@@ -11,6 +11,7 @@ test_it_all:
   stage: test
   script:
    - npm install
+   - npm run lint
    - npm test
 
 
