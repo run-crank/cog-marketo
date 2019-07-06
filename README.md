@@ -40,12 +40,12 @@ as appropriate.
 4. Run `npm start` to validate the cog works locally (`ctrl+c` to kill it)
 5. Run `crank cog:install --source=local --local-start-command="npm start"` to
    register your local instance of this cog. You may need to append a `--force`
-   flag or run `crank cog:uninstall automatoninc/marketo-cog` if you've already
+   flag or run `crank cog:uninstall automatoninc/marketo` if you've already
    installed the distributed version of this cog.
 
 ### Adding/Modifying Steps
 Modify code in `src/steps` and validate your changes by running
-`crank cog:step automatoninc/marketo-cog` and selecting your step.
+`crank cog:step automatoninc/marketo` and selecting your step.
 
 To add new steps, create new step classes in `src/steps`. You will need to run
 `crank registry:rebuild` in order for your new steps to be recognized.
