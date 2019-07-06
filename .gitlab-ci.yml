@@ -13,5 +13,3 @@ test_it_all:
    - npm install
    - npm run lint
    - npm test
-
-
