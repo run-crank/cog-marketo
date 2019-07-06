@@ -1,0 +1,14 @@
+scenario: Demonstrate the Marketo Cog
+description: A contrived scenario that proves out this Cog at a basic level.
+
+steps:
+-
+  step: When I create or update a Marketo lead
+  data:
+    lead:
+      email: atoma.tommy@example.com
+      firstName: Atoma
+      lastName: Tommy
+- step: Then the firstName field on atoma.tommy@example.com should equal Atoma in Marketo
+- step: And the lastName field on atoma.tommy@example.com should equal Tommy in Marketo
+- step: Delete the atoma.tommy@example.com Marketo lead
