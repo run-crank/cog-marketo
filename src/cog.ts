@@ -31,7 +31,7 @@ export class Cog implements ICogServiceServer {
   constructor (private marketoClientClass, private stepMap: any = {}) {
     this.steps = fs.readdirSync(`${__dirname}/steps`, { withFileTypes: true })
       .filter((file: fs.Dirent) => {
-        return file.isFile() && (file.name.endsWith('.ts') || file.name.endsWith('.js'))
+        return file.isFile() && (file.name.endsWith('.ts') || file.name.endsWith('.js'));
       }).map((file: fs.Dirent) => {
         const step = require(`${__dirname}/steps/${file.name}`).Step;
         const stepInstance: StepInterface = new step(this.marketoClientClass);
