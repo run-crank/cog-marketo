@@ -1,4 +1,4 @@
-import { BaseStep, Field, StepInterface } from '../base-step';
+import { BaseStep, Field, StepInterface } from '../core/base-step';
 import { Step, RunStepResponse, FieldDefinition } from '../proto/cog_pb';
 import { Struct, Value } from 'google-protobuf/google/protobuf/struct_pb';
 

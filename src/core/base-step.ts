@@ -1,4 +1,4 @@
-import { StepDefinition, FieldDefinition, Step as PbStep, RunStepResponse } from './proto/cog_pb';
+import { StepDefinition, FieldDefinition, Step as PbStep, RunStepResponse } from '../proto/cog_pb';
 
 export interface StepInterface {
   getId(): string;

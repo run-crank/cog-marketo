@@ -4,9 +4,9 @@ import * as fs from 'fs';
 
 import { Field, StepInterface } from './base-step';
 
-import { ICogServiceServer } from './proto/cog_grpc_pb';
+import { ICogServiceServer } from '../proto/cog_grpc_pb';
 import { ManifestRequest, CogManifest, Step, RunStepRequest, RunStepResponse, FieldDefinition,
-  StepDefinition } from './proto/cog_pb';
+  StepDefinition } from '../proto/cog_pb';
 
 export class Cog implements ICogServiceServer {
 
@@ -29,11 +29,11 @@ export class Cog implements ICogServiceServer {
   private steps: StepInterface[];
 
   constructor (private marketoClientClass, private stepMap: any = {}) {
-    this.steps = fs.readdirSync(`${__dirname}/steps`, { withFileTypes: true })
+    this.steps = fs.readdirSync(`${__dirname}/../steps`, { withFileTypes: true })
       .filter((file: fs.Dirent) => {
         return file.isFile() && (file.name.endsWith('.ts') || file.name.endsWith('.js'));
       }).map((file: fs.Dirent) => {
-        const step = require(`${__dirname}/steps/${file.name}`).Step;
+        const step = require(`${__dirname}/../steps/${file.name}`).Step;
         const stepInstance: StepInterface = new step(this.marketoClientClass);
         this.stepMap[stepInstance.getId()] = step;
         return stepInstance;

@@ -1,5 +1,5 @@
 import * as grpc from 'grpc';
-import { CogServiceService as CogService } from './proto/cog_grpc_pb';
+import { CogServiceService as CogService } from '../proto/cog_grpc_pb';
 import { Cog } from './cog';
 import * as Marketo from 'node-marketo-rest';
 
