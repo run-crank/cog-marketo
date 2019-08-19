@@ -1,6 +1,7 @@
+/*tslint:disable:no-else-after-return*/
+
 import { BaseStep, Field, StepInterface } from '../core/base-step';
-import { Step, RunStepResponse, FieldDefinition, StepDefinition } from '../proto/cog_pb';
-import { Struct, Value } from 'google-protobuf/google/protobuf/struct_pb';
+import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
 
 export class DeleteLeadStep extends BaseStep implements StepInterface {
 
@@ -14,12 +15,11 @@ export class DeleteLeadStep extends BaseStep implements StepInterface {
   }];
 
   async executeStep(step: Step) {
-    let responseData: Struct;
     const stepData: any = step.getData().toJavaScript();
     const email = stepData.email;
-    const res = new RunStepResponse();
 
     try {
+      // @todo Consider refactoring this logic into the ClientWrapper.
       const data: any = await this.client.findLeadByEmail(email);
 
       if (data.success && data.result && data.result[0] && data.result[0].id) {
@@ -31,33 +31,22 @@ export class DeleteLeadStep extends BaseStep implements StepInterface {
           deleteRes.result[0] &&
           deleteRes.result[0].status === 'deleted'
         ) {
-          res.setOutcome(RunStepResponse.Outcome.PASSED);
-          res.setMessageFormat('Successfully deleted lead %s');
-          res.addMessageArgs(Value.fromJavaScript(email));
+          return this.pass('Successfully deleted lead %s', [email]);
         } else {
-          res.setOutcome(RunStepResponse.Outcome.FAILED);
-          res.setMessageFormat('Unable to delete lead %s: %s');
-          res.addMessageArgs(Value.fromJavaScript(email));
-          res.addMessageArgs(Value.fromJavaScript(data));
+          return this.error('Unable to delete lead %s: %s', [email, data]);
         }
-        responseData = Struct.fromJavaScript(deleteRes.result[0]);
       } else {
-        res.setOutcome(RunStepResponse.Outcome.ERROR);
-        res.setMessageFormat('Unable to delete lead %s: %s');
-        res.addMessageArgs(Value.fromJavaScript(email));
-        res.addMessageArgs(Value.fromJavaScript('a lead with that email address does not exist.'));
-        responseData = Struct.fromJavaScript(data);
+        return this.error('Unable to delete lead %s: %s', [
+          email,
+          'a lead with that email address does not exist.',
+        ]);
       }
     } catch (e) {
-      responseData = Struct.fromJavaScript(e);
-      res.setOutcome(RunStepResponse.Outcome.ERROR);
-      res.setMessageFormat('There was an error deleting %s from Marketo: %s');
-      res.addMessageArgs(Value.fromJavaScript(email));
-      res.addMessageArgs(Value.fromJavaScript(e.message));
+      return this.error('There was an error deleting %s from Marketo: %s', [
+        email,
+        e.toString(),
+      ]);
     }
-
-    res.setResponseData(responseData);
-    return res;
   }
 
 }

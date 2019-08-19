@@ -1,6 +1,7 @@
+/*tslint:disable:no-else-after-return*/
+
 import { BaseStep, Field, StepInterface } from '../core/base-step';
-import { Step, RunStepResponse, FieldDefinition, StepDefinition } from '../proto/cog_pb';
-import { Struct, Value } from 'google-protobuf/google/protobuf/struct_pb';
+import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
 
 export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
 
@@ -23,12 +24,10 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
   }];
 
   async executeStep(step: Step) {
-    let responseData: Struct;
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
     const expectation = stepData.expectation;
     const email = stepData.email;
     const field = stepData.field;
-    const response = new RunStepResponse();
 
     try {
       const data: any = await this.client.findLeadByEmail(email, {
@@ -38,33 +37,26 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
       if (data.success && data.result && data.result[0] && data.result[0][field]) {
         // tslint:disable-next-line:triple-equals
         if (data.result[0][field] == expectation) {
-          response.setOutcome(RunStepResponse.Outcome.PASSED);
-          response.setMessageFormat('The %s field was %s, as expected.');
-          response.addMessageArgs(Value.fromJavaScript(field));
-          response.addMessageArgs(Value.fromJavaScript(data.result[0][field]));
+          return this.pass('The %s field was %s, as expected.', [
+            field,
+            data.result[0][field],
+          ]);
         } else {
-          response.setOutcome(RunStepResponse.Outcome.FAILED);
-          response.setMessageFormat('Expected %s to be %s, but it was actually %s.');
-          response.addMessageArgs(Value.fromJavaScript(field));
-          response.addMessageArgs(Value.fromJavaScript(expectation));
-          response.addMessageArgs(Value.fromJavaScript(data.result[0][field]));
+          return this.fail('Expected %s to be %s, but it was actually %s.', [
+            field,
+            expectation,
+            data.result[0][field],
+          ]);
         }
-        responseData = Struct.fromJavaScript(data.result[0]);
       } else {
-        response.setOutcome(RunStepResponse.Outcome.ERROR);
-        response.setMessageFormat("Couldn't find a lead associated with %s");
-        response.addMessageArgs(Value.fromJavaScript(email));
-        responseData = Struct.fromJavaScript(data);
+        return this.error("Couldn't find a lead associated with %s", [
+          email,
+          data,
+        ]);
       }
     } catch (e) {
-      responseData = Struct.fromJavaScript(e);
-      response.setOutcome(RunStepResponse.Outcome.ERROR);
-      response.setMessageFormat('There was an error loading leads from Marketo: %s');
-      response.addMessageArgs(Value.fromJavaScript(e.message));
+      return this.error('There was an error loading leads from Marketo: %s', [e.toString()]);
     }
-
-    response.setResponseData(responseData);
-    return response;
   }
 
 }
