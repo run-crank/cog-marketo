@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "description": "Automaton Cog for Marketo",
   "cog": {
-    "name": "automatoninc/marketo"
+    "name": "automatoninc/marketo",
+    "label": "Marketo"
   },
   "scripts": {
     "build-docker": "docker build -t automatoninc/marketo:$npm_package_version -t automatoninc/marketo:latest .",

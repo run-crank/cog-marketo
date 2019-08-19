@@ -1,5 +1,5 @@
 import { BaseStep, Field, StepInterface } from '../core/base-step';
-import { Step, RunStepResponse, FieldDefinition } from '../proto/cog_pb';
+import { Step, RunStepResponse, FieldDefinition, StepDefinition } from '../proto/cog_pb';
 import { Struct, Value } from 'google-protobuf/google/protobuf/struct_pb';
 
 export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
@@ -7,6 +7,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
   protected stepName: string = 'Check Marketo Lead Field for Value';
   // tslint:disable-next-line:max-line-length
   protected stepExpression: string = 'the (?<field>[a-zA-Z0-9_-]+) field on (?<email>.+) should equal (?<expectation>.+) in marketo';
+  protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
     field: 'email',
     type: FieldDefinition.Type.EMAIL,

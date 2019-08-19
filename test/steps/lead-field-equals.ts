@@ -27,6 +27,7 @@ describe('LeadFieldEqualsStep', () => {
     expect(stepDef.getStepId()).to.equal('LeadFieldEqualsStep');
     expect(stepDef.getName()).to.equal('Check Marketo Lead Field for Value');
     expect(stepDef.getExpression()).to.equal('the (?<field>[a-zA-Z0-9_-]+) field on (?<email>.+) should equal (?<expectation>.+) in marketo');
+    expect(stepDef.getType()).to.equal(StepDefinition.Type.VALIDATION);
   });
 
   it('should return expected step fields', () => {

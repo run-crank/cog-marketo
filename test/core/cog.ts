@@ -26,6 +26,7 @@ describe('Cog:GetManifest', () => {
     const version: string = JSON.parse(fs.readFileSync('package.json').toString('utf8')).version;
     cogUnderTest.getManifest(null, (err, manifest: CogManifest) => {
       expect(manifest.getName()).to.equal('automatoninc/marketo');
+      expect(manifest.getLabel()).to.equal('Marketo');
       expect(manifest.getVersion()).to.equal(version);
       done();
     });
@@ -39,7 +40,7 @@ describe('Cog:GetManifest', () => {
 
       // Endpoint
       const endpoint: any = authFields.filter(a => a.key === 'endpoint')[0];
-      expect(endpoint.type).to.equal(FieldDefinition.Type.STRING);
+      expect(endpoint.type).to.equal(FieldDefinition.Type.URL);
       expect(endpoint.optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
 
       // ClientID

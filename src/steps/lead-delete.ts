@@ -1,11 +1,12 @@
 import { BaseStep, Field, StepInterface } from '../core/base-step';
-import { Step, RunStepResponse, FieldDefinition } from '../proto/cog_pb';
+import { Step, RunStepResponse, FieldDefinition, StepDefinition } from '../proto/cog_pb';
 import { Struct, Value } from 'google-protobuf/google/protobuf/struct_pb';
 
 export class DeleteLeadStep extends BaseStep implements StepInterface {
 
   protected stepName: string = 'Delete Marketo Lead';
   protected stepExpression: string = 'delete the (?<email>.+) marketo lead';
+  protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
   protected expectedFields: Field[] = [{
     field: 'email',
     type: FieldDefinition.Type.EMAIL,
