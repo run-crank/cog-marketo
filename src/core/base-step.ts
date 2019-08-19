@@ -1,5 +1,6 @@
 import { ClientWrapper } from '../client/client-wrapper';
 import { StepDefinition, FieldDefinition, Step as PbStep, RunStepResponse } from '../proto/cog_pb';
+import { Value } from 'google-protobuf/google/protobuf/struct_pb';
 
 export interface StepInterface {
   getId(): string;
@@ -44,4 +45,32 @@ export abstract class BaseStep {
 
     return stepDefinition;
   }
+
+  protected pass(message: string, messageArgs: any[] = []): RunStepResponse {
+    const response = this.outcomelessResponse(message, messageArgs);
+    response.setOutcome(RunStepResponse.Outcome.PASSED);
+    return response;
+  }
+
+  protected fail(message: string, messageArgs: any[] = []): RunStepResponse {
+    const response = this.outcomelessResponse(message, messageArgs);
+    response.setOutcome(RunStepResponse.Outcome.FAILED);
+    return response;
+  }
+
+  protected error(message: string, messageArgs: any[] = []): RunStepResponse {
+    const response = this.outcomelessResponse(message, messageArgs);
+    response.setOutcome(RunStepResponse.Outcome.ERROR);
+    return response;
+  }
+
+  private outcomelessResponse(message: string, messageArgs: any[] = []): RunStepResponse {
+    const response: RunStepResponse = new RunStepResponse();
+    response.setMessageFormat(message);
+    messageArgs.forEach((arg) => {
+      response.addMessageArgs(Value.fromJavaScript(arg));
+    });
+    return response;
+  }
+
 }
