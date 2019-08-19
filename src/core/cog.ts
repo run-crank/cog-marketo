@@ -30,7 +30,9 @@ export class Cog implements ICogServiceServer {
     callback: grpc.sendUnaryData<CogManifest>,
   ) {
     const manifest: CogManifest = new CogManifest();
-    const pkgJson: Record<string, any> = JSON.parse(fs.readFileSync('package.json').toString('utf8'));
+    const pkgJson: Record<string, any> = JSON.parse(
+      fs.readFileSync('package.json').toString('utf8'),
+    );
     const stepDefinitions: StepDefinition[] = this.steps.map((step: StepInterface) => {
       return step.getDefinition();
     });

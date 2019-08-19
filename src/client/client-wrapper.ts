@@ -37,16 +37,15 @@ export class ClientWrapper {
   public async findLeadByEmail(email: string, opts: Record<string, any> = null) {
     if (opts) {
       return this.client.lead.find('email', [email], opts);
-    } else {
-      return this.client.lead.find('email', [email]);
     }
+    return this.client.lead.find('email', [email]);
   }
 
-  public async deleteLeadById(id: number) {
+  public async deleteLeadById(leadId: number) {
     // @todo Contribute this back up to the package.
     return this.client._connection.postJson(
       '/v1/leads.json',
-      { input: [{ id: id }] },
+      { input: [{ id: leadId }] },
       { query: { _method: 'DELETE' } },
     );
   }
