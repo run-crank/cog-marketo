@@ -19,15 +19,10 @@ export class DeleteLeadStep extends BaseStep implements StepInterface {
     const res = new RunStepResponse();
 
     try {
-      const data: any = await this.marketo.lead.find('email', [email]);
+      const data: any = await this.client.findLeadByEmail(email);
 
       if (data.success && data.result && data.result[0] && data.result[0].id) {
-        // @todo Contribute this back up to the package.
-        const deleteRes: any = await this.marketo._connection.postJson(
-          '/v1/leads.json',
-          { input: [{ id: data.result[0].id }] },
-          { query: { _method: 'DELETE' } },
-        );
+        const deleteRes: any = await this.client.deleteLeadById(data.result[0].id);
 
         if (
           deleteRes.success &&

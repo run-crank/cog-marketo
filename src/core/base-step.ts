@@ -1,3 +1,4 @@
+import { ClientWrapper } from '../client/client-wrapper';
 import { StepDefinition, FieldDefinition, Step as PbStep, RunStepResponse } from '../proto/cog_pb';
 
 export interface StepInterface {
@@ -18,11 +19,7 @@ export abstract class BaseStep {
   protected stepExpression: string;
   protected expectedFields: Field[];
 
-  protected marketo;
-
-  constructor(marketo) {
-    this.marketo = marketo;
-  }
+  constructor(protected client: ClientWrapper) {}
 
   getId(): string {
     return this.constructor.name;

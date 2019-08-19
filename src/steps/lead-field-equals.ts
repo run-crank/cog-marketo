@@ -30,7 +30,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     const response = new RunStepResponse();
 
     try {
-      const data: any = await this.marketo.lead.find('email', [email], {
+      const data: any = await this.client.findLeadByEmail(email, {
         fields: ['email', field].join(','),
       });
 

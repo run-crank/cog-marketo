@@ -13,12 +13,13 @@ describe('LeadFieldEqualsStep', () => {
   const expect = chai.expect;
   let protoStep: ProtoStep;
   let stepUnderTest: Step;
-  let marketoClientStub: any = {lead: {}};
+  let clientWrapperStub: any;
 
   beforeEach(() => {
     protoStep = new ProtoStep();
-    marketoClientStub.lead.find = sinon.stub();
-    stepUnderTest = new Step(marketoClientStub);
+    clientWrapperStub = sinon.stub();
+    clientWrapperStub.findLeadByEmail = sinon.stub();
+    stepUnderTest = new Step(clientWrapperStub);
   });
 
   it('should return expected step metadata', () => {
@@ -50,7 +51,7 @@ describe('LeadFieldEqualsStep', () => {
     expect(fields[2].type).to.equal(FieldDefinition.Type.ANYSCALAR);
   });
 
-  it('should call the marketo client with the expected args', async () => {
+  it('should call the client wrapper with the expected args', async () => {
     const expectedField: string = 'firstName';
     const expectedEmail: string = 'expected@example.com';
     protoStep.setData(Struct.fromJavaScript({
@@ -59,23 +60,21 @@ describe('LeadFieldEqualsStep', () => {
     }));
 
     await stepUnderTest.executeStep(protoStep);
-    expect(marketoClientStub.lead.find).to.have.been.calledWith(
-      'email',
-      [expectedEmail],
-      {fields: `email,${expectedField}`}
+    expect(clientWrapperStub.findLeadByEmail).to.have.been.calledWith(
+      expectedEmail
     );
   });
 
   it('should respond with an error if the marketo client throws an error', async () => {
     // Cause the client to throw an error, and execute the step.
-    marketoClientStub.lead.find.throws('any error');
+    clientWrapperStub.findLeadByEmail.throws('any error');
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
   });
 
   it('should respond with an error if the marketo client did not find a lead', async () => {
     // Have the client respond with no leads.
-    marketoClientStub.lead.find.returns(Promise.resolve({
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
       success: true,
       result: []
     }));
@@ -93,7 +92,7 @@ describe('LeadFieldEqualsStep', () => {
     }));
 
     // Have the client respond with a valid, but mismatched lead.
-    marketoClientStub.lead.find.returns(Promise.resolve({
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: `Not ${expectedValue}`
@@ -113,7 +112,7 @@ describe('LeadFieldEqualsStep', () => {
     }));
 
     // Have the client respond with a valid, but mismatched lead.
-    marketoClientStub.lead.find.returns(Promise.resolve({
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: expectedValue

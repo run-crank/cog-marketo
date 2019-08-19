@@ -20,7 +20,7 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
     const response = new RunStepResponse();
 
     try {
-      const data: any = await this.marketo.lead.createOrUpdate([lead], { lookupField: 'email' });
+      const data: any = await this.client.createOrUpdateLead(lead);
       if (data.success && data.result && data.result[0] && data.result[0].status !== 'skipped') {
         response.setOutcome(RunStepResponse.Outcome.PASSED);
         response.setMessageFormat('Successfully created or updated lead %s with status %s');

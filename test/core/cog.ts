@@ -15,11 +15,11 @@ chai.use(sinonChai);
 describe('Cog:GetManifest', () => {
   const expect = chai.expect;
   let cogUnderTest: Cog;
-  let marketoClientStub: any = {lead: {}};
+  let clientWrapperSpy: any;
 
   beforeEach(() => {
-    marketoClientStub.lead.find = sinon.stub();
-    cogUnderTest = new Cog(marketoClientStub);
+    clientWrapperSpy = sinon.spy();
+    cogUnderTest = new Cog(clientWrapperSpy);
   });
 
   it('should return expected cog metadata', (done) => {
@@ -83,7 +83,7 @@ describe('Cog:RunStep', () => {
   let protoStep: ProtoStep;
   let grpcUnaryCall: any = {};
   let cogUnderTest: Cog;
-  let marketoClientStub: any = {lead: {}};
+  let clientWrapperStub: any;
 
   beforeEach(() => {
     protoStep = new ProtoStep();
@@ -91,27 +91,8 @@ describe('Cog:RunStep', () => {
       getStep: function () {return protoStep},
       metadata: null
     };
-    marketoClientStub = sinon.stub();
-    cogUnderTest = new Cog(marketoClientStub);
-  });
-
-  it('authenticates marketo client with call metadata', (done) => {
-    // Construct grpc metadata and assert the client was authenticated.
-    const expectedCallArgs = {
-      endpoint: 'https://abc-123-xyz.mktorest.example/rest',
-      identity: 'https://abc-123-xyz.mktorest.example/identity',
-      clientId: 'a-client-id',
-      clientSecret: 'a-client-secret'
-    };
-    grpcUnaryCall.metadata = new Metadata();
-    grpcUnaryCall.metadata.add('endpoint', expectedCallArgs.endpoint.replace('/rest', ''));
-    grpcUnaryCall.metadata.add('clientId', expectedCallArgs.clientId);
-    grpcUnaryCall.metadata.add('clientSecret', expectedCallArgs.clientSecret);
-
-    cogUnderTest.runStep(grpcUnaryCall, (err, response: RunStepResponse) => {
-      expect(marketoClientStub).to.have.been.calledWith(expectedCallArgs);
-      done();
-    })
+    clientWrapperStub = sinon.stub();
+    cogUnderTest = new Cog(clientWrapperStub);
   });
 
   it('responds with error when called with unknown stepId', (done) => {
@@ -131,7 +112,7 @@ describe('Cog:RunStep', () => {
     const mockTestStepMap: any = {TestStepId: sinon.stub()}
     mockTestStepMap.TestStepId.returns(mockStepExecutor);
 
-    cogUnderTest = new Cog(marketoClientStub, mockTestStepMap);
+    cogUnderTest = new Cog(clientWrapperStub, mockTestStepMap);
     protoStep.setStepId('TestStepId');
 
     cogUnderTest.runStep(grpcUnaryCall, (err, response: RunStepResponse) => {
@@ -148,7 +129,7 @@ describe('Cog:RunStep', () => {
     const mockTestStepMap: any = {TestStepId: sinon.stub()}
     mockTestStepMap.TestStepId.returns(mockStepExecutor);
 
-    cogUnderTest = new Cog(marketoClientStub, mockTestStepMap);
+    cogUnderTest = new Cog(clientWrapperStub, mockTestStepMap);
     protoStep.setStepId('TestStepId');
 
     cogUnderTest.runStep(grpcUnaryCall, (err, response: RunStepResponse) => {
@@ -165,7 +146,7 @@ describe('Cog:RunSteps', () => {
   let runStepRequest: RunStepRequest;
   let grpcDuplexStream: any;
   let cogUnderTest: Cog;
-  let marketoClientStub: any = {lead: {}};
+  let clientWrapperStub: any;
 
   beforeEach(() => {
     protoStep = new ProtoStep();
@@ -174,27 +155,8 @@ describe('Cog:RunSteps', () => {
     grpcDuplexStream._write = sinon.stub().callsArg(2);
     grpcDuplexStream._read = sinon.stub();
     grpcDuplexStream.metadata = new Metadata();
-    marketoClientStub = sinon.stub();
-    cogUnderTest = new Cog(marketoClientStub);
-  });
-
-  it('authenticates marketo client with call metadata', () => {
-    runStepRequest.setStep(protoStep);
-
-    // Construct grpc metadata and assert the client was authenticated.
-    const expectedCallArgs = {
-      endpoint: 'https://abc-123-xyz.mktorest.example/rest',
-      identity: 'https://abc-123-xyz.mktorest.example/identity',
-      clientId: 'a-client-id',
-      clientSecret: 'a-client-secret'
-    };
-    grpcDuplexStream.metadata.add('endpoint', expectedCallArgs.endpoint.replace('/rest', ''));
-    grpcDuplexStream.metadata.add('clientId', expectedCallArgs.clientId);
-    grpcDuplexStream.metadata.add('clientSecret', expectedCallArgs.clientSecret);
-
-    cogUnderTest.runSteps(grpcDuplexStream);
-    grpcDuplexStream.emit('data', runStepRequest);
-    expect(marketoClientStub).to.have.been.calledWith(expectedCallArgs);
+    clientWrapperStub = sinon.stub();
+    cogUnderTest = new Cog(clientWrapperStub);
   });
 
   it('responds with error when called with unknown stepId', (done) => {
@@ -222,7 +184,7 @@ describe('Cog:RunSteps', () => {
     mockStepExecutor.executeStep.resolves(expectedResponse);
     const mockTestStepMap: any = {TestStepId: sinon.stub()}
     mockTestStepMap.TestStepId.returns(mockStepExecutor);
-    cogUnderTest = new Cog(marketoClientStub, mockTestStepMap);
+    cogUnderTest = new Cog(clientWrapperStub, mockTestStepMap);
     protoStep.setStepId('TestStepId');
     runStepRequest.setStep(protoStep);
 
@@ -245,7 +207,7 @@ describe('Cog:RunSteps', () => {
     mockStepExecutor.executeStep.throws()
     const mockTestStepMap: any = {TestStepId: sinon.stub()}
     mockTestStepMap.TestStepId.returns(mockStepExecutor);
-    cogUnderTest = new Cog(marketoClientStub, mockTestStepMap);
+    cogUnderTest = new Cog(clientWrapperStub, mockTestStepMap);
     protoStep.setStepId('TestStepId');
     runStepRequest.setStep(protoStep);
 

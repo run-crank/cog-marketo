@@ -7,34 +7,19 @@ import { Field, StepInterface } from './base-step';
 import { ICogServiceServer } from '../proto/cog_grpc_pb';
 import { ManifestRequest, CogManifest, Step, RunStepRequest, RunStepResponse, FieldDefinition,
   StepDefinition } from '../proto/cog_pb';
+import { ClientWrapper } from '../client/client-wrapper';
 
 export class Cog implements ICogServiceServer {
 
-  private cogName: string = 'automatoninc/marketo';
-  private cogVersion: string = JSON.parse(fs.readFileSync('package.json').toString('utf8')).version;
-  private authFields: Field[] = [{
-    field: 'endpoint',
-    type: FieldDefinition.Type.STRING,
-    description: 'Marketo REST API domain (without /rest), e.g. https://abc-123-xyz.mktorest.com',
-  }, {
-    field: 'clientId',
-    type: FieldDefinition.Type.STRING,
-    description: 'The Client ID associated with your Marketo Web Service.',
-  }, {
-    field: 'clientSecret',
-    type: FieldDefinition.Type.STRING,
-    description: 'The Client Secret associated with your Marketo Web Service.',
-  }];
-
   private steps: StepInterface[];
 
-  constructor (private marketoClientClass, private stepMap: any = {}) {
+  constructor (private clientWrapperClass, private stepMap: Record<string, any> = {}) {
     this.steps = fs.readdirSync(`${__dirname}/../steps`, { withFileTypes: true })
       .filter((file: fs.Dirent) => {
         return file.isFile() && (file.name.endsWith('.ts') || file.name.endsWith('.js'));
       }).map((file: fs.Dirent) => {
         const step = require(`${__dirname}/../steps/${file.name}`).Step;
-        const stepInstance: StepInterface = new step(this.marketoClientClass);
+        const stepInstance: StepInterface = new step(clientWrapperClass);
         this.stepMap[stepInstance.getId()] = step;
         return stepInstance;
       });
@@ -45,15 +30,16 @@ export class Cog implements ICogServiceServer {
     callback: grpc.sendUnaryData<CogManifest>,
   ) {
     const manifest: CogManifest = new CogManifest();
+    const pkgJson: Record<string, any> = JSON.parse(fs.readFileSync('package.json').toString('utf8'));
     const stepDefinitions: StepDefinition[] = this.steps.map((step: StepInterface) => {
       return step.getDefinition();
     });
 
-    manifest.setName(this.cogName);
-    manifest.setVersion(this.cogVersion);
+    manifest.setName(pkgJson.cog.name);
+    manifest.setVersion(pkgJson.version);
     manifest.setStepDefinitionsList(stepDefinitions);
 
-    this.authFields.forEach((field: Field) => {
+    ClientWrapper.expectedAuthFields.forEach((field: Field) => {
       const authField: FieldDefinition = new FieldDefinition();
       authField.setKey(field.field);
       authField.setOptionality(FieldDefinition.Optionality.REQUIRED);
@@ -105,7 +91,7 @@ export class Cog implements ICogServiceServer {
   }
 
   private async dispatchStep(step: Step, metadata: grpc.Metadata): Promise<RunStepResponse> {
-    const marketo = this.getMarketoClient(metadata);
+    const client = this.getClientWrapper(metadata);
     const stepId = step.getStepId();
     let response: RunStepResponse = new RunStepResponse();
 
@@ -117,7 +103,7 @@ export class Cog implements ICogServiceServer {
     }
 
     try {
-      const stepExecutor: StepInterface = new this.stepMap[stepId](marketo);
+      const stepExecutor: StepInterface = new this.stepMap[stepId](client);
       response = await stepExecutor.executeStep(step);
     } catch (e) {
       response.setOutcome(RunStepResponse.Outcome.ERROR);
@@ -127,13 +113,8 @@ export class Cog implements ICogServiceServer {
     return response;
   }
 
-  private getMarketoClient(auth: grpc.Metadata) {
-    return new this.marketoClientClass({
-      endpoint: `${auth.get('endpoint')[0]}/rest`,
-      identity: `${auth.get('endpoint')[0]}/identity`,
-      clientId: auth.get('clientId')[0],
-      clientSecret: auth.get('clientSecret')[0],
-    });
+  private getClientWrapper(auth: grpc.Metadata) {
+    return new this.clientWrapperClass(auth);
   }
 
 }
