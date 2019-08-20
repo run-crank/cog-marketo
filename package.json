@@ -4,7 +4,9 @@
   "description": "Automaton Cog for Marketo",
   "cog": {
     "name": "automatoninc/marketo",
-    "label": "Marketo"
+    "label": "Marketo",
+    "homepage": "",
+    "authHelpUrl": "https://docs.marketo.com/display/public/DOCS/Create+a+Custom+Service+for+Use+with+ReST+API"
   },
   "scripts": {
     "build-docker": "docker build -t automatoninc/marketo:$npm_package_version -t automatoninc/marketo:latest .",
