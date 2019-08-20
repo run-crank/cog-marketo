@@ -2,6 +2,7 @@
   "name": "cog-marketo",
   "version": "0.1.0",
   "description": "Marketo Cog for use with Crank",
+  "license": "MIT",
   "cog": {
     "name": "automatoninc/marketo",
     "label": "Marketo",
