@@ -8,15 +8,15 @@ export class ClientWrapper {
   public static expectedAuthFields: Field[] = [{
     field: 'endpoint',
     type: FieldDefinition.Type.URL,
-    description: 'Marketo REST API domain (without /rest), e.g. https://abc-123-xyz.mktorest.com',
+    description: 'REST API endpoint (without /rest), e.g. https://abc-123.mktorest.com',
   }, {
     field: 'clientId',
     type: FieldDefinition.Type.STRING,
-    description: 'The Client ID associated with your Marketo Web Service.',
+    description: 'Client ID',
   }, {
     field: 'clientSecret',
     type: FieldDefinition.Type.STRING,
-    description: 'The Client Secret associated with your Marketo Web Service.',
+    description: 'Client Secret',
   }];
 
   private client: Marketo;

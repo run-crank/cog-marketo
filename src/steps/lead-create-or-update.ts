@@ -5,14 +5,13 @@ import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
 
 export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Create or Update Marketo Lead';
+  protected stepName: string = 'Create or update a Marketo Lead';
   protected stepExpression: string = 'create or update a marketo lead';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
   protected expectedFields: Field[] = [{
     field: 'lead',
     type: FieldDefinition.Type.MAP,
-    description: 'Key/value pairs whose keys correspond to Marketo REST API field names for ' +
-      'Lead fields. Must include an email key/value pair.',
+    description: 'A map of field names to field values',
   }];
 
   async executeStep(step: Step) {

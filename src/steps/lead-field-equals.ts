@@ -5,22 +5,22 @@ import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
 
 export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Check Marketo Lead Field for Value';
+  protected stepName: string = 'Check a field on a Marketo Lead';
   // tslint:disable-next-line:max-line-length
-  protected stepExpression: string = 'the (?<field>[a-zA-Z0-9_-]+) field on (?<email>.+) should equal (?<expectation>.+) in marketo';
+  protected stepExpression: string = 'the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should be (?<expectation>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
     field: 'email',
     type: FieldDefinition.Type.EMAIL,
-    description: 'The email address of the Marketo lead to inspect.',
+    description: "Lead's email address",
   }, {
     field: 'field',
     type: FieldDefinition.Type.STRING,
-    description: 'The REST API field name of the Lead field to inspect.',
+    description: 'Field name to check',
   }, {
     field: 'expectation',
     type: FieldDefinition.Type.ANYSCALAR,
-    description: 'The expected field value.',
+    description: 'Expected field value',
   }];
 
   async executeStep(step: Step) {
