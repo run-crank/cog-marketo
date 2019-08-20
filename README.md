@@ -25,9 +25,9 @@ Note: You can always re-authenticate later.
 <!-- authenticationDetails -->
 You will be asked for the following authentication details on installation.
 
-- **endpoint**: Marketo REST API domain (without /rest), e.g. https://abc-123-xyz.mktorest.com
-- **clientId**: The Client ID associated with your Marketo Web Service.
-- **clientSecret**: The Client Secret associated with your Marketo Web Service.
+- **endpoint**: REST API endpoint (without /rest), e.g. https://abc-123.mktorest.com
+- **clientId**: Client ID
+- **clientSecret**: Client Secret
 
 ```bash
 # Re-authenticate by running this
@@ -37,27 +37,27 @@ crank cog:auth automatoninc/marketo
 
 ### Steps
 <!-- stepDetails -->
-<h4 id="CreateOrUpdateLeadByFieldStep">Create or Update Marketo Lead</h4>
+<h4 id="CreateOrUpdateLeadByFieldStep">Create or update a Marketo Lead</h4>
 
 - **Expression**: `create or update a marketo lead`
 - **Expected Data**:
-  - `lead`: Key/value pairs whose keys correspond to Marketo REST API field names for Lead fields. Must include an email key/value pair.
+  - `lead`: A map of field names to field values
 - **Step ID**: `CreateOrUpdateLeadByFieldStep`
 
-<h4 id="DeleteLeadStep">Delete Marketo Lead</h4>
+<h4 id="DeleteLeadStep">Delete a Marketo Lead</h4>
 
 - **Expression**: `delete the (?<email>.+) marketo lead`
 - **Expected Data**:
-  - `email`: The email address of the Marketo lead to be deleted.
+  - `email`: Lead's email address
 - **Step ID**: `DeleteLeadStep`
 
-<h4 id="LeadFieldEqualsStep">Check Marketo Lead Field for Value</h4>
+<h4 id="LeadFieldEqualsStep">Check a field on a Marketo Lead</h4>
 
-- **Expression**: `the (?<field>[a-zA-Z0-9_-]+) field on (?<email>.+) should equal (?<expectation>.+) in marketo`
+- **Expression**: `the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should be (?<expectation>.+)`
 - **Expected Data**:
-  - `email`: The email address of the Marketo lead to inspect.
-  - `field`: The REST API field name of the Lead field to inspect.
-  - `expectation`: The expected field value.
+  - `email`: Lead's email address
+  - `field`: Field name to check
+  - `expectation`: Expected field value
 - **Step ID**: `LeadFieldEqualsStep`
 <!-- stepDetailsEnd -->
 
