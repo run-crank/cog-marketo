@@ -1,7 +1,8 @@
 # Marketo Cog
 
-This is an Automaton Cog for Marketo, providing steps and assertions for you to
-validate the state and behavior of your Marketo instance.
+This is a [Crank][what-is-crank] Cog for Marketo, providing steps and
+assertions for you to validate the state and behavior of your Marketo
+instance.
 
 * [Installation](#installation)
 * [Usage](#usage)
@@ -13,8 +14,8 @@ Ensure you have the `crank` CLI and `docker` installed and running locally,
 then run the following.  You'll be prompted to enter your Marketo credentials
 once the Cog is successfully installed.
 
-```bash
-crank cog:install automatoninc/marketo
+```shell-session
+$ crank cog:install automatoninc/marketo
 ```
 
 Note: You can always re-authenticate later.
@@ -29,9 +30,9 @@ You will be asked for the following authentication details on installation.
 - **clientId**: Client ID
 - **clientSecret**: Client Secret
 
-```bash
+```shell-session
 # Re-authenticate by running this
-crank cog:auth automatoninc/marketo
+$ crank cog:auth automatoninc/marketo
 ```
 <!-- authenticationDetailsEnd -->
 
@@ -105,3 +106,5 @@ re-authenticate this cog by running `crank cog:auth automatoninc/marketo`
 ### Tests and Housekeeping
 Tests can be found in the `test` directory and run like this: `npm test`.
 Ensure your code meets standards by running `npm run lint`.
+
+[what-is-crank]: https://crank.run?utm_medium=readme&utm_source=automatoninc%2Fmarketo

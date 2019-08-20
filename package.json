@@ -1,11 +1,11 @@
 {
   "name": "cog-marketo",
   "version": "0.1.0",
-  "description": "Automaton Cog for Marketo",
+  "description": "Marketo Cog for use with Crank",
   "cog": {
     "name": "automatoninc/marketo",
     "label": "Marketo",
-    "homepage": "",
+    "homepage": "https://github.com/run-crank/cog-marketo",
     "authHelpUrl": "https://docs.marketo.com/display/public/DOCS/Create+a+Custom+Service+for+Use+with+ReST+API"
   },
   "scripts": {
