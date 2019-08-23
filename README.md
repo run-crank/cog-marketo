@@ -1,5 +1,7 @@
 # Marketo Cog
 
+[![CircleCI](https://circleci.com/gh/run-crank/cog-marketo/tree/master.svg?style=svg)](https://circleci.com/gh/run-crank/cog-marketo/tree/master)
+
 This is a [Crank][what-is-crank] Cog for Marketo, providing steps and
 assertions for you to validate the state and behavior of your Marketo
 instance.
