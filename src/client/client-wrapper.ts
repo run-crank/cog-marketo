@@ -2,8 +2,9 @@ import * as grpc from 'grpc';
 import * as Marketo from 'node-marketo-rest';
 import { Field } from '../core/base-step';
 import { FieldDefinition } from '../proto/cog_pb';
+import { LeadAwareMixin } from './mixins/lead-aware';
 
-export class ClientWrapper {
+class ClientWrapper {
 
   public static expectedAuthFields: Field[] = [{
     field: 'endpoint',
@@ -19,7 +20,7 @@ export class ClientWrapper {
     description: 'Client Secret',
   }];
 
-  private client: Marketo;
+  client: Marketo;
 
   constructor (auth: grpc.Metadata, clientConstructor = Marketo) {
     this.client = new clientConstructor({
@@ -29,25 +30,18 @@ export class ClientWrapper {
       clientSecret: auth.get('clientSecret')[0],
     });
   }
-
-  public async createOrUpdateLead(lead: Record<string, any>) {
-    return this.client.lead.createOrUpdate([lead], { lookupField: 'email' });
-  }
-
-  public async findLeadByEmail(email: string, opts: Record<string, any> = null) {
-    if (opts) {
-      return this.client.lead.find('email', [email], opts);
-    }
-    return this.client.lead.find('email', [email]);
-  }
-
-  public async deleteLeadById(leadId: number) {
-    // @todo Contribute this back up to the package.
-    return this.client._connection.postJson(
-      '/v1/leads.json',
-      { input: [{ id: leadId }] },
-      { query: { _method: 'DELETE' } },
-    );
-  }
-
 }
+
+interface ClientWrapper extends LeadAwareMixin {}
+applyMixins(ClientWrapper, [LeadAwareMixin]);
+
+function applyMixins(derivedCtor: any, baseCtors: any[]) {
+  baseCtors.forEach((baseCtor) => {
+    Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
+          // tslint:disable-next-line:max-line-length
+      Object.defineProperty(derivedCtor.prototype, name, Object.getOwnPropertyDescriptor(baseCtor.prototype, name));
+    });
+  });
+}
+
+export { ClientWrapper as ClientWrapper };
