@@ -34,7 +34,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
         fields: ['email', field].join(','),
       });
 
-      if (data.success && data.result && data.result[0] && data.result[0][field]) {
+      if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
         // tslint:disable-next-line:triple-equals
         if (data.result[0][field] == expectation) {
           return this.pass('The %s field was %s, as expected.', [
@@ -49,10 +49,18 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
           ]);
         }
       } else {
-        return this.error("Couldn't find a lead associated with %s", [
-          email,
-          data,
-        ]);
+        if (data.result && data.result[0] && !data.result[0][field]) {
+          return this.error('Found the %s lead, but there was no %s field.', [
+            email,
+            field,
+            data,
+          ]);
+        } else {
+          return this.error("Couldn't find a lead associated with %s", [
+            email,
+            data,
+          ]);
+        }
       }
     } catch (e) {
       return this.error('There was an error loading leads from Marketo: %s', [e.toString()]);

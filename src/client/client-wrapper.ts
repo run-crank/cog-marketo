@@ -28,6 +28,7 @@ class ClientWrapper {
       identity: `${auth.get('endpoint')[0]}/identity`,
       clientId: auth.get('clientId')[0],
       clientSecret: auth.get('clientSecret')[0],
+      ...(!!auth.get('partnerId')[0] && { partnerId: auth.get('partnerId')[0] }),
     });
   }
 }
