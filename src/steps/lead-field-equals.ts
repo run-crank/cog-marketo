@@ -50,7 +50,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
         }
       } else {
         if (data.result && data.result[0] && !data.result[0][field]) {
-          return this.error("Found the %s lead, but there was no %s field.", [
+          return this.error('Found the %s lead, but there was no %s field.', [
             email,
             field,
             data,
