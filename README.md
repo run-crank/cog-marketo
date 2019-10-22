@@ -26,11 +26,13 @@ Note: You can always re-authenticate later.
 
 ### Authentication
 <!-- authenticationDetails -->
-You will be asked for the following authentication details on installation.
+You will be asked for the following authentication details on installation. To avoid prompts in a CI/CD context, you can provide the same details as environment variables.
 
-- **endpoint**: REST API endpoint (without /rest), e.g. https://abc-123.mktorest.com
-- **clientId**: Client ID
-- **clientSecret**: Client Secret
+| Field | Install-Time Environment Variable | Description |
+| --- | --- | --- |
+| **endpoint** | `CRANK_AUTOMATONINC_MARKETO__ENDPOINT` | REST API endpoint (without /rest), e.g. https://abc-123.mktorest.com |
+| **clientId** | `CRANK_AUTOMATONINC_MARKETO__CLIENTID` | Client ID |
+| **clientSecret** | `CRANK_AUTOMATONINC_MARKETO__CLIENTSECRET` | Client Secret |
 
 ```shell-session
 # Re-authenticate by running this
@@ -40,28 +42,11 @@ $ crank cog:auth automatoninc/marketo
 
 ### Steps
 <!-- stepDetails -->
-<h4 id="CreateOrUpdateLeadByFieldStep">Create or update a Marketo Lead</h4>
-
-- **Expression**: `create or update a marketo lead`
-- **Expected Data**:
-  - `lead`: A map of field names to field values
-- **Step ID**: `CreateOrUpdateLeadByFieldStep`
-
-<h4 id="DeleteLeadStep">Delete a Marketo Lead</h4>
-
-- **Expression**: `delete the (?<email>.+) marketo lead`
-- **Expected Data**:
-  - `email`: Lead's email address
-- **Step ID**: `DeleteLeadStep`
-
-<h4 id="LeadFieldEqualsStep">Check a field on a Marketo Lead</h4>
-
-- **Expression**: `the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should be (?<expectation>.+)`
-- **Expected Data**:
-  - `email`: Lead's email address
-  - `field`: Field name to check
-  - `expectation`: Expected field value
-- **Step ID**: `LeadFieldEqualsStep`
+| Name (ID) | Expression | Expected Data |
+| --- | --- | --- |
+| **Create or update a Marketo Lead**<br>(`CreateOrUpdateLeadByFieldStep`) | `create or update a marketo lead` | - `lead`: A map of field names to field values |
+| **Delete a Marketo Lead**<br>(`DeleteLeadStep`) | `delete the (?<email>.+) marketo lead` | - `email`: Lead's email address |
+| **Check a field on a Marketo Lead**<br>(`LeadFieldEqualsStep`) | `the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should be (?<expectation>.+)` | - `email`: Lead's email address <br><br>- `field`: Field name to check <br><br>- `expectation`: Expected field value |
 <!-- stepDetailsEnd -->
 
 ## Development and Contributing
