@@ -84,6 +84,25 @@ describe('LeadFieldEqualsStep', () => {
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
   });
 
+  it('should respond with an error if the lead found does not contain the given field', async () => {
+    protoStep.setData(Struct.fromJavaScript({
+      expectation: 'anything',
+      email: 'anyone@example.com',
+      field: 'firstname',
+    }));
+
+    // Have the client respond with an object not containing the field above.
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+      success: true,
+      result: [{
+        firstName: '<-- Notice the case',
+      }]
+    }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+  });
+
   it('should respond with a failure if the field on the lead does not match the expectation', async () => {
     const expectedValue: string = 'Atoma';
     protoStep.setData(Struct.fromJavaScript({
