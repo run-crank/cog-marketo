@@ -47,6 +47,26 @@ describe('ClientWrapper', () => {
     expect(marketoConstructorStub).to.have.been.calledWith(expectedCallArgs);
   });
 
+  it('authentication::partner', () => {
+    // Construct grpc metadata and assert the client was authenticated.
+    const expectedCallArgs = {
+      endpoint: 'https://abc-123-xyz.mktorest.example/rest',
+      identity: 'https://abc-123-xyz.mktorest.example/identity',
+      clientId: 'a-client-id',
+      clientSecret: 'a-client-secret',
+      partnerId: 'some-partner-id',
+    };
+    metadata = new Metadata();
+    metadata.add('endpoint', expectedCallArgs.endpoint.replace('/rest', ''));
+    metadata.add('clientId', expectedCallArgs.clientId);
+    metadata.add('clientSecret', expectedCallArgs.clientSecret);
+    metadata.add('partnerId', expectedCallArgs.partnerId);
+
+    // Assert that the underlying API client was authenticated correctly.
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+    expect(marketoConstructorStub).to.have.been.calledWith(expectedCallArgs);
+  });
+
   it('createOrUpdateLead', () => {
     const expectedLead = { email: 'test@example.com' };
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
