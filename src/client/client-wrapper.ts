@@ -9,7 +9,7 @@ class ClientWrapper {
   public static expectedAuthFields: Field[] = [{
     field: 'endpoint',
     type: FieldDefinition.Type.URL,
-    description: 'REST API endpoint (without /rest), e.g. https://abc-123.mktorest.com',
+    description: 'REST API endpoint (without /rest), e.g. https://123-abc-456.mktorest.com',
   }, {
     field: 'clientId',
     type: FieldDefinition.Type.STRING,
