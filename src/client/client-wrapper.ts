@@ -2,7 +2,7 @@ import * as grpc from 'grpc';
 import * as Marketo from 'node-marketo-rest';
 import { Field } from '../core/base-step';
 import { FieldDefinition } from '../proto/cog_pb';
-import { LeadAwareMixin } from './mixins/lead-aware';
+import { LeadAwareMixin, SmartCampaignAwareMixin } from './mixins';
 
 class ClientWrapper {
 
@@ -33,8 +33,8 @@ class ClientWrapper {
   }
 }
 
-interface ClientWrapper extends LeadAwareMixin {}
-applyMixins(ClientWrapper, [LeadAwareMixin]);
+interface ClientWrapper extends LeadAwareMixin, SmartCampaignAwareMixin {}
+applyMixins(ClientWrapper, [LeadAwareMixin, SmartCampaignAwareMixin]);
 
 function applyMixins(derivedCtor: any, baseCtors: any[]) {
   baseCtors.forEach((baseCtor) => {
