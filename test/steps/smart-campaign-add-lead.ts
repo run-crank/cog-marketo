@@ -118,7 +118,7 @@ describe('AddLeadToSmartCampaignStep', () => {
   });
 
   it('should respond with error if the marketo returns more than 1 campaign', async () => {
-    const expectedResponseMessage: string = "Can't add %s to %s: found more than one campaign with that name.";
+    const expectedResponseMessage: string = "Can't add %s to %s: found %d matching campaigns";
     clientWrapperStub.getCampaigns.returns(Promise.resolve({
       success: true,
       result: [
@@ -178,7 +178,7 @@ describe('AddLeadToSmartCampaignStep', () => {
   });
 
   it('should respond with fail if the marketo fails to add lead to smart campaign', async () => {
-    const expectedResponseMessage: string = 'Unable to add lead %s to smart campaign %s';
+    const expectedResponseMessage: string = 'Unable to add lead %s to smart campaign %s: %s';
     clientWrapperStub.getCampaigns.returns(Promise.resolve({
       success: true,
       result: [
@@ -201,6 +201,7 @@ describe('AddLeadToSmartCampaignStep', () => {
     clientWrapperStub.addLeadToSmartCampaign.returns(Promise.resolve({
       success: false,
       result: [{}],
+      message: 'someError',
     }));
     protoStep.setData(Struct.fromJavaScript({
       email: 'someEmail',

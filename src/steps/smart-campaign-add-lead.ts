@@ -29,11 +29,10 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
       if (isNaN(campaign)) {
         const allCampaigns = await this.client.getCampaigns();
         campaigns = allCampaigns.result.filter(c => c.name.toLowerCase() == campaign.toLowerCase());
-        console.log(campaigns);
       }
 
       if (campaigns.length != 1) {
-        return this.error("Can't add %s to %s: found more than one campaign with that name.", [email, campaign[0]]);
+        return this.error("Can't add %s to %s: found %d matching campaigns", [email, campaign, campaigns.length]);
       } else if (campaigns[0].hasOwnProperty('isRequestable') && !campaigns[0].isRequestable) {
         return this.error("Cannot add lead to smart campaign %s. In order to test this campaign, you must add a 'Campaign is Requested' trigger with 'Source' set to 'Web Service API'", [campaign]);
       }
@@ -43,7 +42,7 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
       if (result.success) {
         return this.pass('Successfully added lead %s to smart campaign %s', [lead.result[0].email, campaigns[0].id.toString()]);
       } else {
-        return this.fail('Unable to add lead %s to smart campaign %s', [lead.result[0].email, campaigns[0].id.toString()]);
+        return this.fail('Unable to add lead %s to smart campaign %s: %s', [lead.result[0].email, campaigns[0].id.toString(), result.message]);
       }
     } catch (e) {
       return this.error('%s', [e.toString()]);
