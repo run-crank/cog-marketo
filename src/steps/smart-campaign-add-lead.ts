@@ -43,7 +43,6 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
         return this.fail('Unable to add lead %s to smart campaign %s: %s', [lead.result[0].email, campaigns[0].id.toString(), result.message]);
       }
     } catch (e) {
-      console.log(e.message);
       if (e.message.includes("Trigger campaign needs to have a 'Campaign Requested' trigger")) {
         return this.error("Cannot add lead to smart campaign %s. In order to test this campaign, you must add a 'Campaign is Requested' trigger with 'Source' set to 'Web Service API'", [campaign]);
       }
