@@ -143,7 +143,7 @@ describe('AddLeadToSmartCampaignStep', () => {
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
   });
 
-  it('should respond with error if the marketo returns campaign with isRequestable set to false', async () => {
+  it('should respond with an error if the marketo throws an error related to trigger campaign', async () => {
     const expectedResponseMessage: string = "Cannot add lead to smart campaign %s. In order to test this campaign, you must add a 'Campaign is Requested' trigger with 'Source' set to 'Web Service API'";
     clientWrapperStub.getCampaigns.returns(Promise.resolve({
       success: true,
@@ -151,7 +151,7 @@ describe('AddLeadToSmartCampaignStep', () => {
         {
           name: 'someCampaign',
           id: '11111',
-          isRequestable: false,
+          isRequestable: true,
         },
       ],
     }));
@@ -164,10 +164,7 @@ describe('AddLeadToSmartCampaignStep', () => {
         },
       ],
     }));
-    clientWrapperStub.addLeadToSmartCampaign.returns(Promise.resolve({
-      success: true,
-      result: [{}],
-    }));
+    clientWrapperStub.addLeadToSmartCampaign.throws({ message: "Trigger campaign needs to have a 'Campaign Requested' trigger" });
     protoStep.setData(Struct.fromJavaScript({
       email: 'someEmail',
       campaign: 'someCampaign',
@@ -215,7 +212,8 @@ describe('AddLeadToSmartCampaignStep', () => {
   it('should respond with an error if the marketo throws an error', async () => {
     clientWrapperStub.getCampaigns.throws('any error');
     protoStep.setData(Struct.fromJavaScript({
-      email: 'any@email.com',
+      email: 'someEmail',
+      campaign: 'someCampaign',
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);

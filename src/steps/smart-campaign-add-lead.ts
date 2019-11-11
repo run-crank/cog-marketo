@@ -11,12 +11,12 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
   protected expectedFields: Field[] = [{
     field: 'email',
     type: FieldDefinition.Type.EMAIL,
-    description: 'the email address of the Marketo Lead',
+    description: "Lead's email address",
   },
   {
     field: 'campaign',
     type: FieldDefinition.Type.ANYSCALAR,
-    description: 'either the name of the smart campaign, or its numeric ID',
+    description: 'Smart campaign name or numeric id',
   }];
 
   async executeStep(step: Step) {
@@ -33,8 +33,6 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
 
       if (campaigns.length != 1) {
         return this.error("Can't add %s to %s: found %d matching campaigns", [email, campaign, campaigns.length]);
-      } else if (campaigns[0].hasOwnProperty('isRequestable') && !campaigns[0].isRequestable) {
-        return this.error("Cannot add lead to smart campaign %s. In order to test this campaign, you must add a 'Campaign is Requested' trigger with 'Source' set to 'Web Service API'", [campaign]);
       }
 
       const lead: any = await this.client.findLeadByEmail(email);
@@ -45,6 +43,10 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
         return this.fail('Unable to add lead %s to smart campaign %s: %s', [lead.result[0].email, campaigns[0].id.toString(), result.message]);
       }
     } catch (e) {
+      console.log(e.message);
+      if (e.message.includes("Trigger campaign needs to have a 'Campaign Requested' trigger")) {
+        return this.error("Cannot add lead to smart campaign %s. In order to test this campaign, you must add a 'Campaign is Requested' trigger with 'Source' set to 'Web Service API'", [campaign]);
+      }
       return this.error('%s', [e.toString()]);
     }
   }
