@@ -151,7 +151,6 @@ describe('AddLeadToSmartCampaignStep', () => {
         {
           name: 'someCampaign',
           id: '11111',
-          isRequestable: true,
         },
       ],
     }));
