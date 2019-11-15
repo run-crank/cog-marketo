@@ -26,7 +26,10 @@ describe('ClientWrapper', () => {
       },
     };
     marketoConstructorStub = sinon.stub();
-    marketoConstructorStub.returns(marketoClientStub)
+    marketoConstructorStub.returns(marketoClientStub);
+    marketoClientStub.campaign = sinon.stub();
+    marketoClientStub.campaign.getCampaigns = sinon.stub();
+    marketoClientStub.campaign.request = sinon.stub();
   });
 
   it('authentication', () => {
@@ -112,6 +115,22 @@ describe('ClientWrapper', () => {
       { input: [ { id: expectedId } ] },
       { query: { _method: 'DELETE' } }
     );
+  });
+
+  it('addLeadToSmartCampaign', () => {
+    const campaignIdInput = 'someId';
+    const leadInput = { name: 'someLead' };
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+    clientWrapperUnderTest.addLeadToSmartCampaign(campaignIdInput, leadInput);
+
+    expect(marketoClientStub.campaign.request).to.have.been.calledWith(campaignIdInput, [leadInput]);
+  });
+
+  it('getCampaigns', () => {
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+    clientWrapperUnderTest.getCampaigns();
+
+    expect(marketoClientStub.campaign.getCampaigns).to.have.been.calledWith();
   });
 
 });
