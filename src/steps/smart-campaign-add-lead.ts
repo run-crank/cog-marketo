@@ -38,9 +38,9 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
       const lead: any = await this.client.findLeadByEmail(email);
       const result = await this.client.addLeadToSmartCampaign(campaigns[0].id.toString(), lead.result[0]);
       if (result.success) {
-        return this.pass('Successfully added lead %s to smart campaign %s', [lead.result[0].email, campaigns[0].id.toString()]);
+        return this.pass('Successfully added lead %s to smart campaign %s', [email, campaign]);
       } else {
-        return this.fail('Unable to add lead %s to smart campaign %s: %s', [lead.result[0].email, campaigns[0].id.toString(), result.message]);
+        return this.fail('Unable to add lead %s to smart campaign %s: %s', [email, campaign, result.message]);
       }
     } catch (e) {
       if (e.message.includes("Trigger campaign needs to have a 'Campaign Requested' trigger")) {
