@@ -30,7 +30,7 @@ You will be asked for the following authentication details on installation. To a
 
 | Field | Install-Time Environment Variable | Description |
 | --- | --- | --- |
-| **endpoint** | `CRANK_AUTOMATONINC_MARKETO__ENDPOINT` | REST API endpoint (without /rest), e.g. https://abc-123.mktorest.com |
+| **endpoint** | `CRANK_AUTOMATONINC_MARKETO__ENDPOINT` | REST API endpoint (without /rest), e.g. https://123-abc-456.mktorest.com |
 | **clientId** | `CRANK_AUTOMATONINC_MARKETO__CLIENTID` | Client ID |
 | **clientSecret** | `CRANK_AUTOMATONINC_MARKETO__CLIENTSECRET` | Client Secret |
 
@@ -47,6 +47,7 @@ $ crank cog:auth automatoninc/marketo
 | **Create or update a Marketo Lead**<br>(`CreateOrUpdateLeadByFieldStep`) | `create or update a marketo lead` | - `lead`: A map of field names to field values |
 | **Delete a Marketo Lead**<br>(`DeleteLeadStep`) | `delete the (?<email>.+) marketo lead` | - `email`: Lead's email address |
 | **Check a field on a Marketo Lead**<br>(`LeadFieldEqualsStep`) | `the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should be (?<expectation>.+)` | - `email`: Lead's email address <br><br>- `field`: Field name to check <br><br>- `expectation`: Expected field value |
+| **Add Marketo Lead to Smart Campaign**<br>(`AddLeadToSmartCampaignStep`) | `add the (?<email>.+) marketo lead to smart campaign (?<campaign>.+)` | - `email`: Lead's email address <br><br>- `campaign`: Smart campaign name or numeric id |
 <!-- stepDetailsEnd -->
 
 ## Development and Contributing
