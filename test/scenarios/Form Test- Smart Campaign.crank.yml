@@ -1,9 +1,8 @@
-scenario: Form Test validation in Marketo
-description: This test the creation of Lead from Web and validation of field in SalesForce.
-
+scenario: Adding a lead from Web to a smart campaign
+description: Proves that the Add Lead contact to Smart Campaign step is working 
 tokens:
   test:
-    email: graces@ys.com
+    email: jcopper@thisisjust.atomatest.com
     lastname: Copper
     firstname: JM
     company: Yeah corp
@@ -20,8 +19,10 @@ steps:
 - step: Fill out select[id=Title] with {{test.title}}
 - step: Fill out select[id=Country] with {{test.country}}
 - step: Submit the form by clicking {{test.submit}}
-- waitFor: 60
+- waitFor: 10
   step: Validate that the email field on marketo lead {{test.email}} should be {{test.email}}
 - step: Validate that the lastName field on marketo lead {{test.email}} should be {{test.lastname}}
-- waitFor: 150 
-  step: Delete the {{test.email}} Marketo lead. 
+- step: Add the {{test.email}} marketo lead to smart campaign Dev - QA - Set Field value
+- waitFor: 5
+  step: Validate that the middleName field on marketo lead {{test.email}} should be Testing
+- step: Delete the {{test.email}} Marketo lead. 
