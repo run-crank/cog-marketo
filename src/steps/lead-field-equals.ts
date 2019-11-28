@@ -7,7 +7,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
 
   protected stepName: string = 'Check a field on a Marketo Lead';
   // tslint:disable-next-line:max-line-length
-  protected stepExpression: string = 'the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should be (?<expectation>.+)';
+  protected stepExpression: string = 'the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should (?<operator>be less than|be greater than|be|contain|not be|not contain) (?<expectation>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
     field: 'email',
@@ -18,6 +18,11 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     type: FieldDefinition.Type.STRING,
     description: 'Field name to check',
   }, {
+    field: 'operator',
+    type: FieldDefinition.Type.STRING,
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+    description: 'Check Logic (be, not be, contain, not contain, be greater than, or be less than)',
+  }, {
     field: 'expectation',
     type: FieldDefinition.Type.ANYSCALAR,
     description: 'Expected field value',
@@ -27,6 +32,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
     const expectation = stepData.expectation;
     const email = stepData.email;
+    const operator: string = stepData.operator || 'be';
     const field = stepData.field;
 
     try {
@@ -35,14 +41,10 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
       });
 
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
-        // tslint:disable-next-line:triple-equals
-        if (data.result[0][field] == expectation) {
-          return this.pass('The %s field was %s, as expected.', [
-            field,
-            data.result[0][field],
-          ]);
+        if (this.compare(operator, data.result[0][field], expectation)) {
+          return this.pass(this.operatorSuccessMessages[operator.replace(/\s/g, '').toLowerCase()], [field, expectation]);
         } else {
-          return this.fail('Expected %s to be %s, but it was actually %s.', [
+          return this.fail(this.operatorFailMessages[operator.replace(/\s/g, '').toLowerCase()], [
             field,
             expectation,
             data.result[0][field],
