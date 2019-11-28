@@ -204,7 +204,7 @@ describe('LeadFieldEqualsStep', () => {
       success: true,
       result: [{
         firstName: 'someName',
-        someNumberField: '0',
+        someNumberField: '10',
       }]
     }));
 
@@ -277,7 +277,7 @@ describe('LeadFieldEqualsStep', () => {
   });
 
   it("should respond with a pass if the field on the lead satisfies the expectation with number value and 'be less than' operator", async () => {
-    const expectedValue: string = '0';
+    const expectedValue: string = '10';
     protoStep.setData(Struct.fromJavaScript({
       expectation: expectedValue,
       email: 'anyone@example.com',
