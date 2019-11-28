@@ -26,7 +26,7 @@ describe('LeadFieldEqualsStep', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('LeadFieldEqualsStep');
     expect(stepDef.getName()).to.equal('Check a field on a Marketo Lead');
-    expect(stepDef.getExpression()).to.equal('the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should be (?<expectation>.+)');
+    expect(stepDef.getExpression()).to.equal('the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should (?<operator>be less than|be greater than|be|contain|not be|not contain) (?<expectation>.+)');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.VALIDATION);
   });
 
@@ -46,10 +46,15 @@ describe('LeadFieldEqualsStep', () => {
     expect(fields[1].optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
     expect(fields[1].type).to.equal(FieldDefinition.Type.STRING);
 
+    // Operator field
+    expect(fields[2].key).to.equal('operator');
+    expect(fields[2].optionality).to.equal(FieldDefinition.Optionality.OPTIONAL);
+    expect(fields[2].type).to.equal(FieldDefinition.Type.STRING);
+
     // Expectation field
-    expect(fields[2].key).to.equal('expectation');
-    expect(fields[2].optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
-    expect(fields[2].type).to.equal(FieldDefinition.Type.ANYSCALAR);
+    expect(fields[3].key).to.equal('expectation');
+    expect(fields[3].optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
+    expect(fields[3].type).to.equal(FieldDefinition.Type.ANYSCALAR);
   });
 
   it('should call the client wrapper with the expected args', async () => {
@@ -141,6 +146,244 @@ describe('LeadFieldEqualsStep', () => {
 
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
+  });
+
+  it("should respond with a pass if the field on the lead matches the expectation with 'be' operator", async () => {
+    const expectedValue: string = 'Atoma';
+    protoStep.setData(Struct.fromJavaScript({
+      expectation: expectedValue,
+      email: 'anyone@example.com',
+      field: 'firstName',
+      operator: 'be'
+    }));
+
+    // Have the client respond with a valid, but mismatched lead.
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+      success: true,
+      result: [{
+        firstName: expectedValue
+      }]
+    }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
+  });
+
+  it("should respond with a pass if the field on the lead matches the expectation with 'contain' operator", async () => {
+    const expectedValue: string = 'Atoma';
+    protoStep.setData(Struct.fromJavaScript({
+      expectation: expectedValue,
+      email: 'anyone@example.com',
+      field: 'firstName',
+      operator: 'contain'
+    }));
+
+    // Have the client respond with a valid, but mismatched lead.
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+      success: true,
+      result: [{
+        firstName: 'AtomaWithExtraLetters',
+      }]
+    }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
+  });
+
+  it("should respond with a pass if the field on the lead satisfies the expectation with number value and 'be greater than' operator", async () => {
+    const expectedValue: string = '5';
+    protoStep.setData(Struct.fromJavaScript({
+      expectation: expectedValue,
+      email: 'anyone@example.com',
+      field: 'someNumberField',
+      operator: 'be greater than',
+    }));
+
+    // Have the client respond with a valid, but mismatched lead.
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+      success: true,
+      result: [{
+        firstName: 'someName',
+        someNumberField: '0',
+      }]
+    }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
+  });
+
+  it("should respond with a pass if the field on the lead satisfies the expectation with date value and 'be greater than' operator", async () => {
+    const expectedValue: string = '2000-01-01';
+    protoStep.setData(Struct.fromJavaScript({
+      expectation: expectedValue,
+      email: 'anyone@example.com',
+      field: 'someDateField',
+      operator: 'be greater than',
+    }));
+
+    // Have the client respond with a valid, but mismatched lead.
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+      success: true,
+      result: [{
+        firstName: 'someName',
+        someDateField: '2000-02-01',
+      }]
+    }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
+  });
+
+  it("should respond with a pass if the field on the lead matches the expectation with 'not be' operator", async () => {
+    const expectedValue: string = 'Atoma';
+    protoStep.setData(Struct.fromJavaScript({
+      expectation: expectedValue,
+      email: 'anyone@example.com',
+      field: 'firstName',
+      operator: 'not be'
+    }));
+
+    // Have the client respond with a valid, but mismatched lead.
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+      success: true,
+      result: [{
+        firstName: 'someOtherValue'
+      }]
+    }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
+  });
+
+  it("should respond with a pass if the field on the lead matches the expectation with 'not contain' operator", async () => {
+    const expectedValue: string = 'Atoma';
+    protoStep.setData(Struct.fromJavaScript({
+      expectation: expectedValue,
+      email: 'anyone@example.com',
+      field: 'firstName',
+      operator: 'not contain'
+    }));
+
+    // Have the client respond with a valid, but mismatched lead.
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+      success: true,
+      result: [{
+        firstName: 'Atom',
+      }]
+    }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
+  });
+
+  it("should respond with a pass if the field on the lead satisfies the expectation with number value and 'be less than' operator", async () => {
+    const expectedValue: string = '0';
+    protoStep.setData(Struct.fromJavaScript({
+      expectation: expectedValue,
+      email: 'anyone@example.com',
+      field: 'someNumberField',
+      operator: 'be less than',
+    }));
+
+    // Have the client respond with a valid, but mismatched lead.
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+      success: true,
+      result: [{
+        firstName: 'someName',
+        someNumberField: '5',
+      }]
+    }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
+  });
+
+  it("should respond with a pass if the field on the lead satisfies the expectation with date value and 'be less than' operator", async () => {
+    const expectedValue: string = '2000-02-01';
+    protoStep.setData(Struct.fromJavaScript({
+      expectation: expectedValue,
+      email: 'anyone@example.com',
+      field: 'someDateField',
+      operator: 'be less than',
+    }));
+
+    // Have the client respond with a valid, but mismatched lead.
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+      success: true,
+      result: [{
+        firstName: 'someName',
+        someDateField: '2000-01-01',
+      }]
+    }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
+  });
+
+  it("should respond with an error if the field on the lead is not a date or number and 'be less than' operator", async () => {
+    const expectedValue: string = 'notANumber';
+    protoStep.setData(Struct.fromJavaScript({
+      expectation: expectedValue,
+      email: 'anyone@example.com',
+      field: 'someDateField',
+      operator: 'be less than',
+    }));
+
+    // Have the client respond with a valid, but mismatched lead.
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+      success: true,
+      result: [{
+        firstName: 'someName',
+        someDateField: '2000-01-01',
+      }]
+    }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+  });
+
+  it("should respond with an error if the field on the lead is not a date or number and 'be greater than' operator", async () => {
+    const expectedValue: string = 'notANumber';
+    protoStep.setData(Struct.fromJavaScript({
+      expectation: expectedValue,
+      email: 'anyone@example.com',
+      field: 'someDateField',
+      operator: 'be greater than',
+    }));
+
+    // Have the client respond with a valid, but mismatched lead.
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+      success: true,
+      result: [{
+        firstName: 'someName',
+        someDateField: '2000-01-01',
+      }]
+    }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+  });
+
+  it('should respond with an error if the operator is invalid', async () => {
+    const expectedValue: string = '12345';
+    protoStep.setData(Struct.fromJavaScript({
+      expectation: expectedValue,
+      email: 'anyone@example.com',
+      field: 'someDateField',
+      operator: 'someOtherOperator',
+    }));
+
+    // Have the client respond with a valid, but mismatched lead.
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+      success: true,
+      result: [{
+        firstName: 'someName',
+        someDateField: '2000-01-01',
+      }]
+    }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
   });
 
 });
