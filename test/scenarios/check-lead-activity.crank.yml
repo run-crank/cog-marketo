@@ -1,0 +1,16 @@
+scenario: Form Test validation in Marketo
+description: This test the creation of Lead from Web and validation of field in SalesForce.
+  
+steps:
+- step: create or update a marketo lead
+  data:
+    lead:
+        email: gon@thisisjust.atomatest.com
+        firstName: Scenario
+        lastName: Tester
+        company: ST Corp
+- step: Validate that there should be an 12 activity for marketo lead gon@thisisjust.atomatest.com in the last 2 minutes
+- step: Validate that there should be an 1 activity for marketo lead gon@thisisjust.atomatest.com in the last 5 minutes
+  data:
+    withAttributes:
+      'ZXC': Change Lead
