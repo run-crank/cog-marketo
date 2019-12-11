@@ -2,7 +2,6 @@ scenario: Form Test validation in Marketo
 description: This test the creation of Lead from Web and validation of field in SalesForce.
   
 steps:
-- step: Delete the tests@thisisjust.atomatest.com Marketo lead
 - step: Create or update a marketo lead
   data:
     lead:
@@ -16,6 +15,6 @@ steps:
   data:
     withAttributes:
       'Source': Marketo Flow Action
-      'Campaign': Automatest Live Demo.Lead routing APIx
+      'Campaign': Automatest Live Demo.Lead routing API
 - step: Delete the tests@thisisjust.atomatest.com Marketo lead
 
