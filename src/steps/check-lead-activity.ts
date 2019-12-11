@@ -102,10 +102,11 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
           ]);
         }
 
-        return this.fail('Expected attributes of activity %s for lead %s within the last %d minute(s) did not match the actual activity attributes', [
+        return this.fail('Expected attributes of activity %s for lead %s within the last %d minute(s) did not match the actual activity attributes. Actual attributes: \n\n', [
           stepData.activityTypeIdOrName,
           email,
           minutesAgo,
+          JSON.stringify(activities.map(activity => activity.attributes), null, 2),
         ]);
       }
 
