@@ -7,7 +7,7 @@ export class ActivityAwareMixin {
     return await this.client.activities.getActivityTypes();
   }
 
-  public async getPagingToken(sinceDate) {
+  public async getActivityPagingToken(sinceDate) {
     return await this.client._connection.get(`/v1/activities/pagingtoken.json?sinceDatetime=${sinceDate}`);
   }
 

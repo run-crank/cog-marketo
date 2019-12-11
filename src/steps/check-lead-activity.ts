@@ -17,7 +17,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
   }, {
     field: 'activityTypeIdOrName',
     type: FieldDefinition.Type.ANYSCALAR,
-    description: 'The activity type ID (integer) or name',
+    description: 'The activity type ID (number) or name',
   }, {
     field: 'minutes',
     type: FieldDefinition.Type.NUMERIC,
@@ -25,7 +25,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
   }, {
     field: 'withAttributes',
     type: FieldDefinition.Type.MAP,
-    description: 'Represents additional parameters that should be used to validate an event. The key in the object represents an attribute name and the value represents the expected value',
+    description: 'Represents additional parameters that should be used to validate an activity. The key in the object represents an attribute name and the value represents the expected value',
     optionality: FieldDefinition.Optionality.OPTIONAL,
   }];
 
@@ -38,7 +38,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
     try {
       const sinceDate = moment().subtract(minutesAgo, 'minutes').utc().format(moment.defaultFormatUtc);
-      const tokenResponse = await this.client.getPagingToken(sinceDate);
+      const tokenResponse = await this.client.getActivityPagingToken(sinceDate);
       const nextPageToken = tokenResponse.nextPageToken;
 
       const lead = (await this.client.findLeadByEmail(email)).result[0];
@@ -67,69 +67,82 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
       /* Fail when when the activity supplied is not found in the lead's logs. */
       if (!activities) {
-        return this.fail('Activity %s was not found for lead %s for the last %s minute(s)', [
+        return this.fail('Activity %s was not found for lead %s within the last %d minute(s)', [
           stepData.activityTypeIdOrName,
           email,
           minutesAgo,
         ]);
       }
-
-      /* Map the primary attributes of all activities found */
-      const actualPrimaryAttributes = [].concat.apply([], activities.map((activity) => {
-        /* Find the name of the primary attribute from activityTypes to create a name,value for the primary attributes */
-        const activityType = activityTypes.find(at => at.id == activity.activityTypeId);
-
-        if (activityType) {
-          if (activityType.primaryAttribute) {
-            return {
-              name: activityType.primaryAttribute.name,
-              value: activity.primaryAttributeValue,
-            };
-          }
-        }
-      }));
-
-      /* Map the secondary attributes of all activities found and join them with the primary */
-      const actualAttributes = [].concat.apply([], activities.map(a => a.attributes).concat(actualPrimaryAttributes));
 
       /* Expected attributes passed to test step. Translate object/map as array for easier comparison with actual attributes */
       const expectedAttributes = Object.keys(withAttributes).map((key) => { return { name: key, value: withAttributes[key] }; });
 
-      /* Match attributes only when expectedAttributes are provided. Otherwise, when we reach this point. The expected activity is found from the logs */
+      /* Assert Actual vs Expected attributes and pass if at least one activity matches attributes. Otherwise fail */
       if (expectedAttributes.length > 0) {
-        /* We only need at least one matching attributes to pass the check */
-        if (this.hasAtLeastOneMatch(actualAttributes, expectedAttributes)) {
-          return this.pass('Activity %s was found for lead %s for the last %s minute(s). With expected attributes: \n\n', [
+        let validated = false;
+        for (const activity of activities) {
+          const primaryAttribute = this.getPrimaryAttribute(activityTypes, activity);
+          const actualAttributes = activity.attributes;
+          if (primaryAttribute) {
+            actualAttributes.push(primaryAttribute);
+          }
+
+          if (this.hasMatchingAttributes(actualAttributes, expectedAttributes)) {
+            validated = true;
+            break;
+          }
+        }
+
+        if (validated) {
+          return this.pass('Activity %s was found for lead %s within the last %s minute(s). With expected attributes: \n\n', [
             stepData.activityTypeIdOrName,
             email,
             minutesAgo,
-            JSON.stringify(expectedAttributes),
-          ]);
-        } else {
-          return this.fail('Expected attributes of activity %s for lead %s for the last %d minute(s) did not match the actual activity attributes. Actual attributes are: \n\n', [
-            stepData.activityTypeIdOrName,
-            email,
-            minutesAgo,
-            JSON.stringify(actualAttributes),
+            JSON.stringify(expectedAttributes, null, 2),
           ]);
         }
-      } else {
-        return this.pass('Activity %s was found for lead %s for the last %d minute(s)', [
+
+        return this.fail('Expected attributes of activity %s for lead %s within the last %d minute(s) did not match the actual activity attributes', [
           stepData.activityTypeIdOrName,
           email,
           minutesAgo,
         ]);
       }
+
+      return this.pass('Activity %s was found for lead %s within the last %d minute(s)', [
+        stepData.activityTypeIdOrName,
+        email,
+        minutesAgo,
+      ]);
+
     } catch (e) {
-      return this.error('There was an checking Activities for Marketo Lead: %s', [
+      return this.error('There was an error checking Activities for Marketo Lead: %s', [
         e.toString(),
       ]);
     }
   }
 
-  hasAtLeastOneMatch(actualAttributes: any[], expectedAttributes: any[]): boolean {
-    const intersection = actualAttributes.filter(value => expectedAttributes.find(f => f.name == value.name && f.id == value.id) !== undefined);
-    return intersection.length > 0;
+  hasMatchingAttributes(actualAttributes: any[], expectedAttributes: any[]): boolean {
+    /* This will intersect actual vs expected; If the count of intersection and expected is same. All attributes have been matched. */
+    const intersection = actualAttributes.filter(actual => expectedAttributes.find(expected => expected.name == actual.name && expected.value == actual.value) !== undefined);
+    return intersection.length === expectedAttributes.length;
+  }
+
+  getPrimaryAttribute(activityTypes, activity) {
+    let result = undefined;
+
+    const activityType = activityTypes.find(at => at.id == activity.activityTypeId);
+
+    if (activityType) {
+      if (activityType.primaryAttribute) {
+        result = {
+          name: activityType.primaryAttribute.name,
+          value: activity.primaryAttributeValue,
+        };
+      }
+    }
+
+    return result;
   }
 }
 

@@ -2,15 +2,19 @@ scenario: Form Test validation in Marketo
 description: This test the creation of Lead from Web and validation of field in SalesForce.
   
 steps:
-- step: create or update a marketo lead
+- step: Create or update a marketo lead
   data:
     lead:
-        email: gon@thisisjust.atomatest.com
+        email: tests@thisisjust.atomatest.com
         firstName: Scenario
         lastName: Tester
         company: ST Corp
-- step: Validate that there should be an 12 activity for marketo lead gon@thisisjust.atomatest.com in the last 2 minutes
-- step: Validate that there should be an 1 activity for marketo lead gon@thisisjust.atomatest.com in the last 5 minutes
+- step: Validate that there should be an New Lead activity for marketo lead tests@thisisjust.atomatest.com in the last 15 minutes
+- waitFor: 2
+  step: Validate that there should be an Change Data Value activity for marketo lead tests@thisisjust.atomatest.com in the last 15 minutes
   data:
     withAttributes:
-      'ZXC': Change Lead
+      'Source': Marketo Flow Action
+      'Campaign': Automatest Live Demo.Lead routing API
+- step: Delete the tests@thisisjust.atomatest.com Marketo lead
+
