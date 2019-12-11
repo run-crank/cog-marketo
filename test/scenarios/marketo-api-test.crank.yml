@@ -5,12 +5,12 @@ steps:
 - step: create or update a marketo lead
   data:
     lead:
-        email: onetwomkto@ys.com
-        firstName: james
-        lastName: yap
-        company: JY Corp
+        email: activities@thisisjust.atomatest.com
+        firstName: Scenario
+        lastName: Tester
+        company: ST Corp
 - waitFor: 60
-  step: Validate that the email field on Marketo lead onetwomkto@ys.com should be onetwomkto@ys.com
-- step: Validate that the firstName field on Marketo lead onetwomkto@ys.com should be james
-- step: Validate that the lastName field on Marketo lead onetwomkto@ys.com should be yap
-- step: Delete the onetwomkto@ys.com Marketo lead
+  step: Validate that the email field on Marketo lead activities@thisisjust.atomatest.com should be activities@thisisjust.atomatest.com
+- step: Validate that the firstName field on Marketo lead activities@thisisjust.atomatest.com should be james
+- step: Validate that the lastName field on Marketo lead activities@thisisjust.atomatest.com should be yap
+- step: Delete the activities@thisisjust.atomatest.com Marketo lead
