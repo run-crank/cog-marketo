@@ -60,6 +60,6 @@
     "grpc": "^1.21.1",
     "node-marketo-rest": "^0.7.5",
     "ts-node": "^8.3.0",
-    "moment": "^2.18.1"
+    "moment": "^2.24.0"
   }
 }
