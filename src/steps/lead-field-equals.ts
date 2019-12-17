@@ -44,9 +44,9 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
 
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
         if (this.compare(operator, data.result[0][field], expectation)) {
-          return this.pass(this.operatorSuccessMessages[operator.replace(/\s/g, '').toLowerCase()], [field, expectation]);
+          return this.pass(this.operatorSuccessMessages[operator], [field, expectation]);
         } else {
-          return this.fail(this.operatorFailMessages[operator.replace(/\s/g, '').toLowerCase()], [
+          return this.fail(this.operatorFailMessages[operator], [
             field,
             expectation,
             data.result[0][field],
