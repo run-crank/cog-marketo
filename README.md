@@ -44,9 +44,10 @@ $ crank cog:auth automatoninc/marketo
 <!-- stepDetails -->
 | Name (ID) | Expression | Expected Data |
 | --- | --- | --- |
+| **Check a Marketo Lead's Activity**<br>(`CheckLeadActivityStep`) | `there should be an? (?<activityTypeIdOrName>.+) activity for marketo lead (?<email>.+) in the last (?<minutes>\d+) minutes?` | - `email`: The email address of the Marketo Lead <br><br>- `activityTypeIdOrName`: The activity type ID (number) or name <br><br>- `minutes`: The number of minutes prior to now to use when filtering the activity feed <br><br>- `withAttributes`: Represents additional parameters that should be used to validate an activity. The key in the object represents an attribute name and the value represents the expected value |
 | **Create or update a Marketo Lead**<br>(`CreateOrUpdateLeadByFieldStep`) | `create or update a marketo lead` | - `lead`: A map of field names to field values |
 | **Delete a Marketo Lead**<br>(`DeleteLeadStep`) | `delete the (?<email>.+) marketo lead` | - `email`: Lead's email address |
-| **Check a field on a Marketo Lead**<br>(`LeadFieldEqualsStep`) | `the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should be (?<expectation>.+)` | - `email`: Lead's email address <br><br>- `field`: Field name to check <br><br>- `expectation`: Expected field value |
+| **Check a field on a Marketo Lead**<br>(`LeadFieldEqualsStep`) | `the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should (?<operator>be less than|be greater than|be|contain|not be|not contain) (?<expectation>.+)` | - `email`: Lead's email address <br><br>- `field`: Field name to check <br><br>- `operator`: Check Logic (be, not be, contain, not contain, be greater than, or be less than) <br><br>- `expectation`: Expected field value |
 | **Add Marketo Lead to Smart Campaign**<br>(`AddLeadToSmartCampaignStep`) | `add the (?<email>.+) marketo lead to smart campaign (?<campaign>.+)` | - `email`: Lead's email address <br><br>- `campaign`: Smart campaign name or numeric id |
 <!-- stepDetailsEnd -->
 
