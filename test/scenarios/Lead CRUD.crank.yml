@@ -1,15 +1,17 @@
-scenario: Marketo API Test
-description: This test the creation and validation of field in Marketo.
+scenario: Lead CRUD Steps
+description: |
+  This scenario proves that lead creation, checking, and deletion steps work as
+  expected.
 
 steps:
-- step: create or update a marketo lead
+- step: When I create or update a marketo lead
   data:
     lead:
         email: onetwomkto@thisisjust.atomatest.com
         firstName: james
         lastName: yap
         company: JY Corp
-- step: Validate that the email field on Marketo lead onetwomkto@thisisjust.atomatest.com should be onetwomkto@thisisjust.atomatest.com
-- step: Validate that the firstName field on Marketo lead onetwomkto@thisisjust.atomatest.com should be james
-- step: Validate that the lastName field on Marketo lead onetwomkto@thisisjust.atomatest.com should be yap
-- step: Delete the onetwomkto@thisisjust.atomatest.com Marketo lead
+- step: Then the email field on Marketo lead onetwomkto@thisisjust.atomatest.com should be onetwomkto@thisisjust.atomatest.com
+- step: And the firstName field on Marketo lead onetwomkto@thisisjust.atomatest.com should be james
+- step: And the lastName field on Marketo lead onetwomkto@thisisjust.atomatest.com should be yap
+- step: Finally, delete the onetwomkto@thisisjust.atomatest.com Marketo lead

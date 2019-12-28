@@ -7,18 +7,18 @@ tokens:
   test.email: mla-check@thisisjust.atomatest.com
 
 steps:
-- step: Create or update a marketo lead
+- step: When I create or update a marketo lead
   data:
     lead:
-        email: '{{test.email}}'
-        firstName: Scenario
-        lastName: Tester
-        company: ST Corp
-- step: Validate that there should be a New Lead activity for marketo lead {{test.email}} in the last 15 minutes
-- waitFor: 2
-  step: Validate that there should be a Change Data Value activity for marketo lead {{test.email}} in the last 15 minutes
+      email: '{{test.email}}'
+      firstName: Scenario
+      lastName: Tester
+      company: ST Corp
+- step: Then there should be a New Lead activity for marketo lead {{test.email}} in the last 15 minutes
+- step: And there should be a Change Data Value activity for marketo lead {{test.email}} in the last 15 minutes
   data:
     withAttributes:
       Source: Marketo Flow Action
       Campaign: Automatest Live Demo.Lead routing API
-- step: Delete the {{test.email}} Marketo lead
+  failAfter: 2
+- step: Finally, delete the {{test.email}} Marketo lead

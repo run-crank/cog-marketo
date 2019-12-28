@@ -1,5 +1,8 @@
-scenario: Adding a lead from Web to a smart campaign
-description: Proves that the Add Lead contact to Smart Campaign step is working 
+scenario: Form Lead Can Be Added To Smart Campaign
+description: |
+  Proves that it's possible to add a lead to a smart campaign that was created
+  by means other than through the Marketo REST API.
+
 tokens:
   test:
     email: jcopper@thisisjust.atomatest.com
@@ -9,20 +12,20 @@ tokens:
     title: Executive
     country: United States
     submit: button[type=submit]
-  
+
 steps:
-- step: Navigate to http://go.automatoninc.com/Automatest-Live-Demo_Demo-Page-New-2019-Updated.html
-- step: Fill out input[id=Email] with {{test.email}}
-- step: Fill out input[id=Company] with {{test.company}}
-- step: Fill out input[id=LastName] with {{test.lastname}}
-- step: Fill out input[id=FirstName] with {{test.firstname}}
-- step: Fill out select[id=Title] with {{test.title}}
-- step: Fill out select[id=Country] with {{test.country}}
-- step: Submit the form by clicking {{test.submit}}
-- waitFor: 10
-  step: Validate that the email field on marketo lead {{test.email}} should be {{test.email}}
-- step: Validate that the lastName field on marketo lead {{test.email}} should be {{test.lastname}}
-- step: Add the {{test.email}} marketo lead to smart campaign Dev - QA - Set Field value
-- waitFor: 5
-  step: Validate that the middleName field on marketo lead {{test.email}} should be Testing
-- step: Delete the {{test.email}} Marketo lead. 
+- step: Given I navigate to http://go.automatoninc.com/dev-qa-basic-full-form.html
+- step: When I fill out input[id=Email] with {{test.email}}
+- step: And I fill out input[id=Company] with {{test.company}}
+- step: And I fill out input[id=LastName] with {{test.lastname}}
+- step: And I fill out input[id=FirstName] with {{test.firstname}}
+- step: And I fill out input[id=Title] with {{test.title}}
+- step: And I fill out select[id=Country] with {{test.country}}
+- step: And I submit the form by clicking {{test.submit}}
+- step: Then the email field on marketo lead {{test.email}} should be {{test.email}}
+  failAfter: 10
+- step: And the lastName field on marketo lead {{test.email}} should be {{test.lastname}}
+- step: When I add the {{test.email}} marketo lead to smart campaign Dev - QA - Set Field value
+- step: Then the middleName field on marketo lead {{test.email}} should be Testing
+  failAfter: 5
+- step: Finally, delete the {{test.email}} Marketo lead.
