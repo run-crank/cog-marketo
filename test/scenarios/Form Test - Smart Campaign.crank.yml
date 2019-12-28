@@ -1,0 +1,31 @@
+scenario: Form Lead Can Be Added To Smart Campaign
+description: |
+  Proves that it's possible to add a lead to a smart campaign that was created
+  by means other than through the Marketo REST API.
+
+tokens:
+  test:
+    email: jcopper@thisisjust.atomatest.com
+    lastname: Copper
+    firstname: JM
+    company: Yeah corp
+    title: Executive
+    country: United States
+    submit: button[type=submit]
+
+steps:
+- step: Given I navigate to http://go.automatoninc.com/dev-qa-basic-full-form.html
+- step: When I fill out input[id=Email] with {{test.email}}
+- step: And I fill out input[id=Company] with {{test.company}}
+- step: And I fill out input[id=LastName] with {{test.lastname}}
+- step: And I fill out input[id=FirstName] with {{test.firstname}}
+- step: And I fill out input[id=Title] with {{test.title}}
+- step: And I fill out select[id=Country] with {{test.country}}
+- step: And I submit the form by clicking {{test.submit}}
+- step: Then the email field on marketo lead {{test.email}} should be {{test.email}}
+  failAfter: 10
+- step: And the lastName field on marketo lead {{test.email}} should be {{test.lastname}}
+- step: When I add the {{test.email}} marketo lead to smart campaign Dev - QA - Set Field value
+- step: Then the middleName field on marketo lead {{test.email}} should be Testing
+  failAfter: 5
+- step: Finally, delete the {{test.email}} Marketo lead.

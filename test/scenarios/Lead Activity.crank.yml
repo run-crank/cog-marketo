@@ -1,0 +1,24 @@
+scenario: Check Marketo Lead Activities
+description: |
+  This scenario proves that the "Check a Marketo Lead's Activity" step works as
+  expected.
+
+tokens:
+  test.email: mla-check@thisisjust.atomatest.com
+
+steps:
+- step: When I create or update a marketo lead
+  data:
+    lead:
+      email: '{{test.email}}'
+      firstName: Scenario
+      lastName: Tester
+      company: ST Corp
+- step: Then there should be a New Lead activity for marketo lead {{test.email}} in the last 15 minutes
+- step: And there should be a Change Data Value activity for marketo lead {{test.email}} in the last 15 minutes
+  data:
+    withAttributes:
+      Source: Marketo Flow Action
+      Campaign: Automatest Live Demo.Lead routing API
+  failAfter: 2
+- step: Finally, delete the {{test.email}} Marketo lead
