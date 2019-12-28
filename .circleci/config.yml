@@ -151,8 +151,7 @@ workflows:
                 - master
             tags:
               ignore: /.*/
-      - run-test-scenarios:
-          context: marketo-cog-sandbox-env-credentials
+      - install-built-cog:
           requires:
             - test
             - build
