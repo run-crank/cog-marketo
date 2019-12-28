@@ -55,7 +55,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
       /* Error when activity is not found */
       if (!activityType) {
-        return this.error('Activity with ID or Name %s was not found.', [
+        return this.error('%s is not a known activity type.', [
           stepData.activityTypeIdOrName,
         ]);
       }
@@ -67,7 +67,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
       /* Fail when when the activity supplied is not found in the lead's logs. */
       if (!activities) {
-        return this.fail('Activity %s was not found for lead %s within the last %d minute(s)', [
+        return this.fail('No %s activity found for lead %s within the last %d minute(s)', [
           stepData.activityTypeIdOrName,
           email,
           minutesAgo,
@@ -94,7 +94,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
         }
 
         if (validated) {
-          return this.pass('Activity %s was found for lead %s within the last %s minute(s). With expected attributes: \n\n', [
+          return this.pass('Found %s activity for lead %s within the last %d minute(s), including attributes: \n\n', [
             stepData.activityTypeIdOrName,
             email,
             minutesAgo,
@@ -111,22 +111,24 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
           attributes.push(obj);
         });
 
-        return this.fail('Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes. Matching activities include:\n\n%s', [
+        return this.fail('Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s). Found the following similar activities:\n\n%s', [
           stepData.activityTypeIdOrName,
           email,
           minutesAgo,
-          JSON.stringify(attributes, null, 2),
+          expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', '),
+          stepData.activityTypeIdOrName,
+          attributes.map(attr => JSON.stringify(attr, null, 2)).join('\n\n'),
         ]);
       }
 
-      return this.pass('Activity %s was found for lead %s within the last %d minute(s)', [
+      return this.pass('%s activity found for lead %s within the last %d minute(s)', [
         stepData.activityTypeIdOrName,
         email,
         minutesAgo,
       ]);
 
     } catch (e) {
-      return this.error('There was an error checking Activities for Marketo Lead: %s', [
+      return this.error('There was an error checking activities for Marketo Lead: %s', [
         e.toString(),
       ]);
     }
