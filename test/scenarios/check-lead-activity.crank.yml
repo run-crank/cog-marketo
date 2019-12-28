@@ -1,20 +1,24 @@
-scenario: Form Test validation in Marketo
-description: This test the creation of Lead from Web and validation of field in SalesForce.
-  
+scenario: Check Marketo Lead Activities
+description: |
+  This scenario proves that the "Check a Marketo Lead's Activity" step works as
+  expected.
+
+tokens:
+  test.email: mla-check@thisisjust.atomatest.com
+
 steps:
 - step: Create or update a marketo lead
   data:
     lead:
-        email: tests@thisisjust.atomatest.com
+        email: '{{test.email}}'
         firstName: Scenario
         lastName: Tester
         company: ST Corp
-- step: Validate that there should be an New Lead activity for marketo lead tests@thisisjust.atomatest.com in the last 15 minutes
+- step: Validate that there should be a New Lead activity for marketo lead {{test.email}} in the last 15 minutes
 - waitFor: 2
-  step: Validate that there should be an Change Data Value activity for marketo lead tests@thisisjust.atomatest.com in the last 15 minutes
+  step: Validate that there should be a Change Data Value activity for marketo lead {{test.email}} in the last 15 minutes
   data:
     withAttributes:
-      'Source': Marketo Flow Action
-      'Campaign': Automatest Live Demo.Lead routing API
-- step: Delete the tests@thisisjust.atomatest.com Marketo lead
-
+      Source: Marketo Flow Action
+      Campaign: Automatest Live Demo.Lead routing API
+- step: Delete the {{test.email}} Marketo lead
