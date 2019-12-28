@@ -1,0 +1,25 @@
+scenario: Adding Marketo Lead to a Smart Campaign
+description: Proves that the Add Marketo Lead to Smart Campaign step is working.
+
+tokens:
+  test:
+    email: mktosc@thisisjust.atomatest.com
+    middlename: Not Testing
+    lastname: Severano
+    firstname: Howie
+
+steps:
+- step: Create or update a marketo lead
+  data:
+    lead:
+        email: '{{test.email}}'
+        middleName: '{{test.middlename}}'
+        lastName: '{{test.lastname}}'
+        firstName: '{{test.firstname}}'
+- step: Validate that the lastName field on marketo lead {{test.email}} should be {{test.lastname}}
+- step: Validate that the middleName field on marketo lead {{test.email}} should be Not Testing
+- step: Add the {{test.email}} marketo lead to smart campaign Dev - QA - Set Field value
+- step: Add the {{test.email}} marketo lead to smart campaign Dev - QA - Set Different Field value
+- waitFor: 2
+  step: Check that the middleName field on marketo lead {{test.email}} should be Testing
+- step: Delete the {{test.email}} marketo lead
