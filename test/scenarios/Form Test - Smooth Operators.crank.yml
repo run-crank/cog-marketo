@@ -1,13 +1,13 @@
-scenario: Marketo Form Creates Lead
+scenario: Smooth Operators Test in Marketo
 description: |
-  Proves that lead check steps can be used to validate leads created by means
-  other than the Marketo REST API.
+  This scenario proves that the smooth operators when validating fields are working as
+  expected.
 
 tokens:
   test:
-    email: jcooper@thisisjust.atomatest.com
-    lastname: Cooper
-    firstname: John
+    email: cjdeclaro@thisisjust.atomatest.com
+    lastname: De Claro
+    firstname: CJ
     company: Yeah corp
     title: Executive
     country: United States
@@ -22,7 +22,9 @@ steps:
 - step: And I fill out input[id=Company] with {{test.company}}
 - step: And I fill out select[id=Country] with {{test.country}}
 - step: And I submit the form by clicking {{test.submit}}
-- step: Then the email field on marketo lead {{test.email}} should be {{test.email}}
   failAfter: 60
-- step: And the lastName field on marketo lead {{test.email}} should be {{test.lastname}}
+- step: Then the email field on marketo lead {{test.email}} should not be cjdeclaro@atomatest.com
+- step: And the lastName field on marketo lead {{test.email}} should contain de
+- step: And the company field on marketo lead {{test.email}} should not contain Mkto
+- step: And the title field on marketo lead {{test.email}} should be {{test.title}}
 - step: Finally, delete the {{test.email}} Marketo lead. 

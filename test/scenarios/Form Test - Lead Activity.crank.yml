@@ -1,0 +1,35 @@
+scenario: Check Marketo Lead Activities
+description: |
+  This scenario proves that the "Check a Marketo Lead's Activity" step works as
+  expected.
+
+tokens:
+  test:
+    email: dswifts@thisisjust.atomatest.com
+    lastname: Swifterers
+    firstname: Dina
+    company: Yeah corp
+    title: Executive
+    country: United States
+    submit: button[type=submit]
+  
+steps:
+- step: Given I navigate to http://go.automatoninc.com/dev-qa-basic-full-form.html
+- step: When I fill out input[id=Email] with {{test.email}}
+- step: And I fill out input[id=Company] with {{test.company}}
+- step: And I fill out input[id=LastName] with {{test.lastname}}
+- step: And I fill out input[id=FirstName] with {{test.firstname}}
+- step: And I fill out input[id=Title] with {{test.title}}
+- step: And I fill out select[id=Country] with {{test.country}}
+- step: And I Submit the form by clicking {{test.submit}}
+- step: And I click the page element a[href="https://www.iana.org/domains/example"]
+  failAfter: 10
+- step: Then there should be a 12 activity for marketo lead {{test.email}} in the last 5 minutes
+- step: And there should be a Fill Out Form activity for marketo lead {{test.email}} in the last 5 minutes
+  data:
+    withAttributes:
+      'Client IP Address': 180.232.124.226
+      'Referrer URL': http://go.automatoninc.com/dev-qa-basic-full-form.html
+      'User Agent': Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) AutomatonChrome/77.0.3835.0 Safari/537.36
+- step: And there should be a 2 activity for marketo lead {{test.email}} in the last 5 minutes
+- step: Finally, delete the {{test.email}} Marketo lead. 
