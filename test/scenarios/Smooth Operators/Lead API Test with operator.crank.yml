@@ -1,0 +1,18 @@
+scenario: Lead API  with operator Test
+description: This tests that the operators are working when validating fields of a Marketo Lead.
+
+steps:
+- step: When I create or update a marketo lead
+  data:
+    lead:
+        email: mktowoperator@thisisjust.atomatest.com
+        firstName: Alli
+        lastName: Alcantara
+        company: JY Corp
+        leadScore: 50
+- step: Then the email field on Marketo lead mktowoperator@thisisjust.atomatest.com should contain mktowoperator
+- step: And the firstName field on Marketo lead mktowoperator@thisisjust.atomatest.com should not be james
+- step: And the lastName field on Marketo lead mktowoperator@thisisjust.atomatest.com should not contain yap
+- step: And the leadScore field on Marketo lead mktowoperator@thisisjust.atomatest.com should be greater than 10
+- step: And the createdAt field on marketo lead mktowoperator@thisisjust.atomatest.com should be less than 2024-01-01T00:00:00
+- step: Finally, delete the mktowoperator@thisisjust.atomatest.com Marketo lead

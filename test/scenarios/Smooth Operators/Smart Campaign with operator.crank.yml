@@ -1,0 +1,29 @@
+scenario: Smart Campaign with operator Test
+description: This tests the operators when validating lead that was added to a Smart Campaign.
+
+tokens:
+  test:
+    email: mktoscwop@thisisjust.atomatest.com
+    middlename: Not Testing
+    firstname: Marvic
+    dateOfBirth: 1990-01-05T00:00:00
+
+steps:
+- step: Given I create or update a marketo lead
+  data:
+    lead:
+        email: '{{test.email}}'
+        middleName: '{{test.middlename}}'
+        lastName: '{{test.lastname}}'
+        firstName: '{{test.firstname}}'
+        dateOfBirth: '{{test.dateOfBirth}}'
+
+- step: When I add the {{test.email}} marketo lead to smart campaign Dev - QA - Set Field value
+- step: Add I add the {{test.email}} marketo lead to smart campaign Dev - QA - Set Different Field value
+- step: Then the createdAt field on marketo lead {{test.email}} should be greater than 2019-01-01T00:00:00
+- step: And the dateOfBirth field on marketo lead {{test.email}} should be less than 1991-01-05T00:00:00
+- step: And the lastName field on marketo lead {{test.email}} should not contain anything
+- step: And the middleName field on marketo lead {{test.email}} should contain test
+  failAfter: 2
+- step: And the middleName field on marketo lead {{test.email}} should not be Not Testing
+- step: Finally, delete the {{test.email}} marketo lead
