@@ -19,15 +19,40 @@ export class CustomObjectAwareMixin {
   }
 
   public async getCustomObject(customObjectName) {
-    return this.client._connection.get(`/v1/customobjects/${customObjectName}/describe.json`, { query: { _method: 'GET' } });
+    return this.client._connection.get(
+      `/v1/customobjects/${customObjectName}/describe.json`,
+      { query: { _method: 'GET' } },
+    );
   }
 
-  //   public async deleteCustomObjectById(customObjectName, customObjectVin) {
-  //     // @todo Contribute this back up to the package.
-  //     return this.client._connection.postJson(
-  //       `/v1/customobjects/${customObjectName}/delete.json`,
-  //       { deleteBy: 'dedupeFields', input: [{ input: [{ vin: customObjectVin }] }] },
-  //       { query: { _method: 'DELETE' } },
-  //     );
-  //   }
+  public async queryCustomObject(customObjectName, idField, filterType, filterValue) {
+    return this.client._connection.postJson(
+      `/v1/customobjects/${customObjectName}.json`,
+      {
+        filterType: `${filterType}`,
+        fields: [
+          idField,
+        ],
+        input: [
+          filterValue,
+        ],
+      },
+      {
+        query: {
+          _method: 'GET' ,
+        },
+      },
+    );
+  }
+
+  public async deleteCustomObjectById(customObjectName, object) {
+    // @todo Contribute this back up to the package.
+    return this.client._connection.postJson(
+      `/v1/customobjects/${customObjectName}/delete.json`,
+      {
+        deleteBy: 'idField',
+        input: [object],
+      },
+    );
+  }
 }

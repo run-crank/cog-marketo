@@ -11,7 +11,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
   protected expectedFields: Field[] = [{
     field: 'name',
     type: FieldDefinition.Type.STRING,
-    description: "Custom Object's display or API name",
+    description: "Custom Object's API name",
   }, {
     field: 'linkValue',
     type: FieldDefinition.Type.EMAIL,
@@ -48,9 +48,15 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
       // DedupeField related validations
       if (customObject.result[0].hasOwnProperty('dedupeFields') && customObject.result[0].dedupeFields.length > 0) {
         const missingDedupeFields = [];
-        customObject.result[0].dedupeFields.forEach((field) => {
-          if (!Object.keys(object).some(e => e == field)) {
-            missingDedupeFields.push(field);
+        customObject.result[0].dedupeFields.forEach((dedupefield) => {
+          if (!object.hasOwnProperty(dedupefield)) {
+            let fieldLabel;
+            customObject.result[0].fields.find((field) => {
+              if (field.name == dedupefield) {
+                fieldLabel = field.displayName;
+                missingDedupeFields.push(fieldLabel.concat(`(${dedupefield})`));
+              }
+            });
           }
         });
 
@@ -58,7 +64,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
         if (missingDedupeFields.length > 0) {
           return this.error('Error creating or updating %s: you must provide values for the the following fields: %s', [
             name,
-            missingDedupeFields.join(','),
+            missingDedupeFields.join(', '),
           ]);
         }
       }
@@ -78,7 +84,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
       if (data.success && data.result.length > 0) {
         return this.pass('Successfully created %s.', [name]);
       } else {
-        return this.fail('Failed to created %s.: %s', [
+        return this.fail('Failed to create %s.: %s', [
           name,
           data.errors[0].message,
         ]);
