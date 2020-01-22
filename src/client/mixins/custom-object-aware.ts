@@ -1,4 +1,5 @@
 import * as Marketo from 'node-marketo-rest';
+import { isObject } from 'util';
 export class CustomObjectAwareMixin {
   client: Marketo;
 
@@ -25,33 +26,37 @@ export class CustomObjectAwareMixin {
     );
   }
 
-  public async queryCustomObject(customObjectName, idField, filterType, filterValue) {
-    return this.client._connection.postJson(
-      `/v1/customobjects/${customObjectName}.json`,
-      {
-        filterType: `${filterType}`,
-        fields: [
-          idField,
-        ],
-        input: [
-          filterValue,
-        ],
-      },
-      {
-        query: {
-          _method: 'GET' ,
+  public async queryCustomObject(customObjectName, filterType, searchFields: any[], requestFields: string[] = []) {
+    if (isObject(searchFields)) {
+      return this.client._connection.postJson(
+        `/v1/customobjects/${customObjectName}.json`,
+        {
+          filterType: `${filterType}`,
+          fields: requestFields,
+          input: searchFields,
         },
-      },
-    );
+        {
+          query: {
+            _method: 'GET' ,
+          },
+        },
+      );
+    } else {
+      return this.client._connection.get(
+        `/v1/customobjects/${customObjectName}.json?filterType=${filterType}&filterValues=${searchFields.join(',')}`,
+      );
+    }
   }
 
-  public async deleteCustomObjectById(customObjectName, object) {
+  public async deleteCustomObjectById(customObjectName, customObjectGUID) {
     // @todo Contribute this back up to the package.
     return this.client._connection.postJson(
       `/v1/customobjects/${customObjectName}/delete.json`,
       {
         deleteBy: 'idField',
-        input: [object],
+        input: [{
+          marketoGUID: customObjectGUID,
+        }],
       },
     );
   }

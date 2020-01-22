@@ -31,7 +31,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
     try {
       const customObject = await this.client.getCustomObject(name);
       // Custom Object exists validation
-      if (!customObject) {
+      if (!customObject.result.length) {
         return this.error('Error creating or updating %s: no such marketo custom object', [
           name,
         ]);
@@ -69,17 +69,17 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
         }
       }
 
-      const relateToField = customObject.result[0].relationships[0].relatedTo.field;
-      const linkField = customObject.result[0].relationships[0].field;
-
       // Get linkField value from lead
       const lead = await this.client.findLeadByEmail(linkValue, {
-        fields: ['email', relateToField].join(','),
+        fields: ['email', customObject.result[0].relationships[0].relatedTo.field].join(','),
       });
-      const leadLinkFieldValue = lead.result[0][relateToField];
+
+      if (!lead.result.length) {
+        return this.error("Error creating or updating %s: can't link object to %s, who does not exist.", [name, linkValue]);
+      }
 
       // Assign link field value to custom object to be created
-      object[linkField] = leadLinkFieldValue;
+      object[customObject.result[0].relationships[0].field] = lead.result[0][customObject.result[0].relationships[0].relatedTo.field];
       const data = await this.client.createOrUpdateCustomObject(name, object);
       if (data.success && data.result.length > 0) {
         return this.pass('Successfully created %s.', [name]);

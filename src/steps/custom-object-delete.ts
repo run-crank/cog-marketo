@@ -12,7 +12,7 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
   protected expectedFields: Field[] = [{
     field: 'name',
     type: FieldDefinition.Type.STRING,
-    description: "Custom Object's display or API name",
+    description: "Custom Object's API name",
   }, {
     field: 'linkValue',
     type: FieldDefinition.Type.EMAIL,
@@ -32,10 +32,9 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
 
     try {
       const customObject = await this.client.getCustomObject(name);
-      const idField = customObject.result[0].idField;
 
       // Custom Object exists validation
-      if (!customObject) {
+      if (!customObject.result.length) {
         return this.error('Error deleting %s: no such marketo custom object', [
           name,
         ]);
@@ -50,16 +49,18 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
       }
 
       // Getting link field value from lead
-      const relateToField = customObject.result[0].relationships[0].relatedTo.field;
-      const linkField = customObject.result[0].relationships[0].field;
       const lead = await this.client.findLeadByEmail(linkValue, {
-        fields: ['email', relateToField].join(','),
+        fields: ['email', customObject.result[0].relationships[0].relatedTo.field].join(','),
       });
 
+      if (!lead.result.length) {
+        return this.error('Error deleting %s: the %s lead does not exist.', [name, linkValue]);
+      }
+
       // Querying link leads in custom object
-      const filterValue = {};
-      filterValue[linkField] = lead.result[0][relateToField];
-      const queryResult = await this.client.queryCustomObject(name, idField, linkField, filterValue);
+      const searchFields = {};
+      searchFields[customObject.result[0].relationships[0].field] = lead.result[0][customObject.result[0].relationships[0].relatedTo.field];
+      const queryResult = await this.client.queryCustomObject(name, customObject.result[0].relationships[0].field, [searchFields], [customObject.result[0].idField]);
 
       // Error if query retrieves more than one result
       if (queryResult.result.lenght > 1) {
@@ -70,10 +71,8 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
       }
 
       // Delete using idField from customObject and its value from queried link
-      const deleteInput = {};
-      deleteInput[idField] = queryResult.result[0][idField];
-      const data = await this.client.deleteCustomObjectById(name, deleteInput);
-      if (data.success && data.result.length > 0) {
+      const data = await this.client.deleteCustomObjectById(name, queryResult.result[0][customObject.result[0].idField]);
+      if (data.success && data.result.length) {
         return this.pass('Successfully deleted %s linked to %s.', [linkValue, name]);
       } else {
         return this.fail('Failed to deleted %s.: %s', [
