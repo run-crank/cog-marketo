@@ -2,7 +2,6 @@
 
 import { BaseStep, Field, StepInterface } from '../core/base-step';
 import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
-import { isUndefined, isNullOrUndefined } from 'util';
 
 export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
 
@@ -63,7 +62,7 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
       const queryResult = await this.client.queryCustomObject(name, customObject.result[0].relationships[0].field, [searchFields], [customObject.result[0].idField]);
 
       // Error if query retrieves more than one result
-      if (queryResult.result.lenght > 1) {
+      if (queryResult.result.length > 1) {
         return this.error('Error deleting %s linked to %s: more than one matching custom object was found. Please provide dedupe field values to specify which object', [
           linkValue,
           name,
