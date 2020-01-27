@@ -21,8 +21,12 @@ describe('ClientWrapper', () => {
         find: sinon.spy(),
         createOrUpdate: sinon.spy(),
       },
+      activities: {
+        getActivityTypes: sinon.spy(),
+      },
       _connection: {
         postJson: sinon.spy(),
+        get: sinon.spy(),
       },
     };
     marketoConstructorStub = sinon.stub();
@@ -117,6 +121,16 @@ describe('ClientWrapper', () => {
     );
   });
 
+  it('describeLeadFields', () => {
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+    clientWrapperUnderTest.describeLeadFields();
+
+    expect(marketoClientStub._connection.get).to.have.been.calledWith(
+      '/v1/leads/describe.json',
+      { query: { _method: 'GET' } },
+    );
+  });
+
   it('addLeadToSmartCampaign', () => {
     const campaignIdInput = 'someId';
     const leadInput = { name: 'someLead' };
@@ -133,4 +147,121 @@ describe('ClientWrapper', () => {
     expect(marketoClientStub.campaign.getCampaigns).to.have.been.calledWith();
   });
 
+  it('createOrUpdateCustomObject', () => {
+    const customObjectName = 'any';
+    const customObject = { anyField: 'anyValue'};
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+    clientWrapperUnderTest.createOrUpdateCustomObject(customObjectName, customObject);
+
+    expect(marketoClientStub._connection.postJson).to.have.been.calledWith(
+      `/v1/customobjects/${customObjectName}.json`,
+      {
+        action: 'createOrUpdate',
+        dedupeBy: 'dedupeFields',
+        input: [customObject],
+      },
+      {
+        query: {
+          _method: 'POST',
+        },
+      },
+    );
+  });
+
+  it('getCustomObject', () => {
+    const customObjectName = 'any';
+    const customObject = { anyField: 'anyValue'};
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+    clientWrapperUnderTest.getCustomObject(customObjectName);
+
+    expect(marketoClientStub._connection.get).to.have.been.calledWith(
+      `/v1/customobjects/${customObjectName}/describe.json`,
+      { query: { _method: 'GET' } },
+    );
+  });
+
+  it('queryCustomObject(mutiple searchFields)', () => {
+    const customObjectName = 'any';
+    const filterType = 'anyFilterType';
+    const searchFields = [{ anySearchField: 'anySearchFieldValue' }];
+    const requestFields = ['anyField'];
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+    clientWrapperUnderTest.queryCustomObject(customObjectName, filterType, searchFields, requestFields);
+
+    expect(marketoClientStub._connection.postJson).to.have.been.calledWith(
+      `/v1/customobjects/${customObjectName}.json`,
+      {
+        filterType: `${filterType}`,
+        fields: requestFields,
+        input: searchFields,
+      },
+      {
+        query: {
+          _method: 'GET' ,
+        },
+      },
+    );
+  });
+
+  it('queryCustomObject(single searchFields)', () => {
+    const customObjectName = 'any';
+    const filterType = 'anyFilterType';
+    const searchFields = ['anySearchFieldValue'];
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+    clientWrapperUnderTest.queryCustomObject(customObjectName, filterType, searchFields);
+
+    expect(marketoClientStub._connection.get).to.have.been.calledWith(
+      `/v1/customobjects/${customObjectName}.json?filterType=${filterType}&filterValues=${searchFields.join(',')}`,
+    );
+  });
+
+  it('deleteCustomObjectById', () => {
+    const customObjectName = 'any';
+    const customObjectGUID = 'anyGUID';
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+    clientWrapperUnderTest.deleteCustomObjectById(customObjectName, customObjectGUID);
+
+    expect(marketoClientStub._connection.postJson).to.have.been.calledWith(
+      `/v1/customobjects/${customObjectName}/delete.json`,
+      {
+        deleteBy: 'idField',
+        input: [{
+          marketoGUID: customObjectGUID,
+        }],
+      },
+    );
+  });
+
+  it('getActivityTypes', () => {
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+    clientWrapperUnderTest.getActivityTypes();
+
+    expect(marketoClientStub.activities.getActivityTypes).to.have.been.calledWith();
+  });
+
+  it('getActivityPagingToken', () => {
+    const sinceDate = 'anyDate';
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+    clientWrapperUnderTest.getActivityPagingToken(sinceDate);
+
+    expect(marketoClientStub._connection.get).to.have.been.calledWith(
+      `/v1/activities/pagingtoken.json?sinceDatetime=${sinceDate}`,
+    );
+  });
+
+  it('getActivities', () => {
+    const nextPageToken = 'anyToken';
+    const leadId = 'anyId';
+    const activityId = 'anyActivityId';
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+    clientWrapperUnderTest.getActivities(nextPageToken, leadId, activityId);
+
+    expect(marketoClientStub._connection.get).to.have.been.calledWith('/v1/activities.json', {
+      query: {
+        nextPageToken,
+        leadIds: leadId,
+        activityTypeIds: activityId,
+      },
+    });
+  });
 });

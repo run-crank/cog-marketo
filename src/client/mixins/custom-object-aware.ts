@@ -27,7 +27,7 @@ export class CustomObjectAwareMixin {
   }
 
   public async queryCustomObject(customObjectName, filterType, searchFields: any[], requestFields: string[] = []) {
-    if (isObject(searchFields)) {
+    if (isObject(searchFields[0])) {
       return this.client._connection.postJson(
         `/v1/customobjects/${customObjectName}.json`,
         {
