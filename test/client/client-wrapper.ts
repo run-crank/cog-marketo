@@ -20,6 +20,7 @@ describe('ClientWrapper', () => {
       lead: {
         find: sinon.spy(),
         createOrUpdate: sinon.spy(),
+        describe: sinon.spy(),
       },
       activities: {
         getActivityTypes: sinon.spy(),
@@ -125,10 +126,7 @@ describe('ClientWrapper', () => {
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
     clientWrapperUnderTest.describeLeadFields();
 
-    expect(marketoClientStub._connection.get).to.have.been.calledWith(
-      '/v1/leads/describe.json',
-      { query: { _method: 'GET' } },
-    );
+    expect(marketoClientStub.lead.describe).to.have.been.calledWith();
   });
 
   it('addLeadToSmartCampaign', () => {
