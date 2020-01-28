@@ -21,4 +21,8 @@ export class LeadAwareMixin {
       { query: { _method: 'DELETE' } },
     );
   }
+
+  public async describeLeadFields() {
+    return this.client.lead.describe();
+  }
 }

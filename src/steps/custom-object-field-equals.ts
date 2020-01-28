@@ -62,9 +62,16 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
         ]);
       }
 
+      // @todo Remove describe related linkField value assignement code once marketo custom object bug is fixed
+      // Getting of api name of field if relateTo field is Display Name
+      const leadDescribe = await this.client.describeLeadFields();
+      const linkField = leadDescribe.result.find(field => field.displayName == customObject.result[0].relationships[0].relatedTo.field)
+                      ?  leadDescribe.result.find(field => field.displayName == customObject.result[0].relationships[0].relatedTo.field).rest.name
+                      : customObject.result[0].relationships[0].relatedTo.field;
+
       // Getting link field value from lead
       const lead = await this.client.findLeadByEmail(linkValue, {
-        fields: ['email', customObject.result[0].relationships[0].relatedTo.field].join(','),
+        fields: ['email', linkField].join(','),
       });
 
       if (!lead.result.length) {
@@ -73,7 +80,7 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
 
       // Querying link leads in custom object
       const searchFields = [];
-      searchFields.push({ [customObject.result[0].relationships[0].field]: lead.result[0][customObject.result[0].relationships[0].relatedTo.field] });
+      searchFields.push({ [customObject.result[0].relationships[0].field]: lead.result[0][linkField] });
       if (!isNullOrUndefined(dedupeFields)) {
         searchFields.concat(dedupeFields);
       }
@@ -88,7 +95,7 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
       }
 
       // Field validation
-      if (this.compare(operator, queryResult.result[0][field], expectedValue)) {
+      if (this.compare(operator, queryResult.result[0][field].toString(), expectedValue)) {
         return this.pass(this.operatorSuccessMessages[operator], [field, expectedValue]);
       } else {
         return this.fail(this.operatorFailMessages[operator], [

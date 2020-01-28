@@ -52,7 +52,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
           if (!object.hasOwnProperty(dedupefield)) {
             let fieldLabel;
             customObject.result[0].fields.find((field) => {
-              if (field.name == dedupefield) {
+              if (dedupefield != customObject.result[0].relationships[0].field && field.name == dedupefield) {
                 fieldLabel = field.displayName;
                 missingDedupeFields.push(fieldLabel.concat(`(${dedupefield})`));
               }
@@ -69,9 +69,16 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
         }
       }
 
-      // Get linkField value from lead
+      // @todo Remove describe related linkField value assignement code once marketo custom object bug is fixed
+      // Getting of api name of field if relateTo field is Display Name
+      const leadDescribe = await this.client.describeLeadFields();
+      const linkField = leadDescribe.result.find(field => field.displayName == customObject.result[0].relationships[0].relatedTo.field)
+                       ?  leadDescribe.result.find(field => field.displayName == customObject.result[0].relationships[0].relatedTo.field).rest.name
+                       : customObject.result[0].relationships[0].relatedTo.field;
+
+      // Getting link field value from lead
       const lead = await this.client.findLeadByEmail(linkValue, {
-        fields: ['email', customObject.result[0].relationships[0].relatedTo.field].join(','),
+        fields: ['email', linkField].join(','),
       });
 
       if (!lead.result.length) {
@@ -79,7 +86,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
       }
 
       // Assign link field value to custom object to be created
-      object[customObject.result[0].relationships[0].field] = lead.result[0][customObject.result[0].relationships[0].relatedTo.field];
+      object[customObject.result[0].relationships[0].field] = lead.result[0][linkField];
       const data = await this.client.createOrUpdateCustomObject(name, object);
       if (data.success && data.result.length > 0) {
         return this.pass('Successfully created %s.', [name]);
