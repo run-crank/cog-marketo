@@ -23,9 +23,6 @@ export class LeadAwareMixin {
   }
 
   public async describeLeadFields() {
-    return this.client._connection.get(
-      '/v1/leads/describe.json',
-      { query: { _method: 'GET' } },
-    );
+    return this.client.lead.describe();
   }
 }
