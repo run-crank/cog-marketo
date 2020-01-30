@@ -74,34 +74,53 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
         fields: ['email', linkField].join(','),
       });
 
+      // Check if lead exists
       if (!lead.result.length) {
         return this.error('Error finding %s: the %s lead does not exist.', [name, linkValue]);
       }
 
-      // Querying link leads in custom object
-      const searchFields = [];
-      searchFields.push({ [customObject.result[0].relationships[0].field]: lead.result[0][linkField] });
+      // Assign Query Params
+      let searchFields = [{ [customObject.result[0].relationships[0].field]: lead.result[0][linkField] }];
+      let filterType = customObject.result[0].relationships[0].field;
+      const fields = [field, customObject.result[0].relationships[0].field];
+
+      // Check if dedupe fields exists to change query params
       if (!isNullOrUndefined(dedupeFields)) {
-        searchFields.concat(dedupeFields);
-      }
-      const queryResult = await this.client.queryCustomObject(name, customObject.result[0].relationships[0].field, searchFields, [field]);
-
-      // Error if query retrieves more than one result
-      if (queryResult.result.length > 1) {
-        return this.error('Error finding %s linked to %s: more than one matching custom object was found. Please provide dedupe field values to specify which object', [
-          linkValue,
-          name,
-        ]);
+        searchFields = [dedupeFields];
+        filterType = 'dedupeFields';
       }
 
-      // Field validation
-      if (this.compare(operator, queryResult.result[0][field].toString(), expectedValue)) {
-        return this.pass(this.operatorSuccessMessages[operator], [field, expectedValue]);
+      // Querying link leads in custom object
+      const queryResult = await this.client.queryCustomObject(name, filterType, searchFields, fields);
+      // Check if query ran as expected
+      if (queryResult.success && queryResult.result.length > 0 && !queryResult.result[0].hasOwnProperty('reasons')) {
+        // Filter query by linkfield
+        const filteredQueryResult = queryResult.result.filter(result => result[customObject.result[0].relationships[0].field] == lead.result[0][linkField]);
+        if (!filteredQueryResult.length) {
+          return this.error('%s lead is not linked to %s', [linkValue, name]);
+        }
+        // Error if query retrieves more than one result
+        if (filteredQueryResult.length > 1) {
+          return this.error('Error finding %s linked to %s: more than one matching custom object was found. Please provide dedupe field values to specify which object', [
+            linkValue,
+            name,
+          ]);
+        }
+        // Field validation
+        if (this.compare(operator, filteredQueryResult[0][field].toString(), expectedValue)) {
+          return this.pass(this.operatorSuccessMessages[operator], [field, expectedValue]);
+        } else {
+          return this.fail(this.operatorFailMessages[operator], [
+            field,
+            expectedValue,
+            queryResult.result[0][field],
+          ]);
+        }
       } else {
-        return this.fail(this.operatorFailMessages[operator], [
-          field,
-          expectedValue,
-          queryResult.result[0][field],
+        return this.fail('Failed to query %s linked to %s.: %s', [
+          name,
+          linkValue,
+          queryResult.result[0].reasons.map(reason => reason.message).join(', '),
         ]);
       }
     } catch (e) {

@@ -77,14 +77,15 @@ describe('DeleteCustomObject', () => {
     clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
       result: [
         {
-          anyLeadRestField: 'anyFieldValue',
+          anyLeadRestField: 'anyIdFieldValue',
         },
       ],
     }));
-    clientWrapperStub.queryCustomObject .returns(Promise.resolve({
+    clientWrapperStub.queryCustomObject.returns(Promise.resolve({
+      success: true,
       result: [
         {
-          anyIdField: 'anyIdFieldValue',
+          anyRelationshipField: 'anyIdFieldValue',
         },
       ],
     }));
@@ -150,18 +151,27 @@ describe('DeleteCustomObject', () => {
         },
       ],
     }));
-    clientWrapperStub.queryCustomObject .returns(Promise.resolve({
+    clientWrapperStub.queryCustomObject.returns(Promise.resolve({
+      success: false,
       result: [
         {
-          anyIdField: 'anyIdFieldValue',
+          reasons: [
+            {
+              message: 'someReason',
+            },
+          ],
         },
       ],
     }));
     clientWrapperStub.deleteCustomObjectById.returns(Promise.resolve({
       success: false,
-      errors:[
+      result: [
         {
-          message: 'anyErrorMessage',
+          reasons: [
+            {
+              message: 'someReason',
+            },
+          ],
         },
       ],
     }));

@@ -144,9 +144,13 @@ describe('CreateOrUpdateCustomObject', () => {
     }));
     clientWrapperStub.createOrUpdateCustomObject.returns(Promise.resolve({
       success: false,
-      errors:[
+      result: [
         {
-          message: 'anyErrorMessage',
+          reasons: [
+            {
+              message: 'someReason',
+            },
+          ],
         },
       ],
     }));

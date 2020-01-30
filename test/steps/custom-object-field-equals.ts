@@ -76,21 +76,22 @@ describe('CustomObjectFieldEquals', () => {
     clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
       result: [
         {
-          anyLeadRestField: 'anyFieldValue',
+          anyLeadRestField: 'anyIdFieldValue',
         },
       ],
     }));
-    clientWrapperStub.queryCustomObject .returns(Promise.resolve({
+    clientWrapperStub.queryCustomObject.returns(Promise.resolve({
+      success: true,
       result: [
         {
-          anyIdField: 'anyIdFieldValue',
+          anyRelationshipField: 'anyIdFieldValue',
         },
       ],
     }));
     protoStep.setData(Struct.fromJavaScript({
       name: nameValue,
       linkValue: linkValueValue,
-      field: 'anyIdField',
+      field: 'anyRelationshipField',
       operator: 'be',
       expectedValue: 'anyIdFieldValue',
       dedupeField: dedupeFieldValues,
@@ -142,21 +143,22 @@ describe('CustomObjectFieldEquals', () => {
     clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
       result: [
         {
-          anyLeadRestField: 'anyFieldValue',
+          anyLeadRestField: 'anyOtherIdFieldValue',
         },
       ],
     }));
     clientWrapperStub.queryCustomObject.returns(Promise.resolve({
+      success:true,
       result: [
         {
-          anyIdField: 'anyOtherIdFieldValue',
+          anyRelationshipField: 'anyOtherIdFieldValue',
         },
       ],
     }));
     protoStep.setData(Struct.fromJavaScript({
       name: nameValue,
       linkValue: linkValueValue,
-      field: 'anyIdField',
+      field: 'anyRelationshipField',
       operator: 'be',
       expectedValue: 'anyIdFieldValue',
       dedupeField: dedupeFieldValues,
