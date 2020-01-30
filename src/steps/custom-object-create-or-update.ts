@@ -44,7 +44,6 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
           linkValue,
         ]);
       }
-
       // DedupeField related validations
       if (customObject.result[0].hasOwnProperty('dedupeFields') && customObject.result[0].dedupeFields.length > 0) {
         const missingDedupeFields = [];
@@ -62,13 +61,12 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
 
         // Missing dedupe fields validation
         if (missingDedupeFields.length > 0) {
-          return this.error('Error creating or updating %s: you must provide values for the the following fields: %s', [
+          return this.error('Error creating or updating %s: you must provide values for the following fields: %s', [
             name,
             missingDedupeFields.join(', '),
           ]);
         }
       }
-
       // @todo Remove describe related linkField value assignement code once marketo custom object bug is fixed
       // Getting of api name of field if relateTo field is Display Name
       const leadDescribe = await this.client.describeLeadFields();
@@ -84,16 +82,15 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
       if (!lead.result.length) {
         return this.error("Error creating or updating %s: can't link object to %s, who does not exist.", [name, linkValue]);
       }
-
       // Assign link field value to custom object to be created
       object[customObject.result[0].relationships[0].field] = lead.result[0][linkField];
       const data = await this.client.createOrUpdateCustomObject(name, object);
-      if (data.success && data.result.length > 0) {
+      if (data.success && data.result.length > 0 && data.result[0].status != 'skipped') {
         return this.pass('Successfully created %s.', [name]);
       } else {
         return this.fail('Failed to create %s.: %s', [
           name,
-          data.errors[0].message,
+          data.result[0].reasons[0].message,
         ]);
       }
     } catch (e) {

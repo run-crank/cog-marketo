@@ -2,6 +2,7 @@
 
 import { BaseStep, Field, StepInterface } from '../core/base-step';
 import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
+import { isNullOrUndefined } from 'util';
 
 export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
 
@@ -64,26 +65,50 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
       }
 
       // Querying link leads in custom object
-      const searchFields = {};
-      searchFields[customObject.result[0].relationships[0].field] = lead.result[0][linkField];
-      const queryResult = await this.client.queryCustomObject(name, customObject.result[0].relationships[0].field, [searchFields], [customObject.result[0].idField]);
+      // Assign Query Params
+      let searchFields = [{ [customObject.result[0].relationships[0].field]: lead.result[0][linkField] }];
+      let filterType = customObject.result[0].relationships[0].field;
+      const fields = [customObject.result[0].idField];
 
-      // Error if query retrieves more than one result
-      if (queryResult.result.length > 1) {
-        return this.error('Error deleting %s linked to %s: more than one matching custom object was found. Please provide dedupe field values to specify which object', [
-          linkValue,
-          name,
-        ]);
+      // Check if dedupe fields exists to change query params
+      if (!isNullOrUndefined(dedupeFields)) {
+        searchFields = [dedupeFields];
+        filterType = 'dedupeFields';
       }
 
-      // Delete using idField from customObject and its value from queried link
-      const data = await this.client.deleteCustomObjectById(name, queryResult.result[0][customObject.result[0].idField]);
-      if (data.success && data.result.length) {
-        return this.pass('Successfully deleted %s linked to %s.', [linkValue, name]);
+      // Querying link leads in custom object
+      const queryResult = await this.client.queryCustomObject(name, filterType, searchFields, fields);
+
+      if (queryResult.success && queryResult.result.length > 0 && !queryResult.result[0].hasOwnProperty('reasons')) {
+        // Filter query by linkfield
+        const filteredQueryResult = queryResult.result.filter(result => result[customObject.result[0].relationships[0].field] == lead.result[0][linkField]);
+        if (!filteredQueryResult.length) {
+          return this.error('%s lead is not linked to %s', [linkValue, name]);
+        }
+        // Error if query retrieves more than one result
+        if (filteredQueryResult.length > 1) {
+          return this.error('Error deleting %s linked to %s: more than one matching custom object was found. Please provide dedupe field values to specify which object', [
+            linkValue,
+            name,
+          ]);
+        }
+
+        // Delete using idField from customObject and its value from queried link
+        const data = await this.client.deleteCustomObjectById(name, queryResult.result[0][customObject.result[0].idField]);
+        if (data.success && data.result.length > 0 && data.result[0].status != 'skipped') {
+          return this.pass('Successfully deleted %s linked to %s.', [linkValue, name]);
+        } else {
+          return this.fail('Failed to delete %s.: %s', [
+            name,
+            data.result[0].reasons[0].message,
+          ]);
+        }
       } else {
-        return this.fail('Failed to deleted %s.: %s', [
+        return this.fail('Error deleting %s: Failed to query %s linked to %s to be deleted: %s', [
           name,
-          data.errors[0].message,
+          name,
+          linkValue,
+          queryResult.result[0].reasons.map(reason => reason.message).join(', '),
         ]);
       }
     } catch (e) {
