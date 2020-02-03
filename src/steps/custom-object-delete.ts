@@ -64,24 +64,30 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
         return this.error('Error deleting %s: the %s lead does not exist.', [name, linkValue]);
       }
 
-      // Querying link leads in custom object
       // Assign Query Params
-      let searchFields = [{ [customObject.result[0].relationships[0].field]: lead.result[0][linkField] }];
-      let filterType = customObject.result[0].relationships[0].field;
+      const searchFields = [{ [customObject.result[0].relationships[0].field]: lead.result[0][linkField] }];
+      const filterType = customObject.result[0].relationships[0].field;
       const fields = [customObject.result[0].idField];
 
       // Check if dedupe fields exists to change query params
       if (!isNullOrUndefined(dedupeFields)) {
-        searchFields = [dedupeFields];
-        filterType = 'dedupeFields';
+        Object.keys(dedupeFields).forEach((field) => {
+          fields.push(field);
+        });
       }
 
       // Querying link leads in custom object
       const queryResult = await this.client.queryCustomObject(name, filterType, searchFields, fields);
 
       if (queryResult.success && queryResult.result.length > 0 && !queryResult.result[0].hasOwnProperty('reasons')) {
-        // Filter query by linkfield
-        const filteredQueryResult = queryResult.result.filter(result => result[customObject.result[0].relationships[0].field] == lead.result[0][linkField]);
+        let filteredQueryResult = queryResult.result;
+        // Filter query by dedupeField
+        if (!isNullOrUndefined(dedupeFields)) {
+          for (const key in dedupeFields) {
+            filteredQueryResult = filteredQueryResult.filter(result => dedupeFields[key] == result[key]);
+          }
+        }
+        // Check if filtered query has a result
         if (!filteredQueryResult.length) {
           return this.error('%s lead is not linked to %s', [linkValue, name]);
         }
