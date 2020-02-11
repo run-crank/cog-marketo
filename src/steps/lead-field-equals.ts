@@ -1,7 +1,7 @@
 /*tslint:disable:no-else-after-return*/
 
-import { BaseStep, Field, StepInterface } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
+import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
 import * as util from '@run-crank/utilities';
 import { baseOperators } from '../client/constants/operators';
 
@@ -29,6 +29,20 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     type: FieldDefinition.Type.ANYSCALAR,
     description: 'Expected field value',
   }];
+  protected expectedRecords: ExpectedRecord[] = [{
+    id: 'lead',
+    type: RecordDefinition.Type.KEYVALUE,
+    fields: [{
+      field: 'id',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Lead's Marketo ID",
+    }, {
+      field: 'email',
+      type: FieldDefinition.Type.EMAIL,
+      description: "Lead's Email",
+    }],
+    dynamicFields: true,
+  }];
 
   async executeStep(step: Step) {
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
@@ -42,23 +56,18 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
         fields: ['email', field].join(','),
       });
 
+      //// TODO: conditional operators can still be refactored so that `const leadRecord = ...` won't be called twice
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
+        const leadRecord = this.keyValue('lead', 'Checked Lead', data.result[0]);
         if (this.compare(operator, data.result[0][field], expectation)) {
-          return this.pass(this.operatorSuccessMessages[operator], [field, expectation]);
+          return this.pass(this.operatorSuccessMessages[operator], [field, expectation], [leadRecord]);
         } else {
-          return this.fail(this.operatorFailMessages[operator], [
-            field,
-            expectation,
-            data.result[0][field],
-          ]);
+          return this.fail(this.operatorFailMessages[operator], [field, expectation, data.result[0][field]], [leadRecord]);
         }
       } else {
         if (data.result && data.result[0] && !data.result[0][field]) {
-          return this.error('Found the %s lead, but there was no %s field.', [
-            email,
-            field,
-            data,
-          ]);
+          const leadRecord = this.keyValue('lead', 'Checked Lead', data.result[0]);
+          return this.error('Found the %s lead, but there was no %s field.', [email, field, data], [leadRecord]);
         } else {
           return this.error("Couldn't find a lead associated with %s", [
             email,
