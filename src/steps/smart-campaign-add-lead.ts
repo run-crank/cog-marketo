@@ -1,7 +1,7 @@
 /*tslint:disable:no-else-after-return*/
 
-import { BaseStep, Field, StepInterface } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
+import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
 
 export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterface {
 
@@ -17,6 +17,29 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
     field: 'campaign',
     type: FieldDefinition.Type.ANYSCALAR,
     description: 'Smart campaign name or numeric id',
+  }];
+  protected expectedRecords: ExpectedRecord[] = [{
+    id: 'lead',
+    type: RecordDefinition.Type.KEYVALUE,
+    fields: [{
+      field: 'id',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Lead's Marketo ID",
+    }, {
+      field: 'email',
+      type: FieldDefinition.Type.EMAIL,
+      description: "Lead's Email",
+    }],
+    dynamicFields: true,
+  }, {
+    id: 'campaign',
+    type: RecordDefinition.Type.KEYVALUE,
+    fields: [{
+      field: 'id',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Campaign's Marketo ID",
+    }],
+    dynamicFields: true,
   }];
 
   async executeStep(step: Step) {
@@ -35,12 +58,21 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
         return this.error("Can't add %s to %s: found %d matching campaigns", [email, campaign, campaigns.length]);
       }
 
-      const lead: any = await this.client.findLeadByEmail(email);
-      const result = await this.client.addLeadToSmartCampaign(campaigns[0].id.toString(), lead.result[0]);
-      if (result.success) {
-        return this.pass('Successfully added lead %s to smart campaign %s', [email, campaign]);
+      const campaignRecord = this.keyValue('campaign', 'Smart Campaign', campaigns[0]);
+
+      const leadResponse: any = await this.client.findLeadByEmail(email);
+
+      if (!leadResponse.result[0]) {
+        return this.fail('Could not find lead %s', [email], [campaignRecord]);
+      }
+
+      const leadRecord = this.keyValue('lead', 'Lead To Be Added', leadResponse.result[0]);
+
+      const enrollmentResponse = await this.client.addLeadToSmartCampaign(campaigns[0].id.toString(), leadResponse.result[0]);
+      if (enrollmentResponse.success) {
+        return this.pass('Successfully added lead %s to smart campaign %s', [email, campaign], [campaignRecord, leadRecord]);
       } else {
-        return this.fail('Unable to add lead %s to smart campaign %s: %s', [email, campaign, result.message]);
+        return this.fail('Unable to add lead %s to smart campaign %s: %s', [email, campaign, enrollmentResponse.message], [campaignRecord, leadRecord]);
       }
     } catch (e) {
       if (e.message.includes("Trigger campaign needs to have a 'Campaign Requested' trigger")) {
