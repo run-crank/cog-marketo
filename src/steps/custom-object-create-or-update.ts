@@ -17,7 +17,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
     type: FieldDefinition.Type.EMAIL,
     description: "Linked Lead's email address",
   }, {
-    field: 'object',
+    field: 'customObject',
     type: FieldDefinition.Type.MAP,
     description: 'Map of custom object data whose keys are field names.',
   }];
@@ -26,7 +26,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
     const stepData: any = step.getData().toJavaScript();
     const name = stepData.name;
     const linkValue = stepData.linkValue;
-    const object = stepData.object;
+    const object = stepData.customObject;
 
     try {
       const customObject = await this.client.getCustomObject(name);
