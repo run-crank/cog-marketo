@@ -40,6 +40,18 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
       field: 'email',
       type: FieldDefinition.Type.EMAIL,
       description: "Lead's Email",
+    }, {
+      field: 'createdAt',
+      type: FieldDefinition.Type.DATETIME,
+      description: "Lead's Create Date",
+    }, {
+      field: 'firstName',
+      type: FieldDefinition.Type.STRING,
+      description: "Lead's First Name",
+    }, {
+      field: 'lastName',
+      type: FieldDefinition.Type.STRING,
+      description: "Lead's Last Name",
     }],
     dynamicFields: true,
   }];
@@ -53,7 +65,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
 
     try {
       const data: any = await this.client.findLeadByEmail(email, {
-        fields: ['email', field].join(','),
+        fields: [...this.expectedRecords[0].fields.map(field => field.field), field].join(','),
       });
 
       //// TODO: conditional operators can still be refactored so that `const leadRecord = ...` won't be called twice
