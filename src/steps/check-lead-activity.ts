@@ -1,7 +1,7 @@
 /*tslint:disable:no-else-after-return*/
 
-import { BaseStep, Field, StepInterface } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
+import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
 
 import * as moment from 'moment';
 
@@ -27,6 +27,29 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
     type: FieldDefinition.Type.MAP,
     description: 'Represents additional parameters that should be used to validate an activity. The key in the object represents an attribute name and the value represents the expected value',
     optionality: FieldDefinition.Optionality.OPTIONAL,
+  }];
+  // const headers = { id: 'ID', leadId: 'Lead ID', activityDate: 'Activity Date', activityTypeId: 'Activity Type ID' };
+  protected expectedRecords: ExpectedRecord[] = [{
+    id: 'matchedActivities',
+    type: RecordDefinition.Type.TABLE,
+    fields: [{
+      field: 'id',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Activity's Marketo ID",
+    }, {
+      field: 'leadId',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Lead's Marketo ID",
+    }, {
+      field: 'activityDate',
+      type: FieldDefinition.Type.DATETIME,
+      description: "Activity's Date",
+    }, {
+      field: 'activityTypeId',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Activity Type's ID",
+    }],
+    dynamicFields: true,
   }];
 
   async executeStep(step: Step) {
