@@ -53,29 +53,6 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
     dynamicFields: true,
   }];
 
-  protected expectedRecords: ExpectedRecord[] = [{
-    id: 'matchedActivities',
-    type: RecordDefinition.Type.TABLE,
-    fields: [{
-      field: 'id',
-      type: FieldDefinition.Type.NUMERIC,
-      description: "Activity's Marketo ID",
-    }, {
-      field: 'leadId',
-      type: FieldDefinition.Type.NUMERIC,
-      description: "Lead's Marketo ID",
-    }, {
-      field: 'activityDate',
-      type: FieldDefinition.Type.DATETIME,
-      description: "Activity's Date",
-    }, {
-      field: 'activityTypeId',
-      type: FieldDefinition.Type.NUMERIC,
-      description: "Activity Type's ID",
-    }],
-    dynamicFields: true,
-  }];
-
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
     const email = stepData.email;
