@@ -97,8 +97,8 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
         ]);
       }
 
-      const headers = { id: 'ID', leadId: 'Lead ID', activityDate: 'Activity Date', activityTypeId: 'Activity Type ID' };
-      const activityRecords = this.table('matchedActivities', `Matched ${activityType.name} Records`, headers, activities);
+      const activityRecords = this.createRecords(activities);
+      activityRecords.setName(`Matched "${activityType.name}" Activities`);
 
       /* Expected attributes passed to test step. Translate object/map as array for easier comparison with actual attributes */
       const expectedAttributes = Object.keys(withAttributes).map((key) => { return { name: key, value: withAttributes[key] }; });
@@ -181,6 +181,17 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
     }
 
     return result;
+  }
+
+  createRecords(activities) {
+    const records = [];
+    activities.forEach((activity) => {
+      activity.attributes.forEach(attr => activity[attr.name] = attr.value);
+      records.push(activity);
+    });
+    const headers = { id: 'ID', leadId: 'Lead ID', activityDate: 'Activity Date', activityTypeId: 'Activity Type ID' };
+    activities[0].attributes.forEach(attr => headers[attr.name] = attr.name);
+    return this.table('matchedActivities', '', headers, records);
   }
 }
 
