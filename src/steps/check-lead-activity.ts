@@ -98,13 +98,8 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
         ]);
       }
 
-<<<<<<< HEAD
       const activityRecords = this.createRecords(activities);
       activityRecords.setName(`Matched "${activityType.name}" Activities`);
-=======
-      const headers = { id: 'ID', leadId: 'Lead ID', activityDate: 'Activity Date', activityTypeId: 'Activity Type ID' };
-      const activityRecords = this.table('matchedActivities', `Matched ${activityType.name} Records`, headers, activities);
->>>>>>> Conflicts
 
       /* Expected attributes passed to test step. Translate object/map as array for easier comparison with actual attributes */
       const expectedAttributes = Object.keys(withAttributes).map((key) => { return { name: key, value: withAttributes[key] }; });
@@ -201,6 +196,15 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
     const headers = { id: 'ID', leadId: 'Lead ID', activityDate: 'Activity Date', activityTypeId: 'Activity Type ID' };
     activities[0].attributes.forEach(attr => headers[attr.name] = titleCase(attr.name));
     return this.table('matchedActivities', '', headers, records);
+  }
+
+  toTitleCase(value) {
+    const strs = value.split(' ');
+    strs.forEach((str: string) => {
+      str.charAt(0).toUpperCase();
+    });
+
+    return strs.join(' ');
   }
 }
 
