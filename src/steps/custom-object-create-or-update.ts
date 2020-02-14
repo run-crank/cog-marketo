@@ -93,7 +93,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
       object[customObject.result[0].relationships[0].field] = lead.result[0][linkField];
       const data = await this.client.createOrUpdateCustomObject(name, object);
       if (data.success && data.result.length > 0 && data.result[0].status != 'skipped') {
-        return this.pass('Successfully created %s.', [name]);
+        return this.pass(`Successfully ${data.result[0].status} %s`, [name]);
       } else {
         return this.fail('Failed to create %s.: %s', [
           name,
