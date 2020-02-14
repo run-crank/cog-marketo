@@ -190,8 +190,17 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
       records.push(activity);
     });
     const headers = { id: 'ID', leadId: 'Lead ID', activityDate: 'Activity Date', activityTypeId: 'Activity Type ID' };
-    activities[0].attributes.forEach(attr => headers[attr.name] = attr.name);
+    activities[0].attributes.forEach(attr => headers[attr.name] = this.toTitleCase(attr.name));
     return this.table('matchedActivities', '', headers, records);
+  }
+
+  toTitleCase(value) {
+    const strs = value.split(' ');
+    strs.forEach((str: string) => {
+      str.charAt(0).toUpperCase();
+    });
+
+    return strs.join(' ');
   }
 }
 
