@@ -197,15 +197,6 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
     activities[0].attributes.forEach(attr => headers[attr.name] = titleCase(attr.name));
     return this.table('matchedActivities', '', headers, records);
   }
-
-  toTitleCase(value) {
-    const strs = value.split(' ');
-    strs.forEach((str: string) => {
-      str.charAt(0).toUpperCase();
-    });
-
-    return strs.join(' ');
-  }
 }
 
 export { CheckLeadActivityStep as Step };
