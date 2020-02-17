@@ -138,21 +138,24 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
           attributes.push(obj);
         });
 
-        return this.fail('Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s). Found the following similar activities:\n\n%s', [
-          stepData.activityTypeIdOrName,
-          email,
-          minutesAgo,
-          expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', '),
-          stepData.activityTypeIdOrName,
-          attributes.map(attr => JSON.stringify(attr, null, 2)).join('\n\n'),
-        ],               [activityRecords]);
+        return this.fail(
+          'Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s). Found the following similar activities:\n\n%s', 
+          [
+            stepData.activityTypeIdOrName,
+            email,
+            minutesAgo,
+            expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', '),
+            stepData.activityTypeIdOrName,
+            attributes.map(attr => JSON.stringify(attr, null, 2)).join('\n\n'),
+          ],
+          [activityRecords]);
       }
 
-      return this.pass('%s activity found for lead %s within the last %d minute(s)', [
-        stepData.activityTypeIdOrName,
-        email,
-        minutesAgo,
-      ],               [activityRecords]);
+      return this.pass(
+        '%s activity found for lead %s within the last %d minute(s)',
+        [stepData.activityTypeIdOrName, email, minutesAgo],
+        [activityRecords],
+      );
 
     } catch (e) {
       return this.error('There was an error checking activities for Marketo Lead: %s', [
