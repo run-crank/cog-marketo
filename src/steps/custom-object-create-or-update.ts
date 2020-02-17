@@ -1,3 +1,4 @@
+import { isNullOrUndefined } from 'util';
 /*tslint:disable:no-else-after-return*/
 
 import { BaseStep, Field, StepInterface } from '../core/base-step';
@@ -17,7 +18,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
     type: FieldDefinition.Type.EMAIL,
     description: "Linked Lead's email address",
   }, {
-    field: 'object',
+    field: 'customObject',
     type: FieldDefinition.Type.MAP,
     description: 'Map of custom object data whose keys are field names.',
   }];
@@ -26,7 +27,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
     const stepData: any = step.getData().toJavaScript();
     const name = stepData.name;
     const linkValue = stepData.linkValue;
-    const object = stepData.object || {};
+    const object = stepData.customObject || {};
 
     try {
       const customObject = await this.client.getCustomObject(name);
@@ -38,7 +39,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
       }
 
       // Linked to lead validation
-      if (!customObject.result[0].relationships.some(relationship => relationship.relatedTo.name == 'Lead')) {
+      if (!customObject.result[0].relationships || !customObject.result[0].relationships.some(relationship => relationship.relatedTo.name == 'Lead')) {
         return this.error("Error creating or updating %s linked to %s: this custom object isn't linked to leads", [
           name,
           linkValue,
@@ -79,14 +80,20 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
         fields: ['email', linkField].join(','),
       });
 
+      // Check if leads are retrieved
       if (!lead.result.length) {
         return this.error("Error creating or updating %s: can't link object to %s, who does not exist.", [name, linkValue]);
+      }
+
+      // Check if LinkField has value
+      if (isNullOrUndefined(lead.result[0][linkField])) {
+        return this.error("Error creating or updating %s: can't link object to %s, whose %s link field is null or undefined.", [name, linkValue, linkField]);
       }
       // Assign link field value to custom object to be created
       object[customObject.result[0].relationships[0].field] = lead.result[0][linkField];
       const data = await this.client.createOrUpdateCustomObject(name, object);
       if (data.success && data.result.length > 0 && data.result[0].status != 'skipped') {
-        return this.pass('Successfully created %s.', [name]);
+        return this.pass(`Successfully ${data.result[0].status} %s`, [name]);
       } else {
         return this.fail('Failed to create %s.: %s', [
           name,
