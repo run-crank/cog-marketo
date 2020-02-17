@@ -4,6 +4,7 @@ import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-ste
 import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
 
 import * as moment from 'moment';
+import { titleCase } from 'title-case';
 
 export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
@@ -190,17 +191,8 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
       records.push(activity);
     });
     const headers = { id: 'ID', leadId: 'Lead ID', activityDate: 'Activity Date', activityTypeId: 'Activity Type ID' };
-    activities[0].attributes.forEach(attr => headers[attr.name] = this.toTitleCase(attr.name));
+    activities[0].attributes.forEach(attr => headers[attr.name] = titleCase(attr.name));
     return this.table('matchedActivities', '', headers, records);
-  }
-
-  toTitleCase(value) {
-    const strs = value.split(' ');
-    strs.forEach((str: string) => {
-      str.charAt(0).toUpperCase();
-    });
-
-    return strs.join(' ');
   }
 }
 
