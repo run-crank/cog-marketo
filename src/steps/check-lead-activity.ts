@@ -139,7 +139,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
         });
 
         return this.fail(
-          'Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s). Found the following similar activities:\n\n%s', 
+          'Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s). Found the following similar activities:\n\n%s',
           [
             stepData.activityTypeIdOrName,
             email,
