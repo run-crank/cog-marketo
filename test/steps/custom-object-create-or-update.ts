@@ -89,7 +89,7 @@ describe('CreateOrUpdateCustomObject', () => {
     protoStep.setData(Struct.fromJavaScript({
       name: nameValue,
       linkValue: linkValueValue,
-      object: objectValue,
+      customObject: objectValue,
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
@@ -157,7 +157,7 @@ describe('CreateOrUpdateCustomObject', () => {
     protoStep.setData(Struct.fromJavaScript({
       name: nameValue,
       linkValue: linkValueValue,
-      object: objectValue,
+      customObject: objectValue,
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);

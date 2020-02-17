@@ -41,7 +41,7 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
       }
 
       // Linked to lead validation
-      if (!customObject.result[0].relationships.some(relationship => relationship.relatedTo.name == 'Lead')) {
+      if (!customObject.result[0].relationships || !customObject.result[0].relationships.some(relationship => relationship.relatedTo.name == 'Lead')) {
         return this.error("Error deleting %s linked to %s: this custom object isn't linked to leads", [
           name,
           linkValue,
