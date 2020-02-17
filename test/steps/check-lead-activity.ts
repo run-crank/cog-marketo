@@ -166,7 +166,14 @@ describe('DeleteLeadStep', () => {
         }));
 
         clientWrapperStub.getActivities.returns(Promise.resolve({
-          result: [],
+          result: [{
+            activityTypeId: 2001,
+            primaryAttribute: { name: 'primaryAttribute' },
+            primaryAttributeValue: 'primaryAttributeValue',
+            attributes: [
+              { name: 'attribute1', value: 'attribute1' },
+            ],
+          }],
         }));
       });
 
