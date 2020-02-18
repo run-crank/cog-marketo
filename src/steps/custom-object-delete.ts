@@ -100,7 +100,7 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
         }
 
         // Delete using idField from customObject and its value from queried link
-        const data = await this.client.deleteCustomObjectById(name, queryResult.result[0][customObject.result[0].idField]);
+        const data = await this.client.deleteCustomObjectById(name, filteredQueryResult[0][customObject.result[0].idField]);
         if (data.success && data.result.length > 0 && data.result[0].status != 'skipped') {
           return this.pass('Successfully deleted %s linked to %s.', [linkValue, name]);
         } else {
