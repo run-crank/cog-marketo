@@ -94,18 +94,21 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
       // Querying link leads in custom object
       const queryResult = await this.client.queryCustomObject(name, filterType, searchFields, fields);
       // Check if query ran as expected
-      if (queryResult.success && queryResult.result.length > 0 && !queryResult.result[0].hasOwnProperty('reasons')) {
+      if (queryResult.success) {
         let filteredQueryResult = queryResult.result;
+
+        // Check if filtered query has a result
+        if (!filteredQueryResult.length) {
+          return this.error('%s lead is not linked to %s', [linkValue, name]);
+        }
+
         // Filter query by dedupeField
         if (!isNullOrUndefined(dedupeFields)) {
           for (const key in dedupeFields) {
             filteredQueryResult = filteredQueryResult.filter(result => dedupeFields[key] == result[key]);
           }
         }
-        // Check if filtered query has a result
-        if (!filteredQueryResult.length) {
-          return this.error('%s lead is not linked to %s', [linkValue, name]);
-        }
+
         // Error if query retrieves more than one result
         if (filteredQueryResult.length > 1) {
           return this.error('Error finding %s linked to %s: more than one matching custom object was found. Please provide dedupe field values to specify which object', [
