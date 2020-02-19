@@ -117,7 +117,7 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
           name,
           name,
           linkValue,
-          queryResult.errors.join(',\n\n'),
+          queryResult.errors.map(e => e.message).join(',\n\n'),
         ]);
       }
     } catch (e) {
