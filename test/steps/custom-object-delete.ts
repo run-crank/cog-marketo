@@ -153,13 +153,9 @@ describe('DeleteCustomObject', () => {
     }));
     clientWrapperStub.queryCustomObject.returns(Promise.resolve({
       success: false,
-      result: [
+      errors: [
         {
-          reasons: [
-            {
-              message: 'someReason',
-            },
-          ],
+          message: 'anyError',
         },
       ],
     }));
