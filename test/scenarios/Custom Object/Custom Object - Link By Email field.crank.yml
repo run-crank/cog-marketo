@@ -1,0 +1,38 @@
+scenario: Custom Object - Link By Email Field
+description: >
+  Proves that this Cog can create, check, and delete custom objects that are
+  linked to leads on the lead email field.
+
+tokens:
+  test.obj: devQACustomObject_c
+  test.email: co-one-to-one@thisisjust.atomatest.com
+
+steps:
+- step: Given I create or update a Marketo Lead
+  data: {lead: {email: '{{test.email}}'}}
+- step: When I create or update a {{test.obj}} Marketo Custom Object linked to Lead {{test.email}}
+  data:
+    customObject:
+      booleanField: false
+      currencyField: 10.00
+      dateField: 2020-05-05
+      dateTimeField: 2020-06-02
+      emailField: one@thisisjust.atomatest.com
+      floatField: 45.66
+      integerField: 45
+      phoneField: 222-333-4444
+      stringField: Lorem ipsum dolor sit amet
+      textField: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+- step: Then the booleanField field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be false
+- step: And the email field on marketo lead co-one-to-one@thisisjust.atomatest.com should contain thisisjust.atomatest
+- step: And the currencyField field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be greater than 9.99
+- step: And the dateField field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be 2020-05-05
+- step: And the dateTimeField field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be less than 2021-06-02T00:00:00
+- step: And the emailField field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be one@thisisjust.atomatest.com
+- step: And the floatField field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be less than 45.76
+- step: And the integerField field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be greater than 44
+- step: And the phoneField field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be 222-333-4444
+- step: And the stringField field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should not contain ,
+- step: And the textField field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should contain labore
+- step: Finally, delete the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}}
+- step: And delete the {{test.email}} Marketo Lead
