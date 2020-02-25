@@ -98,8 +98,13 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
         ]);
       }
 
+<<<<<<< HEAD
       const activityRecords = this.createRecords(activities);
       activityRecords.setName(`Matched "${activityType.name}" Activities`);
+=======
+      const headers = { id: 'ID', leadId: 'Lead ID', activityDate: 'Activity Date', activityTypeId: 'Activity Type ID' };
+      const activityRecords = this.table('matchedActivities', `Matched ${activityType.name} Records`, headers, activities);
+>>>>>>> Conflicts
 
       /* Expected attributes passed to test step. Translate object/map as array for easier comparison with actual attributes */
       const expectedAttributes = Object.keys(withAttributes).map((key) => { return { name: key, value: withAttributes[key] }; });
