@@ -1,0 +1,24 @@
+scenario: Custom Object - One-To-Many Object
+description: >
+  Proves that this Cog can create, check, and delete custom objects that are
+  linked to leads.
+
+tokens:
+  test.obj: devQAOne_To_ManyObject_c
+  test.email: one2many@thisisjust.atomatest.com
+
+steps:
+- step: Given I create or update a Marketo Lead
+  data: {lead: {email: '{{test.email}}'}}
+- step: When I create or update a {{test.obj}} Marketo Custom Object linked to Lead {{test.email}}
+  data:
+    customObject:
+      customPrimaryKey: 12345
+      name: Something
+- step: Then the associatedLead field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be {{test.email}}
+- step: And the customPrimaryKey field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should not be 54321
+- step: And the createdAt field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should contain 2020
+- step: And the createdAt field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be less than 2022-05-05
+- step: And the updatedAt field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be greater than 2019-05-05
+- step: Finally, delete the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}}
+- step: And delete the {{test.email}} Marketo Lead

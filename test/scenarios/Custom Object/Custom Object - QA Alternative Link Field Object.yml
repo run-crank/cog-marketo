@@ -1,0 +1,31 @@
+scenario: Custom Object - Alternative Link Field Test
+description: >
+  Proves that this Cog can create and check custom objects that are
+  linked to leads on the lead organizationId field
+
+tokens:
+  test:
+    obj: devQAAlternativeLinkFieldObject_c
+    email: alternative-linkfield@thisisjust.atomatest.com
+    orgid: RT-482
+    lastName: Geron
+    firstName: Miles
+steps:
+- step: Given I create or update a Marketo Lead
+  data: 
+    lead: 
+       email: '{{test.email}}'
+       organizationId: '{{test.orgid}}'
+       lastName: '{{test.lastName}}'
+       firstName: '{{test.firstName}}'
+- step: When I create or update a {{test.obj}} Marketo Custom Object linked to Lead {{test.email}}
+  data:
+    customObject:
+      memberID: 506
+- step: Then the updatedAt field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be greater than 2019-05-11
+- step: Then the orgID field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should contain rt
+  data:
+    dedupeFields:
+      memberID: 506
+- step: Finally, delete the {{test.obj}} marketo custom object linked to lead {{test.email}}
+- step: And delete the {{test.email}} Marketo Lead.

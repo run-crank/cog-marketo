@@ -1,0 +1,64 @@
+scenario: Custom Object Test - Multiple Dedupe Field
+description: >
+  Proves that this Cog can create, check and delete custom objects that have multiple dedupe fields.
+
+tokens:
+  test.obj: testCar_c
+  test.email: multiplededupe@thisisjust.atomatest.com
+
+steps:
+- step: Given I create or update a Marketo Lead
+  data: {lead: {email: '{{test.email}}'}}
+- step: When I create or update a {{test.obj}} Marketo Custom Object linked to Lead {{test.email}}
+  data:
+    customObject:
+      make: Honda
+      model: Honda Jazz
+      plateNumber: 56766
+      color: blue
+      vehicleType: Sedan
+- step: And I create or update a {{test.obj}} Marketo Custom Object linked to Lead {{test.email}}
+  data:
+    customObject:
+      make: Toyota
+      model: Corolla Altis
+      plateNumber: 57887
+      vehicleType: Sedan
+- step: And I create or update a {{test.obj}} Marketo Custom Object linked to Lead {{test.email}}
+  data:
+    customObject:
+      make: Hyundai
+      model: Hyundai Accent
+      plateNumber: 57456
+      vehicleType: Hatchback
+      color: Red
+- step: Then the color field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be blue
+  data:
+    dedupeFields:
+      make: Honda
+      plateNumber: 56766
+- step: And the color field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should not contain b
+  data:
+    dedupeFields:
+      model: Corolla Altis
+- step: And the vehicleType field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be Hatchback
+  data:
+    dedupeFields:
+      plateNumber: 57456
+- step: And the vehicleType field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should not be Hatchback
+  data:
+    dedupeFields:
+      model: Corolla Altis
+- step: Finally, delete the {{test.obj}} marketo custom object linked to lead {{test.email}}
+  data:
+    dedupeFields:
+      make: Hyundai
+- step: And delete the {{test.obj}} marketo custom object linked to lead {{test.email}}
+  data:
+    dedupeFields:
+      model: Corolla Altis
+- step: And delete the {{test.obj}} marketo custom object linked to lead {{test.email}}
+  data:
+    dedupeFields:
+      plateNumber: 56766
+- step: And delete the {{test.email}} Marketo lead.
