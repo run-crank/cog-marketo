@@ -74,6 +74,9 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
         ]);
       }
 
+      const headers = { id: 'ID', leadId: 'Lead ID', activityDate: 'Activity Date', activityTypeId: 'Activity Type ID' };
+      const activityRecords = this.table('matchedActivities', `Matched ${activityType.name} Records`, headers, activities);
+
       /* Expected attributes passed to test step. Translate object/map as array for easier comparison with actual attributes */
       const expectedAttributes = Object.keys(withAttributes).map((key) => { return { name: key, value: withAttributes[key] }; });
 
@@ -99,7 +102,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
             email,
             minutesAgo,
             JSON.stringify(expectedAttributes, null, 2),
-          ]);
+          ],               [activityRecords]);
         }
 
         const attributes = [];
@@ -118,14 +121,14 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
           expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', '),
           stepData.activityTypeIdOrName,
           attributes.map(attr => JSON.stringify(attr, null, 2)).join('\n\n'),
-        ]);
+        ],               [activityRecords]);
       }
 
       return this.pass('%s activity found for lead %s within the last %d minute(s)', [
         stepData.activityTypeIdOrName,
         email,
         minutesAgo,
-      ]);
+      ],               [activityRecords]);
 
     } catch (e) {
       return this.error('There was an error checking activities for Marketo Lead: %s', [
