@@ -1,8 +1,8 @@
 import { isNullOrUndefined } from 'util';
 /*tslint:disable:no-else-after-return*/
 
-import { BaseStep, Field, StepInterface } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
+import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
 
 export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterface {
 
@@ -111,20 +111,25 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
 
         // Error if query retrieves more than one result
         if (filteredQueryResult.length > 1) {
+          const headers = {};
+          Object.keys(filteredQueryResult[0]).forEach(key => headers[key] = key);
+          const customObjectRecords = this.table('matchedObjects', `Checked ${name}`, headers, filteredQueryResult);
           return this.error('Error finding %s linked to %s: more than one matching custom object was found. Please provide dedupe field values to specify which object', [
             linkValue,
             name,
-          ]);
+          ],                [customObjectRecords]);
         }
+
+        const customObjectRecord = this.keyValue('customObject', `Checked ${name}`, filteredQueryResult[0]);
         // Field validation
         if (this.compare(operator, String(filteredQueryResult[0][field]), expectedValue)) {
-          return this.pass(this.operatorSuccessMessages[operator], [field, expectedValue]);
+          return this.pass(this.operatorSuccessMessages[operator], [field, expectedValue], [customObjectRecord]);
         } else {
           return this.fail(this.operatorFailMessages[operator], [
             field,
             expectedValue,
             String(filteredQueryResult[0][field]),
-          ]);
+          ],               [customObjectRecord]);
         }
       } else {
         return this.fail('Failed to query %s linked to %s.: %s', [
