@@ -27,7 +27,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
     const stepData: any = step.getData().toJavaScript();
     const name = stepData.name;
     const linkValue = stepData.linkValue;
-    const object = stepData.customObject;
+    const object = stepData.customObject || {};
 
     try {
       const customObject = await this.client.getCustomObject(name);
