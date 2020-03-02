@@ -99,14 +99,12 @@ describe('ClientWrapper', () => {
 
   it('findLeadByEmail (with options)', () => {
     const expectedEmail = 'test@example.com';
-    const expectedOps = { fields: ['email', 'firstName'] };
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
-    clientWrapperUnderTest.findLeadByEmail(expectedEmail, expectedOps);
+    clientWrapperUnderTest.findLeadByEmail(expectedEmail);
 
     expect(marketoClientStub.lead.find).to.have.been.calledWith(
       'email',
       [expectedEmail],
-      expectedOps
     );
   });
 
