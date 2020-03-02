@@ -45,6 +45,10 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
       type: FieldDefinition.Type.DATETIME,
       description: "Lead's Create Date",
     }, {
+      field: 'updatedAt',
+      type: FieldDefinition.Type.DATETIME,
+      description: "Lead's Update Date",
+    }, {
       field: 'firstName',
       type: FieldDefinition.Type.STRING,
       description: "Lead's First Name",
@@ -64,9 +68,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     const field = stepData.field;
 
     try {
-      const data: any = await this.client.findLeadByEmail(email, {
-        fields: ['email', field].join(','),
-      });
+      const data: any = await this.client.findLeadByEmail(email);
 
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
         if (this.compare(operator, data.result[0][field], expectation)) {
