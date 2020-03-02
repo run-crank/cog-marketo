@@ -6,11 +6,9 @@ export class LeadAwareMixin {
     return this.client.lead.createOrUpdate([lead], { lookupField: 'email' });
   }
 
-  public async findLeadByEmail(email: string, opts: Record<string, any> = null) {
-    if (opts) {
-      return this.client.lead.find('email', [email], opts);
-    }
-    return this.client.lead.find('email', [email]);
+  public async findLeadByEmail(email: string) {
+    const fields = await this.describeLeadFields();
+    return this.client.lead.find('email', [email], { fields: fields.result.map(field => field.rest).map(rest => rest.name) });
   }
 
   public async deleteLeadById(leadId: number) {
