@@ -35,6 +35,14 @@ describe('ClientWrapper', () => {
     marketoClientStub.campaign = sinon.stub();
     marketoClientStub.campaign.getCampaigns = sinon.stub();
     marketoClientStub.campaign.request = sinon.stub();
+    marketoClientStub.lead.describe = sinon.stub();
+    marketoClientStub.lead.describe.returns(Promise.resolve({
+      result: [{
+        rest: {
+          name: 'email',
+        },
+      }],
+    }));
   });
 
   it('authentication', () => {
@@ -43,7 +51,7 @@ describe('ClientWrapper', () => {
       endpoint: 'https://abc-123-xyz.mktorest.example/rest',
       identity: 'https://abc-123-xyz.mktorest.example/identity',
       clientId: 'a-client-id',
-      clientSecret: 'a-client-secret'
+      clientSecret: 'a-client-secret',
     };
     metadata = new Metadata();
     metadata.add('endpoint', expectedCallArgs.endpoint.replace('/rest', ''));
@@ -82,30 +90,39 @@ describe('ClientWrapper', () => {
 
     expect(marketoClientStub.lead.createOrUpdate).to.have.been.calledWith(
       [expectedLead],
-      { lookupField: 'email' }
+      { lookupField: 'email' },
     );
   });
 
-  it('findLeadByEmail (no options)', () => {
+  it('findLeadByEmail (no options)', (done) => {
     const expectedEmail = 'test@example.com';
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
     clientWrapperUnderTest.findLeadByEmail(expectedEmail);
 
-    expect(marketoClientStub.lead.find).to.have.been.calledWith(
-      'email',
-      [expectedEmail]
-    );
+    setTimeout(() => {
+      expect(marketoClientStub.lead.find).to.have.been.calledWith(
+        'email',
+        [expectedEmail],
+        { fields: ['email'] },
+      );
+      done();
+    });
   });
 
-  it('findLeadByEmail (with options)', () => {
+  it('findLeadByEmail (with options)', (done) => {
     const expectedEmail = 'test@example.com';
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
     clientWrapperUnderTest.findLeadByEmail(expectedEmail);
 
-    expect(marketoClientStub.lead.find).to.have.been.calledWith(
-      'email',
-      [expectedEmail],
-    );
+    setTimeout(() => {
+      expect(marketoClientStub.lead.find).to.have.been.calledWith(
+        'email',
+        [expectedEmail],
+        { fields: ['email'] },
+      );
+
+      done();
+    });
   });
 
   it('deleteLeadById', () => {
@@ -166,7 +183,7 @@ describe('ClientWrapper', () => {
 
   it('getCustomObject', () => {
     const customObjectName = 'any';
-    const customObject = { anyField: 'anyValue'};
+    const customObject = { anyField: 'anyValue' };
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
     clientWrapperUnderTest.getCustomObject(customObjectName);
 

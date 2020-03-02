@@ -166,7 +166,7 @@ describe('DeleteLeadStep', () => {
         }));
 
         clientWrapperStub.getActivities.returns(Promise.resolve({
-          result: [],
+          result: [{ id: 3001, attributes: [] }],
         }));
       });
 
