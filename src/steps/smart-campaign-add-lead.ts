@@ -108,8 +108,6 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
       const leadRecord = this.keyValue('lead', 'Lead To Be Added', leadToBeAdded);
       campaignRecord = this.keyValue('campaign', 'Smart Campaign', campaigns[0]);
 
-      console.log(campaigns[0]);
-
       const result = await this.client.addLeadToSmartCampaign(campaigns[0].id.toString(), leadToBeAdded);
       if (result.success) {
         return this.pass('Successfully added lead %s to smart campaign %s', [email, campaign], [campaignRecord, leadRecord]);
