@@ -88,14 +88,11 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
         if (data.result && data.result[0] && !data.result[0][field]) {
           return this.error(
             'Found the %s lead, but there was no %s field.',
-            [email, field, data],
+            [email, field],
             [this.createRecord(data.result[0])],
           );
         } else {
-          return this.error("Couldn't find a lead associated with %s", [
-            email,
-            data,
-          ]);
+          return this.error("Couldn't find a lead associated with %s", [email]);
         }
       }
     } catch (e) {
