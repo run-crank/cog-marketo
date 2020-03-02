@@ -1,3 +1,4 @@
+import { titleCase } from 'title-case';
 /*tslint:disable:no-else-after-return*/
 
 import { BaseStep, Field, StepInterface } from '../core/base-step';
@@ -74,8 +75,12 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
         ]);
       }
 
+      const activityRecords = this.createRecords(activities);
+      activityRecords.setName(`Matched "${activityType.name}" Activities`);
+
       /* Expected attributes passed to test step. Translate object/map as array for easier comparison with actual attributes */
       const expectedAttributes = Object.keys(withAttributes).map((key) => { return { name: key, value: withAttributes[key] }; });
+      let validatedActivity;
 
       /* Assert Actual vs Expected attributes and pass if at least one activity matches attributes. Otherwise fail */
       if (expectedAttributes.length > 0) {
@@ -89,43 +94,36 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
           if (this.hasMatchingAttributes(actualAttributes, expectedAttributes)) {
             validated = true;
+            validatedActivity = activity;
             break;
           }
         }
 
         if (validated) {
-          return this.pass('Found %s activity for lead %s within the last %d minute(s), including attributes: \n\n', [
+          return this.pass(
+            'Found %s activity for lead %s within the last %d minute(s), including attributes: \n\n%s',
+            [stepData.activityTypeIdOrName, email, minutesAgo, JSON.stringify(expectedAttributes, null, 2)],
+            [this.createRecord(validatedActivity)],
+          );
+        }
+
+        return this.fail(
+          'Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s).',
+          [
             stepData.activityTypeIdOrName,
             email,
             minutesAgo,
-            JSON.stringify(expectedAttributes, null, 2),
-          ]);
-        }
-
-        const attributes = [];
-        activities.forEach((activity) => {
-          const obj = {};
-          activity.attributes.forEach((attr) => {
-            obj[attr.name] = attr.value;
-          });
-          attributes.push(obj);
-        });
-
-        return this.fail('Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s). Found the following similar activities:\n\n%s', [
-          stepData.activityTypeIdOrName,
-          email,
-          minutesAgo,
-          expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', '),
-          stepData.activityTypeIdOrName,
-          attributes.map(attr => JSON.stringify(attr, null, 2)).join('\n\n'),
-        ]);
+            expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', '),
+          ],
+          [activityRecords],
+        );
       }
 
-      return this.pass('%s activity found for lead %s within the last %d minute(s)', [
-        stepData.activityTypeIdOrName,
-        email,
-        minutesAgo,
-      ]);
+      return this.pass(
+        '%s activity found for lead %s within the last %d minute(s)',
+        [stepData.activityTypeIdOrName, email, minutesAgo],
+        [this.createRecord(activities[0])],
+      );
 
     } catch (e) {
       return this.error('There was an error checking activities for Marketo Lead: %s', [
@@ -155,6 +153,24 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
     }
 
     return result;
+  }
+
+  createRecords(activities) {
+    const records = [];
+    activities.forEach((activity) => {
+      activity.attributes.forEach(attr => activity[attr.name] = attr.value);
+      records.push(activity);
+    });
+    const headers = { id: 'ID', leadId: 'Lead ID', activityDate: 'Activity Date', activityTypeId: 'Activity Type ID' };
+    activities[0].attributes.forEach(attr => headers[attr.name] = titleCase(attr.name));
+    return this.table('matchedActivities', '', headers, records);
+  }
+
+  createRecord(activity) {
+    if (activity.hasOwnProperty('attributes')) {
+      activity.attributes.forEach(attr => activity[attr.name] = attr.value);
+    }
+    return this.keyValue('activity', 'Checked Activity', activity);
   }
 }
 
