@@ -47,6 +47,35 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
       description: "Lead's Last Name",
     }],
     dynamicFields: true,
+  }, {
+    id: 'campaign',
+    type: RecordDefinition.Type.KEYVALUE,
+    fields: [{
+      field: 'id',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Campaign's Marketo ID",
+    }, {
+      field: 'name',
+      type: FieldDefinition.Type.STRING,
+      description: "Campaign's Email",
+    }, {
+      field: 'description',
+      type: FieldDefinition.Type.STRING,
+      description: "Campaign's Description",
+    }, {
+      field: 'type',
+      type: FieldDefinition.Type.STRING,
+      description: "Campaign's Type",
+    }, {
+      field: 'updatedAt',
+      type: FieldDefinition.Type.DATETIME,
+      description: "Campaign's Update Date",
+    }, {
+      field: 'createdAt',
+      type: FieldDefinition.Type.DATETIME,
+      description: "Campaign's Update Date",
+    }],
+    dynamicFields: true,
   }];
 
   async executeStep(step: Step) {
@@ -78,6 +107,8 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
       const leadToBeAdded = findLeadResponse.result[0];
       const leadRecord = this.keyValue('lead', 'Lead To Be Added', leadToBeAdded);
       campaignRecord = this.keyValue('campaign', 'Smart Campaign', campaigns[0]);
+
+      console.log(campaigns[0]);
 
       const result = await this.client.addLeadToSmartCampaign(campaigns[0].id.toString(), leadToBeAdded);
       if (result.success) {
