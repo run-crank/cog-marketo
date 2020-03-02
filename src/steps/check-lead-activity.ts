@@ -75,9 +75,6 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
         ]);
       }
 
-      const activityRecords = this.createRecords(activities);
-      activityRecords.setName(`Matched "${activityType.name}" Activities`);
-
       /* Expected attributes passed to test step. Translate object/map as array for easier comparison with actual attributes */
       const expectedAttributes = Object.keys(withAttributes).map((key) => { return { name: key, value: withAttributes[key] }; });
       let validatedActivity;
@@ -107,6 +104,8 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
           );
         }
 
+        const activityRecords = this.createRecords(activities);
+        activityRecords.setName(`Matched "${activityType.name}" Activities`);
         return this.fail(
           'Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s).',
           [
@@ -157,19 +156,24 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
   createRecords(activities) {
     const records = [];
-    activities.forEach((activity) => {
-      activity.attributes.forEach(attr => activity[attr.name] = attr.value);
-      records.push(activity);
-    });
     const headers = { id: 'ID', leadId: 'Lead ID', activityDate: 'Activity Date', activityTypeId: 'Activity Type ID' };
     activities[0].attributes.forEach(attr => headers[attr.name] = titleCase(attr.name));
+
+    activities.forEach((activity) => {
+      activity.attributes.forEach(attr => activity[attr.name] = attr.value);
+      delete activity.attributes;
+      records.push(activity);
+    });
+
     return this.table('matchedActivities', '', headers, records);
   }
 
   createRecord(activity) {
     if (activity.hasOwnProperty('attributes')) {
       activity.attributes.forEach(attr => activity[attr.name] = attr.value);
+      delete activity.attributes;
     }
+
     return this.keyValue('activity', 'Checked Activity', activity);
   }
 }
