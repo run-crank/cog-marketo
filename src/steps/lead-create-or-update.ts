@@ -31,10 +31,11 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
     try {
       const data: any = await this.client.createOrUpdateLead(lead);
       if (data.success && data.result && data.result[0] && data.result[0].status !== 'skipped') {
-        return this.pass('Successfully created or updated lead %s with status %s', [
-          lead.email,
-          data.result[0].status,
-        ]);
+        return this.pass(
+          'Successfully created or updated lead %s with status %s',
+          [lead.email, data.result[0].status],
+          [this.keyValue('lead', 'Created Lead', { id: data.result[0].id })],
+        );
       } else {
         if (data.result && data.result[0] && data.result[0].reasons && data.result[0].reasons[0]) {
           return this.fail('Unable to create or update lead: %s', [
