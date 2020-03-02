@@ -1,7 +1,7 @@
 /*tslint:disable:no-else-after-return*/
 
-import { BaseStep, Field, StepInterface } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
+import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
 
 export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInterface {
 
@@ -12,6 +12,16 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
     field: 'lead',
     type: FieldDefinition.Type.MAP,
     description: 'A map of field names to field values',
+  }];
+  protected expectedRecords: ExpectedRecord[] = [{
+    id: 'lead',
+    type: RecordDefinition.Type.KEYVALUE,
+    fields: [{
+      field: 'id',
+      type: FieldDefinition.Type.STRING,
+      description: "Lead's Marketo ID",
+    }],
+    dynamicFields: true,
   }];
 
   async executeStep(step: Step) {
