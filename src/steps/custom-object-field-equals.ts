@@ -70,9 +70,7 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
                       : customObject.result[0].relationships[0].relatedTo.field;
 
       // Getting link field value from lead
-      const lead = await this.client.findLeadByEmail(linkValue, {
-        fields: ['email', linkField].join(','),
-      });
+      const lead = await this.client.findLeadByEmail(linkValue);
 
       // Check if lead exists
       if (!lead.result.length) {
@@ -111,14 +109,21 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
 
         // Error if query retrieves more than one result
         if (filteredQueryResult.length > 1) {
-          return this.error('Error finding %s linked to %s: more than one matching custom object was found. Please provide dedupe field values to specify which object', [
-            linkValue,
-            name,
-          ]);
+          const headers = {};
+          Object.keys(filteredQueryResult[0]).forEach(key => headers[key] = key);
+          return this.error(
+            'Error finding %s linked to %s: more than one matching custom object was found. Please provide dedupe field values to specify which object',
+            [linkValue, name],
+            [this.table('matchedObjects', `Matched ${name}`, headers, filteredQueryResult)],
+          );
         }
         // Field validation
         if (this.compare(operator, String(filteredQueryResult[0][field]), expectedValue)) {
-          return this.pass(this.operatorSuccessMessages[operator], [field, expectedValue]);
+          return this.pass(
+            this.operatorSuccessMessages[operator],
+            [field, expectedValue],
+            [this.keyValue('customObject', `Checked ${name}`, filteredQueryResult[0])],
+          );
         } else {
           return this.fail(this.operatorFailMessages[operator], [
             field,
