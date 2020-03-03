@@ -24,6 +24,6 @@ steps:
 - step: And the dateOfBirth field on marketo lead {{test.email}} should be less than 1991-01-05
 - step: And the lastName field on marketo lead {{test.email}} should not contain anything
 - step: And the middleName field on marketo lead {{test.email}} should contain test
-  failAfter: 2
+  failAfter: 20
 - step: And the middleName field on marketo lead {{test.email}} should not be Not Testing
 - step: Finally, delete the {{test.email}} marketo lead
