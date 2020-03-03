@@ -68,7 +68,9 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     const field = stepData.field;
 
     try {
-      const data: any = await this.client.findLeadByEmail(email);
+      const data: any = await this.client.findLeadByEmail(email, {
+        fields: [field],
+      });
 
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
         if (this.compare(operator, data.result[0][field], expectation)) {

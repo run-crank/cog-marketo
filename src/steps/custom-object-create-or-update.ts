@@ -87,7 +87,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
 
       // Getting link field value from lead
       const lead = await this.client.findLeadByEmail(linkValue, {
-        fields: ['email', linkField].join(','),
+        fields: [linkField],
       });
 
       // Check if leads are retrieved

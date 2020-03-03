@@ -1,4 +1,7 @@
 import * as Marketo from 'node-marketo-rest';
+
+const DEFAULT_FIELDS: string[] = ['email', 'createdAt', 'updatedAt', 'id', 'firstName', 'lastName'];
+
 export class LeadAwareMixin {
   client: Marketo;
   leadDescription: any;
@@ -7,9 +10,15 @@ export class LeadAwareMixin {
     return this.client.lead.createOrUpdate([lead], { lookupField: 'email' });
   }
 
-  public async findLeadByEmail(email: string) {
-    const fields = await this.describeLeadFields();
-    return this.client.lead.find('email', [email], { fields: fields.result.map(field => field.rest).map(rest => rest.name) });
+  public async findLeadByEmail(email: string, options: Record<string, any> = null) {
+    if (options) {
+      options.fields = options.fields || [];
+      options.fields = Array.from(new Set(options.fields.concat(DEFAULT_FIELDS))).join(','); //// Ensure unique fields
+      console.log(options.fields);
+      return this.client.lead.find('email', [email], options);
+    }
+
+    return this.client.lead.find('email', [email]);
   }
 
   public async deleteLeadById(leadId: number) {

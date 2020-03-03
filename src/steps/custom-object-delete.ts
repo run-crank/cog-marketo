@@ -67,7 +67,7 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
 
       // Getting link field value from lead
       const lead = await this.client.findLeadByEmail(linkValue, {
-        fields: ['email', linkField].join(','),
+        fields: [linkField],
       });
 
       if (!lead.result.length) {
