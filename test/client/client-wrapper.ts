@@ -6,6 +6,8 @@ import 'mocha';
 import { ClientWrapper } from '../../src/client/client-wrapper';
 import { Metadata } from 'grpc';
 
+const DEFAULT_FIELDS: string[] = ['email', 'createdAt', 'updatedAt', 'id', 'firstName', 'lastName'];
+
 chai.use(sinonChai);
 
 describe('ClientWrapper', () => {
@@ -97,13 +99,15 @@ describe('ClientWrapper', () => {
   it('findLeadByEmail (no options)', (done) => {
     const expectedEmail = 'test@example.com';
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
-    clientWrapperUnderTest.findLeadByEmail(expectedEmail);
+    clientWrapperUnderTest.findLeadByEmail(expectedEmail, {
+      fields: ['middleName', 'age'],
+    });
 
     setTimeout(() => {
       expect(marketoClientStub.lead.find).to.have.been.calledWith(
         'email',
         [expectedEmail],
-        { fields: ['email'] },
+        { fields: ['middleName', 'age', ...DEFAULT_FIELDS].join(',') },
       );
       done();
     });
@@ -112,13 +116,15 @@ describe('ClientWrapper', () => {
   it('findLeadByEmail (with options)', (done) => {
     const expectedEmail = 'test@example.com';
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
-    clientWrapperUnderTest.findLeadByEmail(expectedEmail);
+    clientWrapperUnderTest.findLeadByEmail(expectedEmail, {
+      fields: ['middleName', 'age'],
+    });
 
     setTimeout(() => {
       expect(marketoClientStub.lead.find).to.have.been.calledWith(
         'email',
         [expectedEmail],
-        { fields: ['email'] },
+        { fields: ['middleName', 'age', ...DEFAULT_FIELDS].join(',') },
       );
 
       done();
