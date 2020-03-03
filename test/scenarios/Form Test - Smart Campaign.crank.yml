@@ -27,5 +27,5 @@ steps:
 - step: And the lastName field on marketo lead {{test.email}} should be {{test.lastname}}
 - step: When I add the {{test.email}} marketo lead to smart campaign Dev - QA - Set Field value
 - step: Then the middleName field on marketo lead {{test.email}} should be Testing
-  failAfter: 5
+  failAfter: 30
 - step: Finally, delete the {{test.email}} Marketo lead.

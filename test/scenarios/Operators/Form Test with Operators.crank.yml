@@ -21,8 +21,8 @@ steps:
 - step: And I fill out input[id=Company] with {{test.company}}
 - step: And I fill out select[id=Country] with {{test.country}}
 - step: And I submit the form by clicking {{test.submit}}
-  failAfter: 20
 - step: Then the email field on marketo lead {{test.email}} should not be mktosop@yahoo.com
+  failAfter: 20
 - step: And the lastName field on marketo lead {{test.email}} should contain de
 - step: And the company field on marketo lead {{test.email}} should not contain Mkto
 - step: And the firstName field on marketo lead {{test.email}} should be {{test.firstname}}
