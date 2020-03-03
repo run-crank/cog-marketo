@@ -1,7 +1,7 @@
 /*tslint:disable:no-else-after-return*/
 
-import { BaseStep, Field, StepInterface } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
+import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
 import { isNullOrUndefined } from 'util';
 
 export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
@@ -22,6 +22,16 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
     type: FieldDefinition.Type.MAP,
     optionality: FieldDefinition.Optionality.OPTIONAL,
     description: 'Map of custom dedupeFields data whose keys are field names.',
+  }];
+  protected expectedRecords: ExpectedRecord[] = [{
+    id: 'customObject',
+    type: RecordDefinition.Type.KEYVALUE,
+    fields: [{
+      field: 'marketoGUID',
+      type: FieldDefinition.Type.STRING,
+      description: "Custom Object's Marketo GUID",
+    }],
+    dynamicFields: true,
   }];
 
   async executeStep(step: Step) {
@@ -105,7 +115,10 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
         // Delete using idField from customObject and its value from queried link
         const data = await this.client.deleteCustomObjectById(name, filteredQueryResult[0][customObject.result[0].idField]);
         if (data.success && data.result.length > 0 && data.result[0].status != 'skipped') {
-          return this.pass('Successfully deleted %s linked to %s.', [linkValue, name]);
+          const custObjRecord = this.keyValue('customObject', `Deleted ${customObject.result[0].displayName}`, {
+            marketoGUID: data.result[0].marketoGUID,
+          });
+          return this.pass('Successfully deleted %s linked to %s.', [linkValue, name], [custObjRecord]);
         } else {
           return this.fail('Failed to delete %s.: %s', [
             name,

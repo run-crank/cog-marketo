@@ -43,6 +43,7 @@ describe('CreateOrUpdateCustomObject', () => {
       success: true,
       result: [
         {
+          displayName: 'Any Custom Object',
           idField: 'anyIdField',
           dedupeFields: ['anyDedupeField'],
           relationships: [
@@ -83,7 +84,9 @@ describe('CreateOrUpdateCustomObject', () => {
     clientWrapperStub.createOrUpdateCustomObject.returns(Promise.resolve({
       success: true,
       result:[
-        {},
+        {
+          marketoGUID: '123-abc-456-etc',
+        },
       ],
     }));
     protoStep.setData(Struct.fromJavaScript({

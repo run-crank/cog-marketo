@@ -1,7 +1,7 @@
 /*tslint:disable:no-else-after-return*/
 
-import { BaseStep, Field, StepInterface } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
+import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
 
 export class DeleteLeadStep extends BaseStep implements StepInterface {
 
@@ -12,6 +12,16 @@ export class DeleteLeadStep extends BaseStep implements StepInterface {
     field: 'email',
     type: FieldDefinition.Type.EMAIL,
     description: "Lead's email address",
+  }];
+  protected expectedRecords: ExpectedRecord[] = [{
+    id: 'lead',
+    type: RecordDefinition.Type.KEYVALUE,
+    fields: [{
+      field: 'id',
+      type: FieldDefinition.Type.STRING,
+      description: "Lead's Marketo ID",
+    }],
+    dynamicFields: true,
   }];
 
   async executeStep(step: Step) {
@@ -31,7 +41,11 @@ export class DeleteLeadStep extends BaseStep implements StepInterface {
           deleteRes.result[0] &&
           deleteRes.result[0].status === 'deleted'
         ) {
-          return this.pass('Successfully deleted lead %s', [email]);
+          return this.pass(
+            'Successfully deleted lead %s',
+            [email],
+            [this.keyValue('lead', 'Deleted Lead', { id: data.result[0].id })],
+          );
         } else {
           return this.error('Unable to delete lead %s: %s', [email, data]);
         }

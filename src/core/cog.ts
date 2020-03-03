@@ -14,15 +14,25 @@ export class Cog implements ICogServiceServer {
   private steps: StepInterface[];
 
   constructor (private clientWrapperClass, private stepMap: Record<string, any> = {}) {
-    this.steps = fs.readdirSync(`${__dirname}/../steps`, { withFileTypes: true })
-      .filter((file: fs.Dirent) => {
-        return file.isFile() && (file.name.endsWith('.ts') || file.name.endsWith('.js'));
-      }).map((file: fs.Dirent) => {
-        const step = require(`${__dirname}/../steps/${file.name}`).Step;
+    this.steps = [].concat(...Object.values(this.getSteps(`${__dirname}/../steps`, clientWrapperClass)));
+  }
+
+  private getSteps(dir: string, clientWrapperClass) {
+    const steps = fs.readdirSync(dir, { withFileTypes: true })
+    .map((file: fs.Dirent) => {
+      if (file.isFile() && (file.name.endsWith('.ts') || file.name.endsWith('.js'))) {
+        const step = require(`${dir}/${file.name}`).Step;
         const stepInstance: StepInterface = new step(clientWrapperClass);
         this.stepMap[stepInstance.getId()] = step;
         return stepInstance;
-      });
+      } if (file.isDirectory()) {
+        return this.getSteps(`${__dirname}/../steps/${file.name}`, clientWrapperClass);
+      }
+    });
+
+    // Note: this filters out files that do not match the above (e.g. READMEs
+    // or .js.map files in built folder, etc).
+    return steps.filter(s => s !== undefined);
   }
 
   getManifest(
@@ -62,6 +72,7 @@ export class Cog implements ICogServiceServer {
   }
 
   runSteps(call: grpc.ServerDuplexStream<RunStepRequest, RunStepResponse>) {
+    const client = this.getClientWrapper(call.metadata);
     let processing = 0;
     let clientEnded = false;
 
@@ -69,7 +80,7 @@ export class Cog implements ICogServiceServer {
       processing = processing + 1;
 
       const step: Step = runStepRequest.getStep();
-      const response: RunStepResponse = await this.dispatchStep(step, call.metadata);
+      const response: RunStepResponse = await this.dispatchStep(step, call.metadata, client);
       call.write(response);
 
       processing = processing - 1;
@@ -100,8 +111,13 @@ export class Cog implements ICogServiceServer {
     callback(null, response);
   }
 
-  private async dispatchStep(step: Step, metadata: grpc.Metadata): Promise<RunStepResponse> {
-    const client = this.getClientWrapper(metadata);
+  private async dispatchStep(
+    step: Step,
+    metadata: grpc.Metadata,
+    client = null,
+  ): Promise<RunStepResponse> {
+    // If a pre-auth'd client was provided, use it. Otherwise, create one.
+    const wrapper = client || this.getClientWrapper(metadata);
     const stepId = step.getStepId();
     let response: RunStepResponse = new RunStepResponse();
 
@@ -113,7 +129,7 @@ export class Cog implements ICogServiceServer {
     }
 
     try {
-      const stepExecutor: StepInterface = new this.stepMap[stepId](client);
+      const stepExecutor: StepInterface = new this.stepMap[stepId](wrapper);
       response = await stepExecutor.executeStep(step);
     } catch (e) {
       response.setOutcome(RunStepResponse.Outcome.ERROR);

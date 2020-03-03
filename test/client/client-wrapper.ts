@@ -35,6 +35,14 @@ describe('ClientWrapper', () => {
     marketoClientStub.campaign = sinon.stub();
     marketoClientStub.campaign.getCampaigns = sinon.stub();
     marketoClientStub.campaign.request = sinon.stub();
+    marketoClientStub.lead.describe = sinon.stub();
+    marketoClientStub.lead.describe.returns(Promise.resolve({
+      result: [{
+        rest: {
+          name: 'email',
+        },
+      }],
+    }));
   });
 
   it('authentication', () => {
@@ -43,7 +51,7 @@ describe('ClientWrapper', () => {
       endpoint: 'https://abc-123-xyz.mktorest.example/rest',
       identity: 'https://abc-123-xyz.mktorest.example/identity',
       clientId: 'a-client-id',
-      clientSecret: 'a-client-secret'
+      clientSecret: 'a-client-secret',
     };
     metadata = new Metadata();
     metadata.add('endpoint', expectedCallArgs.endpoint.replace('/rest', ''));
@@ -82,32 +90,39 @@ describe('ClientWrapper', () => {
 
     expect(marketoClientStub.lead.createOrUpdate).to.have.been.calledWith(
       [expectedLead],
-      { lookupField: 'email' }
+      { lookupField: 'email' },
     );
   });
 
-  it('findLeadByEmail (no options)', () => {
+  it('findLeadByEmail (no options)', (done) => {
     const expectedEmail = 'test@example.com';
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
     clientWrapperUnderTest.findLeadByEmail(expectedEmail);
 
-    expect(marketoClientStub.lead.find).to.have.been.calledWith(
-      'email',
-      [expectedEmail]
-    );
+    setTimeout(() => {
+      expect(marketoClientStub.lead.find).to.have.been.calledWith(
+        'email',
+        [expectedEmail],
+        { fields: ['email'] },
+      );
+      done();
+    });
   });
 
-  it('findLeadByEmail (with options)', () => {
+  it('findLeadByEmail (with options)', (done) => {
     const expectedEmail = 'test@example.com';
-    const expectedOps = { fields: ['email', 'firstName'] };
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
-    clientWrapperUnderTest.findLeadByEmail(expectedEmail, expectedOps);
+    clientWrapperUnderTest.findLeadByEmail(expectedEmail);
 
-    expect(marketoClientStub.lead.find).to.have.been.calledWith(
-      'email',
-      [expectedEmail],
-      expectedOps
-    );
+    setTimeout(() => {
+      expect(marketoClientStub.lead.find).to.have.been.calledWith(
+        'email',
+        [expectedEmail],
+        { fields: ['email'] },
+      );
+
+      done();
+    });
   });
 
   it('deleteLeadById', () => {
@@ -168,7 +183,7 @@ describe('ClientWrapper', () => {
 
   it('getCustomObject', () => {
     const customObjectName = 'any';
-    const customObject = { anyField: 'anyValue'};
+    const customObject = { anyField: 'anyValue' };
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
     clientWrapperUnderTest.getCustomObject(customObjectName);
 
@@ -178,13 +193,16 @@ describe('ClientWrapper', () => {
     );
   });
 
-  it('queryCustomObject(mutiple searchFields)', () => {
+  it('queryCustomObject(mutiple searchFields)', async () => {
     const customObjectName = 'any';
     const filterType = 'anyFilterType';
     const searchFields = [{ anySearchField: 'anySearchFieldValue' }];
     const requestFields = ['anyField'];
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
-    clientWrapperUnderTest.queryCustomObject(customObjectName, filterType, searchFields, requestFields);
+    clientWrapperUnderTest.customObjectDescriptions = {
+      [customObjectName]: {result: [{fields: requestFields.map(f => {return {name: f}})}]},
+    },
+    await clientWrapperUnderTest.queryCustomObject(customObjectName, filterType, searchFields);
 
     expect(marketoClientStub._connection.postJson).to.have.been.calledWith(
       `/v1/customobjects/${customObjectName}.json`,
@@ -201,15 +219,19 @@ describe('ClientWrapper', () => {
     );
   });
 
-  it('queryCustomObject(single searchFields)', () => {
+  it('queryCustomObject(single searchFields)', async () => {
     const customObjectName = 'any';
     const filterType = 'anyFilterType';
     const searchFields = ['anySearchFieldValue'];
+    const requestFields = ['anyField'];
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
-    clientWrapperUnderTest.queryCustomObject(customObjectName, filterType, searchFields);
+    clientWrapperUnderTest.customObjectDescriptions = {
+      [customObjectName]: {result: [{fields: requestFields.map(f => {return {name: f}})}]},
+    },
+    await clientWrapperUnderTest.queryCustomObject(customObjectName, filterType, searchFields);
 
     expect(marketoClientStub._connection.get).to.have.been.calledWith(
-      `/v1/customobjects/${customObjectName}.json?filterType=${filterType}&filterValues=${searchFields.join(',')}`,
+      `/v1/customobjects/${customObjectName}.json?filterType=${filterType}&filterValues=${searchFields.join(',')}&fields=${requestFields.join(',')}`,
     );
   });
 

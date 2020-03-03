@@ -1,7 +1,8 @@
+import { titleCase } from 'title-case';
 /*tslint:disable:no-else-after-return*/
 
-import { BaseStep, Field, StepInterface } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
+import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
 
 import * as moment from 'moment';
 
@@ -27,6 +28,49 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
     type: FieldDefinition.Type.MAP,
     description: 'Represents additional parameters that should be used to validate an activity. The key in the object represents an attribute name and the value represents the expected value',
     optionality: FieldDefinition.Optionality.OPTIONAL,
+  }];
+  protected expectedRecords: ExpectedRecord[] = [{
+    id: 'matchedActivities',
+    type: RecordDefinition.Type.TABLE,
+    fields: [{
+      field: 'id',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Activity's Marketo ID",
+    }, {
+      field: 'leadId',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Lead's Marketo ID",
+    }, {
+      field: 'activityDate',
+      type: FieldDefinition.Type.DATETIME,
+      description: "Activity's Date",
+    }, {
+      field: 'activityTypeId',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Activity Type's ID",
+    }],
+    dynamicFields: true,
+  }, {
+    id: 'activity',
+    type: RecordDefinition.Type.KEYVALUE,
+    fields: [{
+      field: 'id',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Activity's Marketo ID",
+    }, {
+      field: 'leadId',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Lead's Marketo ID",
+    }, {
+      field: 'activityDate',
+      type: FieldDefinition.Type.DATETIME,
+      description: "Activity's Date",
+    }, {
+      field: 'activityTypeId',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Activity Type's ID",
+    }],
+    dynamicFields: true,
   }];
 
   async executeStep(step: Step) {
@@ -76,6 +120,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
       /* Expected attributes passed to test step. Translate object/map as array for easier comparison with actual attributes */
       const expectedAttributes = Object.keys(withAttributes).map((key) => { return { name: key, value: withAttributes[key] }; });
+      let validatedActivity;
 
       /* Assert Actual vs Expected attributes and pass if at least one activity matches attributes. Otherwise fail */
       if (expectedAttributes.length > 0) {
@@ -89,43 +134,38 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
           if (this.hasMatchingAttributes(actualAttributes, expectedAttributes)) {
             validated = true;
+            validatedActivity = activity;
             break;
           }
         }
 
         if (validated) {
-          return this.pass('Found %s activity for lead %s within the last %d minute(s), including attributes: \n\n', [
+          return this.pass(
+            'Found %s activity for lead %s within the last %d minute(s), including attributes: \n\n%s',
+            [stepData.activityTypeIdOrName, email, minutesAgo, JSON.stringify(expectedAttributes, null, 2)],
+            [this.createRecord(validatedActivity)],
+          );
+        }
+
+        const activityRecords = this.createRecords(activities);
+        activityRecords.setName(`Matched "${activityType.name}" Activities`);
+        return this.fail(
+          'Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s).',
+          [
             stepData.activityTypeIdOrName,
             email,
             minutesAgo,
-            JSON.stringify(expectedAttributes, null, 2),
-          ]);
-        }
-
-        const attributes = [];
-        activities.forEach((activity) => {
-          const obj = {};
-          activity.attributes.forEach((attr) => {
-            obj[attr.name] = attr.value;
-          });
-          attributes.push(obj);
-        });
-
-        return this.fail('Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s). Found the following similar activities:\n\n%s', [
-          stepData.activityTypeIdOrName,
-          email,
-          minutesAgo,
-          expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', '),
-          stepData.activityTypeIdOrName,
-          attributes.map(attr => JSON.stringify(attr, null, 2)).join('\n\n'),
-        ]);
+            expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', '),
+          ],
+          [activityRecords],
+        );
       }
 
-      return this.pass('%s activity found for lead %s within the last %d minute(s)', [
-        stepData.activityTypeIdOrName,
-        email,
-        minutesAgo,
-      ]);
+      return this.pass(
+        '%s activity found for lead %s within the last %d minute(s)',
+        [stepData.activityTypeIdOrName, email, minutesAgo],
+        [this.createRecord(activities[0])],
+      );
 
     } catch (e) {
       return this.error('There was an error checking activities for Marketo Lead: %s', [
@@ -155,6 +195,29 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
     }
 
     return result;
+  }
+
+  createRecords(activities) {
+    const records = [];
+    const headers = { id: 'ID', leadId: 'Lead ID', activityDate: 'Activity Date', activityTypeId: 'Activity Type ID' };
+    activities[0].attributes.forEach(attr => headers[attr.name] = titleCase(attr.name));
+
+    activities.forEach((activity) => {
+      activity.attributes.forEach(attr => activity[attr.name] = attr.value);
+      delete activity.attributes;
+      records.push(activity);
+    });
+
+    return this.table('matchedActivities', '', headers, records);
+  }
+
+  createRecord(activity) {
+    if (activity.hasOwnProperty('attributes')) {
+      activity.attributes.forEach(attr => activity[attr.name] = attr.value);
+      delete activity.attributes;
+    }
+
+    return this.keyValue('activity', 'Checked Activity', activity);
   }
 }
 

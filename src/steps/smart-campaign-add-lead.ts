@@ -1,7 +1,7 @@
 /*tslint:disable:no-else-after-return*/
 
-import { BaseStep, Field, StepInterface } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
+import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
 
 export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterface {
 
@@ -18,12 +18,72 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
     type: FieldDefinition.Type.ANYSCALAR,
     description: 'Smart campaign name or numeric id',
   }];
+  protected expectedRecords: ExpectedRecord[] = [{
+    id: 'lead',
+    type: RecordDefinition.Type.KEYVALUE,
+    fields: [{
+      field: 'id',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Lead's Marketo ID",
+    }, {
+      field: 'email',
+      type: FieldDefinition.Type.EMAIL,
+      description: "Lead's Email",
+    }, {
+      field: 'createdAt',
+      type: FieldDefinition.Type.DATETIME,
+      description: "Lead's Create Date",
+    }, {
+      field: 'updatedAt',
+      type: FieldDefinition.Type.DATETIME,
+      description: "Lead's Update Date",
+    }, {
+      field: 'firstName',
+      type: FieldDefinition.Type.STRING,
+      description: "Lead's First Name",
+    }, {
+      field: 'lastName',
+      type: FieldDefinition.Type.STRING,
+      description: "Lead's Last Name",
+    }],
+    dynamicFields: true,
+  }, {
+    id: 'campaign',
+    type: RecordDefinition.Type.KEYVALUE,
+    fields: [{
+      field: 'id',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Campaign's Marketo ID",
+    }, {
+      field: 'name',
+      type: FieldDefinition.Type.STRING,
+      description: "Campaign's Email",
+    }, {
+      field: 'description',
+      type: FieldDefinition.Type.STRING,
+      description: "Campaign's Description",
+    }, {
+      field: 'type',
+      type: FieldDefinition.Type.STRING,
+      description: "Campaign's Type",
+    }, {
+      field: 'updatedAt',
+      type: FieldDefinition.Type.DATETIME,
+      description: "Campaign's Update Date",
+    }, {
+      field: 'createdAt',
+      type: FieldDefinition.Type.DATETIME,
+      description: "Campaign's Update Date",
+    }],
+    dynamicFields: true,
+  }];
 
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
     const email = stepData.email;
     const campaign = stepData.campaign;
-    let campaigns = [{ id:campaign, isRequestable:true }];
+    let campaigns = [{ id: campaign, isRequestable: true }];
+    let campaignRecord;
 
     try {
       if (isNaN(campaign)) {
@@ -35,12 +95,24 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
         return this.error("Can't add %s to %s: found %d matching campaigns", [email, campaign, campaigns.length]);
       }
 
-      const lead: any = await this.client.findLeadByEmail(email);
-      const result = await this.client.addLeadToSmartCampaign(campaigns[0].id.toString(), lead.result[0]);
+      const findLeadResponse: any = await this.client.findLeadByEmail(email);
+
+      if (!findLeadResponse.result[0]) {
+        return this.fail(
+          'Couldn\'t find a lead associated with %s',
+          [email],
+        );
+      }
+
+      const leadToBeAdded = findLeadResponse.result[0];
+      const leadRecord = this.keyValue('lead', 'Lead To Be Added', leadToBeAdded);
+      campaignRecord = this.keyValue('campaign', 'Smart Campaign', campaigns[0]);
+
+      const result = await this.client.addLeadToSmartCampaign(campaigns[0].id.toString(), leadToBeAdded);
       if (result.success) {
-        return this.pass('Successfully added lead %s to smart campaign %s', [email, campaign]);
+        return this.pass('Successfully added lead %s to smart campaign %s', [email, campaign], [campaignRecord, leadRecord]);
       } else {
-        return this.fail('Unable to add lead %s to smart campaign %s: %s', [email, campaign, result.message]);
+        return this.fail('Unable to add lead %s to smart campaign %s: %s', [email, campaign, result.message], [campaignRecord, leadRecord]);
       }
     } catch (e) {
       if (e.message.includes("Trigger campaign needs to have a 'Campaign Requested' trigger")) {

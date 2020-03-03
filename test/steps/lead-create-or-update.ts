@@ -49,6 +49,7 @@ describe('CreateOrUpdateLeadByFieldStep', () => {
       result: [
         {
           status: 'success',
+          id: 123321,
         },
       ],
     }));
