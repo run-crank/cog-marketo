@@ -1,8 +1,8 @@
 import { isNullOrUndefined } from 'util';
 /*tslint:disable:no-else-after-return*/
 
-import { BaseStep, Field, StepInterface } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
+import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
 
 export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterface {
 
@@ -34,6 +34,24 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
     type: FieldDefinition.Type.MAP,
     optionality: FieldDefinition.Optionality.OPTIONAL,
     description: 'Map of custom dedupeFields data whose keys are field names.',
+  }];
+  protected expectedRecords: ExpectedRecord[] = [{
+    id: 'customObject',
+    type: RecordDefinition.Type.KEYVALUE,
+    fields: [{
+      field: 'marketoGUID',
+      type: FieldDefinition.Type.STRING,
+      description: "Custom Object's Marketo GUID",
+    }, {
+      field: 'createdAt',
+      type: FieldDefinition.Type.DATETIME,
+      description: "Custom Object's create date",
+    }, {
+      field: 'updatedAt',
+      type: FieldDefinition.Type.DATETIME,
+      description: "Custom Object's last update date",
+    }],
+    dynamicFields: true,
   }];
 
   async executeStep(step: Step) {
@@ -114,7 +132,7 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
           return this.error(
             'Error finding %s linked to %s: more than one matching custom object was found. Please provide dedupe field values to specify which object',
             [linkValue, name],
-            [this.table('matchedObjects', `Matched ${name}`, headers, filteredQueryResult)],
+            [this.table('matchedObjects', `Matched ${customObject.result[0].displayName}`, headers, filteredQueryResult)],
           );
         }
         // Field validation
@@ -122,7 +140,7 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
           return this.pass(
             this.operatorSuccessMessages[operator],
             [field, expectedValue],
-            [this.keyValue('customObject', `Checked ${name}`, filteredQueryResult[0])],
+            [this.keyValue('customObject', `Checked ${customObject.result[0].displayName}`, filteredQueryResult[0])],
           );
         } else {
           return this.fail(this.operatorFailMessages[operator], [

@@ -2,6 +2,7 @@ import * as Marketo from 'node-marketo-rest';
 import { isObject } from 'util';
 export class CustomObjectAwareMixin {
   client: Marketo;
+  customObjectDescriptions: any = {};
 
   public async createOrUpdateCustomObject(customObjectName, customObject: Record<string, any>) {
     return this.client._connection.postJson(
@@ -20,30 +21,39 @@ export class CustomObjectAwareMixin {
   }
 
   public async getCustomObject(customObjectName) {
-    return this.client._connection.get(
-      `/v1/customobjects/${customObjectName}/describe.json`,
-      { query: { _method: 'GET' } },
-    );
+    // This safely reduces the number of API calls that might have to be made
+    // in custom object field check steps, but is an imcomplete solution.
+    // @todo Incorporate true caching based on https://github.com/run-crank/cli/pull/40
+    if (!this.customObjectDescriptions || !this.customObjectDescriptions[customObjectName]) {
+      this.customObjectDescriptions = this.customObjectDescriptions || {};
+      this.customObjectDescriptions[customObjectName] = await this.client._connection.get(
+        `/v1/customobjects/${customObjectName}/describe.json`,
+        { query: { _method: 'GET' } },
+      );
+    }
+    return this.customObjectDescriptions[customObjectName];
   }
 
+  // @todo Update this method and callees to remove the requestFields argument.
   public async queryCustomObject(customObjectName, filterType, searchFields: any[], requestFields: string[] = []) {
+    const fields = await this.getCustomObject(customObjectName);
     if (isObject(searchFields[0])) {
       return this.client._connection.postJson(
         `/v1/customobjects/${customObjectName}.json`,
         {
           filterType: `${filterType}`,
-          fields: requestFields,
+          fields: fields.result[0].fields.map(field => field.name),
           input: searchFields,
         },
         {
           query: {
-            _method: 'GET' ,
+            _method: 'GET',
           },
         },
       );
     } else {
       return this.client._connection.get(
-        `/v1/customobjects/${customObjectName}.json?filterType=${filterType}&filterValues=${searchFields.join(',')}`,
+        `/v1/customobjects/${customObjectName}.json?filterType=${filterType}&filterValues=${searchFields.join(',')}&fields=${fields.result[0].fields.map(field => field.name).join(',')}`,
       );
     }
   }

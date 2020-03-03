@@ -193,13 +193,16 @@ describe('ClientWrapper', () => {
     );
   });
 
-  it('queryCustomObject(mutiple searchFields)', () => {
+  it('queryCustomObject(mutiple searchFields)', async () => {
     const customObjectName = 'any';
     const filterType = 'anyFilterType';
     const searchFields = [{ anySearchField: 'anySearchFieldValue' }];
     const requestFields = ['anyField'];
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
-    clientWrapperUnderTest.queryCustomObject(customObjectName, filterType, searchFields, requestFields);
+    clientWrapperUnderTest.customObjectDescriptions = {
+      [customObjectName]: {result: [{fields: requestFields.map(f => {return {name: f}})}]},
+    },
+    await clientWrapperUnderTest.queryCustomObject(customObjectName, filterType, searchFields);
 
     expect(marketoClientStub._connection.postJson).to.have.been.calledWith(
       `/v1/customobjects/${customObjectName}.json`,
@@ -216,15 +219,19 @@ describe('ClientWrapper', () => {
     );
   });
 
-  it('queryCustomObject(single searchFields)', () => {
+  it('queryCustomObject(single searchFields)', async () => {
     const customObjectName = 'any';
     const filterType = 'anyFilterType';
     const searchFields = ['anySearchFieldValue'];
+    const requestFields = ['anyField'];
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
-    clientWrapperUnderTest.queryCustomObject(customObjectName, filterType, searchFields);
+    clientWrapperUnderTest.customObjectDescriptions = {
+      [customObjectName]: {result: [{fields: requestFields.map(f => {return {name: f}})}]},
+    },
+    await clientWrapperUnderTest.queryCustomObject(customObjectName, filterType, searchFields);
 
     expect(marketoClientStub._connection.get).to.have.been.calledWith(
-      `/v1/customobjects/${customObjectName}.json?filterType=${filterType}&filterValues=${searchFields.join(',')}`,
+      `/v1/customobjects/${customObjectName}.json?filterType=${filterType}&filterValues=${searchFields.join(',')}&fields=${requestFields.join(',')}`,
     );
   });
 

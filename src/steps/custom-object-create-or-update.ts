@@ -1,8 +1,8 @@
 import { isNullOrUndefined } from 'util';
 /*tslint:disable:no-else-after-return*/
 
-import { BaseStep, Field, StepInterface } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition } from '../proto/cog_pb';
+import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
 
 export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInterface {
 
@@ -21,6 +21,16 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
     field: 'customObject',
     type: FieldDefinition.Type.MAP,
     description: 'Map of custom object data whose keys are field names.',
+  }];
+  protected expectedRecords: ExpectedRecord[] = [{
+    id: 'customObject',
+    type: RecordDefinition.Type.KEYVALUE,
+    fields: [{
+      field: 'marketoGUID',
+      type: FieldDefinition.Type.STRING,
+      description: "Custom Object's Marketo GUID",
+    }],
+    dynamicFields: false,
   }];
 
   async executeStep(step: Step) {
@@ -93,7 +103,10 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
       object[customObject.result[0].relationships[0].field] = lead.result[0][linkField];
       const data = await this.client.createOrUpdateCustomObject(name, object);
       if (data.success && data.result.length > 0 && data.result[0].status != 'skipped') {
-        return this.pass(`Successfully ${data.result[0].status} %s`, [name]);
+        const custObjRecord = this.keyValue('customObject', `Created ${customObject.result[0].displayName}`, {
+          marketoGUID: data.result[0].marketoGUID,
+        });
+        return this.pass(`Successfully ${data.result[0].status} %s`, [name], [custObjRecord]);
       } else {
         return this.fail('Failed to create %s.: %s', [
           name,

@@ -1,6 +1,7 @@
 import * as Marketo from 'node-marketo-rest';
 export class LeadAwareMixin {
   client: Marketo;
+  leadDescription: any;
 
   public async createOrUpdateLead(lead: Record<string, any>) {
     return this.client.lead.createOrUpdate([lead], { lookupField: 'email' });
@@ -21,6 +22,13 @@ export class LeadAwareMixin {
   }
 
   public async describeLeadFields() {
-    return this.client.lead.describe();
+    // This safely reduces the number of API calls that might have to be made
+    // in lead field check steps, but is an imcomplete solution.
+    // @todo Incorporate true caching based on https://github.com/run-crank/cli/pull/40
+    if (!this.leadDescription) {
+      this.leadDescription = await this.client.lead.describe();
+    }
+
+    return this.leadDescription;
   }
 }
