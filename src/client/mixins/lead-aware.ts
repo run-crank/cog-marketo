@@ -14,7 +14,6 @@ export class LeadAwareMixin {
     if (options) {
       options.fields = options.fields || [];
       options.fields = Array.from(new Set(options.fields.concat(DEFAULT_FIELDS))).join(','); //// Ensure unique fields
-      console.log(options.fields);
       return this.client.lead.find('email', [email], options);
     }
 
