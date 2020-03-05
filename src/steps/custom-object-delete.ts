@@ -106,10 +106,12 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
 
         // Error if query retrieves more than one result
         if (filteredQueryResult.length > 1) {
-          return this.error('Error deleting %s linked to %s: more than one matching custom object was found. Please provide dedupe field values to specify which object', [
-            linkValue,
-            name,
-          ]);
+          const headers = {};
+          Object.keys(filteredQueryResult[0]).forEach(key => headers[key] = key);
+          return this.error(
+            'Error deleting %s linked to %s: more than one matching custom object was found. Please provide dedupe field values to specify which object',
+            [linkValue, name],
+            [this.table('matchedObjects', `Matched ${customObject.result[0].displayName}`, headers, filteredQueryResult)]);
         }
 
         // Delete using idField from customObject and its value from queried link
