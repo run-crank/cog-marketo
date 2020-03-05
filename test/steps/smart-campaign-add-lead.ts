@@ -110,7 +110,7 @@ describe('AddLeadToSmartCampaignStep', () => {
     }));
     protoStep.setData(Struct.fromJavaScript({
       email: 'someEmail',
-      campaign: '111111',
+      campaign: '11111',
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getMessageFormat()).to.equal(expectedResponseMessage);
