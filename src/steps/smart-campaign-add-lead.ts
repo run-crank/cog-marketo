@@ -81,18 +81,24 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
     const email = stepData.email;
-    const campaign = stepData.campaign;
-    let campaigns = [{ id: campaign, isRequestable: true }];
+    const campaignIdOrName = stepData.campaign;
+    const isCampaignNameProvided = isNaN(campaignIdOrName);
+    let campaignObj: Record<string, any>;
     let campaignRecord;
 
     try {
-      if (isNaN(campaign)) {
-        const allCampaigns = await this.client.getCampaigns();
-        campaigns = allCampaigns.result.filter(c => c.name.toLowerCase() == campaign.toLowerCase());
-      }
+      const allCampaigns = await this.client.getCampaigns();
 
-      if (campaigns.length != 1) {
-        return this.error("Can't add %s to %s: found %d matching campaigns", [email, campaign, campaigns.length]);
+      campaignObj = allCampaigns.result.find(cam => cam.id == campaignIdOrName);
+
+      if (isCampaignNameProvided) {
+        const matchingCampaigns = allCampaigns.result.filter(c => c.name.toLowerCase() == campaignIdOrName.toLowerCase());
+
+        if (matchingCampaigns.length != 1) {
+          return this.error("Can't add %s to %s: found %d matching campaigns", [email, campaignIdOrName, matchingCampaigns.length]);
+        }
+
+        campaignObj = matchingCampaigns[0];
       }
 
       const findLeadResponse: any = await this.client.findLeadByEmail(email);
@@ -106,17 +112,17 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
 
       const leadToBeAdded = findLeadResponse.result[0];
       const leadRecord = this.keyValue('lead', 'Lead To Be Added', leadToBeAdded);
-      campaignRecord = this.keyValue('campaign', 'Smart Campaign', campaigns[0]);
+      campaignRecord = this.keyValue('campaign', 'Smart Campaign', campaignObj);
 
-      const result = await this.client.addLeadToSmartCampaign(campaigns[0].id.toString(), leadToBeAdded);
+      const result = await this.client.addLeadToSmartCampaign(campaignObj.id.toString(), leadToBeAdded);
       if (result.success) {
-        return this.pass('Successfully added lead %s to smart campaign %s', [email, campaign], [campaignRecord, leadRecord]);
+        return this.pass('Successfully added lead %s to smart campaign %s', [email, campaignIdOrName], [campaignRecord, leadRecord]);
       } else {
-        return this.fail('Unable to add lead %s to smart campaign %s: %s', [email, campaign, result.message], [campaignRecord, leadRecord]);
+        return this.fail('Unable to add lead %s to smart campaign %s: %s', [email, campaignIdOrName, result.message], [campaignRecord, leadRecord]);
       }
     } catch (e) {
       if (e.message.includes("Trigger campaign needs to have a 'Campaign Requested' trigger")) {
-        return this.error("Cannot add lead to smart campaign %s. In order to test this campaign, you must add a 'Campaign is Requested' trigger with 'Source' set to 'Web Service API'", [campaign]);
+        return this.error("Cannot add lead to smart campaign %s. In order to test this campaign, you must add a 'Campaign is Requested' trigger with 'Source' set to 'Web Service API'", [campaignIdOrName]);
       }
       return this.error('%s', [e.toString()]);
     }
