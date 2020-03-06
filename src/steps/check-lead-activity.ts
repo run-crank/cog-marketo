@@ -128,6 +128,16 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
         for (const activity of activities) {
           const primaryAttribute = this.getPrimaryAttribute(activityTypes, activity);
           const actualAttributes = activity.attributes;
+
+          Object.keys(activity).forEach((key) => {
+            if (key !== 'attributes') {
+              actualAttributes.push({
+                name: key,
+                value: activity[key],
+              });
+            }
+          });
+
           if (primaryAttribute) {
             actualAttributes.push(primaryAttribute);
           }
