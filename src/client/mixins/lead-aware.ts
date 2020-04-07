@@ -7,9 +7,28 @@ export class LeadAwareMixin {
     return this.client.lead.createOrUpdate([lead], { lookupField: 'email' });
   }
 
-  public async findLeadByEmail(email: string) {
+  public async findLeadByEmail(email: string, justInCaseField: string = null) {
     const fields = await this.describeLeadFields();
-    return this.client.lead.find('email', [email], { fields: fields.result.map(field => field.rest).map(rest => rest.name) });
+    let fieldList: string[] = fields.result.map((field: any) => field.rest.name);
+
+    // If the length of the get request would be over 7KB, then the request
+    // would fail. Instead, just hard-code the list of fields to be returned.
+    // @todo There is a bug in Marketo's workaround for this, preventing a
+    // "real" solution (e.g. PUT request with _method=GET and fields list in
+    // request body).
+    if (fieldList.join(',').length > 7168) {
+      fieldList = [
+        justInCaseField,
+        'email',
+        'updatedAt',
+        'createdAt',
+        'lastName',
+        'firstName',
+        'id',
+      ].filter(f => !!f);
+    }
+
+    return this.client.lead.find('email', [email], { fields: fieldList });
   }
 
   public async deleteLeadById(leadId: number) {
