@@ -1,6 +1,6 @@
 {
   "name": "cog-marketo",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Marketo Cog for use with Crank",
   "license": "MIT",
   "cog": {
