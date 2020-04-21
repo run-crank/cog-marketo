@@ -31,7 +31,7 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
       type: FieldDefinition.Type.STRING,
       description: "Custom Object's Marketo GUID",
     }],
-    dynamicFields: true,
+    dynamicFields: false,
   }];
 
   async executeStep(step: Step) {

@@ -18,10 +18,10 @@ export class DeleteLeadStep extends BaseStep implements StepInterface {
     type: RecordDefinition.Type.KEYVALUE,
     fields: [{
       field: 'id',
-      type: FieldDefinition.Type.STRING,
+      type: FieldDefinition.Type.NUMERIC,
       description: "Lead's Marketo ID",
     }],
-    dynamicFields: true,
+    dynamicFields: false,
   }];
 
   async executeStep(step: Step) {
