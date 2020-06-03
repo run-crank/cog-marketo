@@ -57,7 +57,7 @@
   "dependencies": {
     "@run-crank/utilities": "^0.2.0",
     "google-protobuf": "^3.8.0",
-    "grpc": "^1.21.1",
+    "grpc": "^1.24.2",
     "moment": "^2.24.0",
     "node-marketo-rest": "^0.7.5",
     "title-case": "^3.0.2",
