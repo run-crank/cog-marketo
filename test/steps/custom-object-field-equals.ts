@@ -29,7 +29,7 @@ describe('CustomObjectFieldEquals', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('CustomObjectFieldEqualsStep');
     expect(stepDef.getName()).to.equal('Check a field on a Marketo Custom Object');
-    expect(stepDef.getExpression()).to.equal('the (?<field>[a-zA-Z0-9_-]+) field on the (?<name>.+) marketo custom object linked to lead (?<linkValue>.+) should (?<operator>be less than|be greater than|be|contain|not be|not contain) (?<expectedValue>.+)');
+    expect(stepDef.getExpression()).to.equal('the (?<field>[a-zA-Z0-9_-]+) field on the (?<name>.+) marketo custom object linked to lead (?<linkValue>.+) should (?<operator>be set|not be set|be less than|be greater than|be|contain|not be|not contain) ?(?<expectedValue>.+)?');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.VALIDATION);
   });
 
@@ -365,4 +365,14 @@ describe('CustomObjectFieldEquals', () => {
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
   });
 
+  it('should respond with error when expectedValue is not passed and operators are not either "be set" or "not be set"', async () => {
+    protoStep.setData(Struct.fromJavaScript({
+      email: 'anyone@example.com',
+      field: 'someDateField',
+      operator: 'be',
+    }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+  });
 });

@@ -26,7 +26,7 @@ describe('LeadFieldEqualsStep', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('LeadFieldEqualsStep');
     expect(stepDef.getName()).to.equal('Check a field on a Marketo Lead');
-    expect(stepDef.getExpression()).to.equal('the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should (?<operator>be less than|be greater than|be|contain|not be|not contain) (?<expectation>.+)');
+    expect(stepDef.getExpression()).to.equal('the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should (?<operator>be set|not be set|be less than|be greater than|be|contain|not be|not contain) ?(?<expectation>.+)?');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.VALIDATION);
   });
 
@@ -53,7 +53,7 @@ describe('LeadFieldEqualsStep', () => {
 
     // Expectation field
     expect(fields[3].key).to.equal('expectation');
-    expect(fields[3].optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
+    expect(fields[3].optionality).to.equal(FieldDefinition.Optionality.OPTIONAL);
     expect(fields[3].type).to.equal(FieldDefinition.Type.ANYSCALAR);
   });
 
@@ -63,11 +63,13 @@ describe('LeadFieldEqualsStep', () => {
     protoStep.setData(Struct.fromJavaScript({
       email: expectedEmail,
       field: expectedField,
+      operator: 'be',
+      expectation: expectedEmail,
     }));
 
     await stepUnderTest.executeStep(protoStep);
     expect(clientWrapperStub.findLeadByEmail).to.have.been.calledWith(
-      expectedEmail
+      expectedEmail,
     );
   });
 
@@ -386,4 +388,14 @@ describe('LeadFieldEqualsStep', () => {
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
   });
 
+  it('should respond with error when expectedValue is not passed and operators are not either "be set" or "not be set"', async () => {
+    protoStep.setData(Struct.fromJavaScript({
+      email: 'anyone@example.com',
+      field: 'someDateField',
+      operator: 'be',
+    }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+  });
 });
