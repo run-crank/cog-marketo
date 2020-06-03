@@ -4,12 +4,13 @@ import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-ste
 import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
 import * as util from '@run-crank/utilities';
 import { baseOperators } from '../client/constants/operators';
+import { isNullOrUndefined } from 'util';
 
 export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
 
   protected stepName: string = 'Check a field on a Marketo Lead';
   // tslint:disable-next-line:max-line-length
-  protected stepExpression: string = 'the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should (?<operator>be less than|be greater than|be|contain|not be|not contain) (?<expectation>.+)';
+  protected stepExpression: string = 'the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should (?<operator>be set|not be set|be less than|be greater than|be|contain|not be|not contain) ?(?<expectation>.+)?';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
     field: 'email',
@@ -23,10 +24,11 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     field: 'operator',
     type: FieldDefinition.Type.STRING,
     optionality: FieldDefinition.Optionality.OPTIONAL,
-    description: 'Check Logic (be, not be, contain, not contain, be greater than, or be less than)',
+    description: 'Check Logic (be, not be, contain, not contain, be greater than, be less than, be set, or not be set)',
   }, {
     field: 'expectation',
     type: FieldDefinition.Type.ANYSCALAR,
+    optionality: FieldDefinition.Optionality.OPTIONAL,
     description: 'Expected field value',
   }];
   protected expectedRecords: ExpectedRecord[] = [{
@@ -62,25 +64,29 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
 
   async executeStep(step: Step) {
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
-    const expectation = stepData.expectation;
+    const expectedValue = stepData.expectation;
     const email = stepData.email;
     const operator: string = stepData.operator || 'be';
     const field = stepData.field;
+
+    if (isNullOrUndefined(expectedValue) && !(operator == 'be set' || operator == 'not be set')) {
+      return this.error("The operator '%s' requires an expected value. Please provide one.", [operator]);
+    }
 
     try {
       const data: any = await this.client.findLeadByEmail(email, field);
 
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
-        if (this.compare(operator, data.result[0][field], expectation)) {
+        if (this.compare(operator, data.result[0][field], expectedValue)) {
           return this.pass(
             this.operatorSuccessMessages[operator],
-            [field, expectation],
+            [field, expectedValue],
             [this.createRecord(data.result[0])],
           );
         } else {
           return this.fail(
             this.operatorFailMessages[operator],
-            [field, expectation, data.result[0][field]],
+            [field, expectedValue, data.result[0][field]],
             [this.createRecord(data.result[0])],
           );
         }
