@@ -7,7 +7,7 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../prot
 export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterface {
 
   protected stepName: string = 'Check a field on a Marketo Custom Object';
-  protected stepExpression: string = 'the (?<field>[a-zA-Z0-9_-]+) field on the (?<name>.+) marketo custom object linked to lead (?<linkValue>.+) should (?<operator>be less than|be greater than|be|contain|not be|not contain) (?<expectedValue>.+)';
+  protected stepExpression: string = 'the (?<field>[a-zA-Z0-9_-]+) field on the (?<name>.+) marketo custom object linked to lead (?<linkValue>.+) should (?<operator>be set|not be set|be less than|be greater than|be|contain|not be|not contain) ?(?<expectedValue>.+)?';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
     field: 'name',
@@ -24,10 +24,11 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
   }, {
     field: 'operator',
     type: FieldDefinition.Type.STRING,
-    description: 'Check Logic (be, not be, contain, not contain, be greater than, or be less than)',
+    description: 'Check Logic (be, not be, contain, not contain, be greater than, be less than, be set, or not be set)',
   }, {
     field: 'expectedValue',
     type: FieldDefinition.Type.ANYSCALAR,
+    optionality: FieldDefinition.Optionality.OPTIONAL,
     description: 'The expected value of the field',
   }, {
     field: 'dedupeFields',
@@ -62,6 +63,10 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
     const operator = stepData.operator;
     const expectedValue = stepData.expectedValue;
     const dedupeFields = stepData.dedupeFields;
+
+    if (isNullOrUndefined(expectedValue) && !(operator == 'be set' || operator == 'not be set')) {
+      return this.error("The operator '%s' requires an expected value. Please provide one.", [operator]);
+    }
 
     try {
       const customObject = await this.client.getCustomObject(name);
