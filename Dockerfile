@@ -3,7 +3,6 @@ WORKDIR /app
 COPY package.json package-lock.json tsconfig.json ./
 COPY src ./src
 RUN npm install \
-  || (apk --no-cache add --virtual builds-deps build-base python && npm install) \
   && npm run build-ts \
   && npm prune --production
 
