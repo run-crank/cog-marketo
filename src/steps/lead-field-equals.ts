@@ -80,13 +80,13 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
         if (this.compare(operator, data.result[0][field], expectedValue)) {
           return this.pass(
             this.operatorSuccessMessages[operator],
-            [field, expectedValue],
+            [field, expectedValue || ''],
             [this.createRecord(data.result[0])],
           );
         } else {
           return this.fail(
             this.operatorFailMessages[operator],
-            [field, expectedValue, data.result[0][field]],
+            [field, expectedValue || '', data.result[0][field]],
             [this.createRecord(data.result[0])],
           );
         }

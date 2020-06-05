@@ -144,13 +144,13 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
         if (this.compare(operator, String(filteredQueryResult[0][field]), expectedValue)) {
           return this.pass(
             this.operatorSuccessMessages[operator],
-            [field, expectedValue],
+            [field, expectedValue || ''],
             [this.keyValue('customObject', `Checked ${customObject.result[0].displayName}`, filteredQueryResult[0])],
           );
         } else {
           return this.fail(
             this.operatorFailMessages[operator],
-            [field, expectedValue, String(filteredQueryResult[0][field])],
+            [field, expectedValue || '', String(filteredQueryResult[0][field])],
             [this.keyValue('customObject', `Checked ${customObject.result[0].displayName}`, filteredQueryResult[0])]);
         }
       } else {
