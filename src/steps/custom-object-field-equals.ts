@@ -7,7 +7,7 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../prot
 export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterface {
 
   protected stepName: string = 'Check a field on a Marketo Custom Object';
-  protected stepExpression: string = 'the (?<field>[a-zA-Z0-9_-]+) field on the (?<name>.+) marketo custom object linked to lead (?<linkValue>.+) should (?<operator>be set|not be set|be less than|be greater than|be|contain|not be|not contain) ?(?<expectedValue>.+)?';
+  protected stepExpression: string = 'the (?<field>[a-zA-Z0-9_-]+) field on the (?<name>.+) marketo custom object linked to lead (?<linkValue>.+) should (?<operator>be set|not be set|be less than|be greater than|be one of|be|contain|not be one of|not be|not contain) ?(?<expectedValue>.+)?';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
     field: 'name',
@@ -24,7 +24,7 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
   }, {
     field: 'operator',
     type: FieldDefinition.Type.STRING,
-    description: 'Check Logic (be, not be, contain, not contain, be greater than, be less than, be set, or not be set)',
+    description: 'Check Logic (be, not be, contain, not contain, be greater than, be less than, be set, not be set, be one of, or not be one of)',
   }, {
     field: 'expectedValue',
     type: FieldDefinition.Type.ANYSCALAR,
