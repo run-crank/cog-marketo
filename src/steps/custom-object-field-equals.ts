@@ -150,7 +150,7 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
         } else {
           return this.fail(
             this.operatorFailMessages[operator],
-            [field, expectedValue || '', String(filteredQueryResult[0][field])],
+            [field, expectedValue || String(filteredQueryResult[0][field]), String(filteredQueryResult[0][field])],
             [this.keyValue('customObject', `Checked ${customObject.result[0].displayName}`, filteredQueryResult[0])]);
         }
       } else {
