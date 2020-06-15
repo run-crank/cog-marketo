@@ -141,20 +141,19 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
           );
         }
 
-        // Transform the value to `String`. However, cater for `null` or `undefined` by defaulting to `''` first
-        const actualValue = String(filteredQueryResult[0][field] || '');
-
         // Field validation
-        if (this.compare(operator, actualValue, expectedValue)) {
+        if (this.compare(operator, filteredQueryResult[0][field], expectedValue)) {
           return this.pass(
             this.operatorSuccessMessages[operator],
             [field, expectedValue || ''],
             [this.keyValue('customObject', `Checked ${customObject.result[0].displayName}`, filteredQueryResult[0])],
           );
         } else {
+          // Cater for `null` or `undefined` by defaulting to `''`.
+          const printValue = [null, undefined].includes(filteredQueryResult[0][field]) ? '' : filteredQueryResult[0][field];
           return this.fail(
             this.operatorFailMessages[operator],
-            [field, expectedValue || actualValue, actualValue],
+            [field, expectedValue || printValue, printValue],
             [this.keyValue('customObject', `Checked ${customObject.result[0].displayName}`, filteredQueryResult[0])]);
         }
       } else {
