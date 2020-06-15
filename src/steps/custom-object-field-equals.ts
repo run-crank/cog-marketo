@@ -140,8 +140,12 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
             [this.table('matchedObjects', `Matched ${customObject.result[0].displayName}`, headers, filteredQueryResult)],
           );
         }
+
+        // Transform the value to `String`. However, cater for `null` or `undefined` by defaulting to `''` first
+        const actualValue = String(filteredQueryResult[0][field] || '');
+
         // Field validation
-        if (this.compare(operator, String(filteredQueryResult[0][field]), expectedValue)) {
+        if (this.compare(operator, actualValue, expectedValue)) {
           return this.pass(
             this.operatorSuccessMessages[operator],
             [field, expectedValue || ''],
@@ -150,7 +154,7 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
         } else {
           return this.fail(
             this.operatorFailMessages[operator],
-            [field, expectedValue || '', String(filteredQueryResult[0][field])],
+            [field, expectedValue || actualValue, actualValue],
             [this.keyValue('customObject', `Checked ${customObject.result[0].displayName}`, filteredQueryResult[0])]);
         }
       } else {
