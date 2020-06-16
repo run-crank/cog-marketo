@@ -63,6 +63,7 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
     const operator = stepData.operator;
     const expectedValue = stepData.expectedValue;
     const dedupeFields = stepData.dedupeFields;
+    const isSetOperator = ['be set', 'not be set'].includes(operator);
 
     if (isNullOrUndefined(expectedValue) && !(operator == 'be set' || operator == 'not be set')) {
       return this.error("The operator '%s' requires an expected value. Please provide one.", [operator]);
@@ -153,7 +154,7 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
           const printValue = [null, undefined].includes(filteredQueryResult[0][field]) ? '' : filteredQueryResult[0][field];
           return this.fail(
             this.operatorFailMessages[operator],
-            [field, expectedValue || printValue, printValue],
+            [field, expectedValue || printValue, isSetOperator ? '' : printValue],
             [this.keyValue('customObject', `Checked ${customObject.result[0].displayName}`, filteredQueryResult[0])]);
         }
       } else {
