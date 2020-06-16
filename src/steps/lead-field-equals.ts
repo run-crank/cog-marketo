@@ -85,9 +85,10 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
             [this.createRecord(data.result[0])],
           );
         } else {
+          const printValue = [null, undefined].includes(data.result[0][field]) ? '' : data.result[0][field];
           return this.fail(
             this.operatorFailMessages[operator],
-            [field, expectedValue || (data.result[0][field] || ''), isSetOperator ? '' : data.result[0][field]],
+            [field, expectedValue || printValue, isSetOperator ? '' : printValue],
             [this.createRecord(data.result[0])],
           );
         }
