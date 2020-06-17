@@ -68,7 +68,6 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     const email = stepData.email;
     const operator: string = stepData.operator || 'be';
     const field = stepData.field;
-    const isSetOperator = ['be set', 'not be set'].includes(operator);
 
     if (isNullOrUndefined(expectedValue) && !(operator == 'be set' || operator == 'not be set')) {
       return this.error("The operator '%s' requires an expected value. Please provide one.", [operator]);
@@ -78,20 +77,11 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
       const data: any = await this.client.findLeadByEmail(email, field);
 
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
-        if (this.compare(operator, data.result[0][field], expectedValue)) {
-          return this.pass(
-            this.operatorSuccessMessages[operator],
-            [field, expectedValue || ''],
-            [this.createRecord(data.result[0])],
-          );
-        } else {
-          const printValue = [null, undefined].includes(data.result[0][field]) ? '' : data.result[0][field];
-          return this.fail(
-            this.operatorFailMessages[operator],
-            [field, expectedValue || printValue, isSetOperator ? '' : printValue],
-            [this.createRecord(data.result[0])],
-          );
-        }
+        const result = this.assert(operator, data.result[0][field], expectedValue, field);
+
+        return result.valid ? this.pass(result.message, [], [this.createRecord(data.result[0])])
+          : this.fail(result.message, [], [this.createRecord(data.result[0])]);
+
       } else {
         if (data.result && data.result[0] && !data.result[0][field]) {
           return this.error(
