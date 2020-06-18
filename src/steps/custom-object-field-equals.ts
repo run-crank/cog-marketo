@@ -143,20 +143,10 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
         }
 
         // Field validation
-        if (this.compare(operator, filteredQueryResult[0][field], expectedValue)) {
-          return this.pass(
-            this.operatorSuccessMessages[operator],
-            [field, expectedValue || ''],
-            [this.keyValue('customObject', `Checked ${customObject.result[0].displayName}`, filteredQueryResult[0])],
-          );
-        } else {
-          // Cater for `null` or `undefined` by defaulting to `''`.
-          const printValue = [null, undefined].includes(filteredQueryResult[0][field]) ? '' : filteredQueryResult[0][field];
-          return this.fail(
-            this.operatorFailMessages[operator],
-            [field, expectedValue || printValue, isSetOperator ? '' : printValue],
-            [this.keyValue('customObject', `Checked ${customObject.result[0].displayName}`, filteredQueryResult[0])]);
-        }
+        const result = this.assert(operator, filteredQueryResult[0][field], expectedValue, field);
+        const record = this.keyValue('customObject', `Checked ${customObject.result[0].displayName}`, filteredQueryResult[0]);
+
+        return result.valid ? this.pass(result.message, [], [record]) : this.fail(result.message, [], [record]);
       } else {
         return this.fail('Failed to query %s linked to %s.: %s', [
           name,
