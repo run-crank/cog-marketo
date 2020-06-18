@@ -7,7 +7,7 @@ export class LeadAwareMixin {
     return this.client.lead.createOrUpdate([lead], { lookupField: 'email' });
   }
 
-  public async findLeadByEmail(email: string, justInCaseField: string = null) {
+  public async findLeadByEmail(email: string, justInCaseField: string = null, partitionId: number = null) {
     const fields = await this.describeLeadFields();
     let fieldList: string[] = fields.result.map((field: any) => field.rest.name);
 
@@ -25,10 +25,20 @@ export class LeadAwareMixin {
         'lastName',
         'firstName',
         'id',
+        'leadPartitionId',
       ].filter(f => !!f);
     }
 
-    return this.client.lead.find('email', [email], { fields: fieldList });
+    const response = await this.client.lead.find('email', [email], { fields: fieldList });
+
+    // If a partition ID was provided, filter the returned leads accordingly.
+    if (partitionId && response && response.result && response.result.length) {
+      response.result = response.result.filter((lead: Record<string, any>) => {
+        return lead.leadPartitionId && lead.leadPartitionId === partitionId;
+      });
+    }
+
+    return response;
   }
 
   public async deleteLeadById(leadId: number) {
