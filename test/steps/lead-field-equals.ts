@@ -55,21 +55,30 @@ describe('LeadFieldEqualsStep', () => {
     expect(fields[3].key).to.equal('expectation');
     expect(fields[3].optionality).to.equal(FieldDefinition.Optionality.OPTIONAL);
     expect(fields[3].type).to.equal(FieldDefinition.Type.ANYSCALAR);
+
+    // Partition ID field
+    expect(fields[4].key).to.equal('partitionId');
+    expect(fields[4].optionality).to.equal(FieldDefinition.Optionality.OPTIONAL);
+    expect(fields[4].type).to.equal(FieldDefinition.Type.NUMERIC);
   });
 
   it('should call the client wrapper with the expected args', async () => {
     const expectedField: string = 'firstName';
     const expectedEmail: string = 'expected@example.com';
+    const expectedPartitionId: number = 3;
     protoStep.setData(Struct.fromJavaScript({
       email: expectedEmail,
       field: expectedField,
       operator: 'be',
       expectation: expectedEmail,
+      partitionId: expectedPartitionId,
     }));
 
     await stepUnderTest.executeStep(protoStep);
     expect(clientWrapperStub.findLeadByEmail).to.have.been.calledWith(
       expectedEmail,
+      sinon.match.any,
+      expectedPartitionId,
     );
   });
 

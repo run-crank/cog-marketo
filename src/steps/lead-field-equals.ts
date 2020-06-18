@@ -30,6 +30,12 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     type: FieldDefinition.Type.ANYSCALAR,
     optionality: FieldDefinition.Optionality.OPTIONAL,
     description: 'Expected field value',
+  }, {
+    field: 'partitionId',
+    type: FieldDefinition.Type.NUMERIC,
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+    description: 'ID of partition lead belongs to',
+    help: 'Only necessary to provide if Marketo has been configured to allow duplicate leads by email.',
   }];
   protected expectedRecords: ExpectedRecord[] = [{
     id: 'lead',
@@ -67,6 +73,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     const expectedValue = stepData.expectation;
     const email = stepData.email;
     const operator: string = stepData.operator || 'be';
+    const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
     const field = stepData.field;
 
     if (isNullOrUndefined(expectedValue) && !(operator == 'be set' || operator == 'not be set')) {
@@ -74,7 +81,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     }
 
     try {
-      const data: any = await this.client.findLeadByEmail(email, field);
+      const data: any = await this.client.findLeadByEmail(email, field, partitionId);
 
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
         const result = this.assert(operator, data.result[0][field], expectedValue, field);
@@ -90,7 +97,10 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
             [this.createRecord(data.result[0])],
           );
         } else {
-          return this.error("Couldn't find a lead associated with %s", [email]);
+          return this.error("Couldn't find a lead associated with %s%s", [
+            email,
+            partitionId ? ` in partition ${partitionId}` : '',
+          ]);
         }
       }
     } catch (e) {
