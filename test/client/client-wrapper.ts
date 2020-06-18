@@ -125,6 +125,32 @@ describe('ClientWrapper', () => {
     });
   });
 
+  it('findLeadByEmail (with partition id)', (done) => {
+    const expectedEmail = 'test-in-partition-2@example.com';
+    const expectedPartition = 1;
+
+    marketoClientStub.lead.find = sinon.stub();
+    marketoClientStub.lead.find.returns(Promise.resolve({
+      result: [{
+        email: `not-${expectedEmail}`,
+        leadPartitionId: expectedPartition * 2,
+      }, {
+        email: expectedEmail,
+        leadPartitionId: expectedPartition,
+      }],
+    }));
+
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+    clientWrapperUnderTest.findLeadByEmail(expectedEmail, null, expectedPartition).then((res) => {
+      try {
+        expect(res.result[0].email).to.equal(expectedEmail);
+      } catch (e) {
+        return done(e);
+      }
+      done();
+    });
+  });
+
   it('deleteLeadById', () => {
     const expectedId = 123;
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
