@@ -47,6 +47,11 @@ describe('AddLeadToSmartCampaignStep', () => {
     expect(fields[1].key).to.equal('campaign');
     expect(fields[1].optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
     expect(fields[1].type).to.equal(FieldDefinition.Type.ANYSCALAR);
+
+    // Partition ID field
+    expect(fields[2].key).to.equal('partitionId');
+    expect(fields[2].optionality).to.equal(FieldDefinition.Optionality.OPTIONAL);
+    expect(fields[2].type).to.equal(FieldDefinition.Type.NUMERIC);
   });
 
   it('should respond with success if the marketo executes succesfully with non numeric campaign', async () => {
