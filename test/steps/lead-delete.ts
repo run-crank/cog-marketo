@@ -87,7 +87,7 @@ describe('DeleteLeadStep', () => {
 
   it('should respond with error if the marketo could not find lead', async () => {
     const expectedEmail: string = 'sampleEmail@email.com';
-    const expectedMessage: string = 'a lead with that email address does not exist.';
+    const expectedMessage: string = 'a lead with that email address does not exist';
     protoStep.setData(Struct.fromJavaScript({
       email: expectedEmail,
     }));

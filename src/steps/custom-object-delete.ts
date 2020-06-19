@@ -22,6 +22,12 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
     type: FieldDefinition.Type.MAP,
     optionality: FieldDefinition.Optionality.OPTIONAL,
     description: 'Map of custom dedupeFields data whose keys are field names.',
+  }, {
+    field: 'partitionId',
+    type: FieldDefinition.Type.NUMERIC,
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+    description: 'ID of partition lead belongs to',
+    help: 'Only necessary to provide if Marketo has been configured to allow duplicate leads by email.',
   }];
   protected expectedRecords: ExpectedRecord[] = [{
     id: 'customObject',
@@ -39,6 +45,7 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
     const name = stepData.name;
     const linkValue = stepData.linkValue;
     const dedupeFields = stepData.dedupeFields;
+    const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
 
     try {
       const customObject = await this.client.getCustomObject(name);
@@ -66,12 +73,14 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
                        : customObject.result[0].relationships[0].relatedTo.field;
 
       // Getting link field value from lead
-      const lead = await this.client.findLeadByEmail(linkValue, {
-        fields: ['email', linkField].join(','),
-      });
+      const lead = await this.client.findLeadByEmail(linkValue, { fields: ['email', linkField].join(',') }, partitionId);
 
       if (!lead.result.length) {
-        return this.error('Error deleting %s: the %s lead does not exist.', [name, linkValue]);
+        return this.error('Error deleting %s: the %s lead does not exist%s.', [
+          name,
+          linkValue,
+          partitionId ? ` in partition ${partitionId}` : '',
+        ]);
       }
 
       // Assign Query Params

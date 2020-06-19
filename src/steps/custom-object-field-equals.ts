@@ -35,6 +35,12 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
     type: FieldDefinition.Type.MAP,
     optionality: FieldDefinition.Optionality.OPTIONAL,
     description: 'Map of custom dedupeFields data whose keys are field names.',
+  }, {
+    field: 'partitionId',
+    type: FieldDefinition.Type.NUMERIC,
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+    description: 'ID of partition lead belongs to',
+    help: 'Only necessary to provide if Marketo has been configured to allow duplicate leads by email.',
   }];
   protected expectedRecords: ExpectedRecord[] = [{
     id: 'customObject',
@@ -63,7 +69,7 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
     const operator = stepData.operator;
     const expectedValue = stepData.expectedValue;
     const dedupeFields = stepData.dedupeFields;
-    const isSetOperator = ['be set', 'not be set'].includes(operator);
+    const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
 
     if (isNullOrUndefined(expectedValue) && !(operator == 'be set' || operator == 'not be set')) {
       return this.error("The operator '%s' requires an expected value. Please provide one.", [operator]);
@@ -94,11 +100,15 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
                       : customObject.result[0].relationships[0].relatedTo.field;
 
       // Getting link field value from lead
-      const lead = await this.client.findLeadByEmail(linkValue);
+      const lead = await this.client.findLeadByEmail(linkValue, null, partitionId);
 
       // Check if lead exists
       if (!lead.result.length) {
-        return this.error('Error finding %s: the %s lead does not exist.', [name, linkValue]);
+        return this.error('Error finding %s: the %s lead does not exist%s.', [
+          name,
+          linkValue,
+          partitionId ? ` in partition ${partitionId}` : '',
+        ]);
       }
 
       // Assign Query Params

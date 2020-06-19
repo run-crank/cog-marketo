@@ -12,11 +12,16 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
     field: 'email',
     type: FieldDefinition.Type.EMAIL,
     description: "Lead's email address",
-  },
-  {
+  }, {
     field: 'campaign',
     type: FieldDefinition.Type.ANYSCALAR,
     description: 'Smart campaign name or numeric id',
+  }, {
+    field: 'partitionId',
+    type: FieldDefinition.Type.NUMERIC,
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+    description: 'ID of partition lead belongs to',
+    help: 'Only necessary to provide if Marketo has been configured to allow duplicate leads by email.',
   }];
   protected expectedRecords: ExpectedRecord[] = [{
     id: 'lead',
@@ -82,6 +87,7 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
     const stepData: any = step.getData().toJavaScript();
     const email = stepData.email;
     const campaignIdOrName = stepData.campaign;
+    const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
     const isCampaignNameProvided = isNaN(campaignIdOrName);
     let campaignObj: Record<string, any>;
     let campaignRecord;
@@ -101,12 +107,14 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
         campaignObj = matchingCampaigns[0];
       }
 
-      const findLeadResponse: any = await this.client.findLeadByEmail(email);
+      const findLeadResponse: any = await this.client.findLeadByEmail(email, null, partitionId);
 
       if (!findLeadResponse.result[0]) {
         return this.fail(
-          'Couldn\'t find a lead associated with %s',
-          [email],
+          'Couldn\'t find a lead associated with %s%s', [
+            email,
+            partitionId ? ` in partition ${partitionId}` : '',
+          ],
         );
       }
 
