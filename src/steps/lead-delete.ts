@@ -12,6 +12,12 @@ export class DeleteLeadStep extends BaseStep implements StepInterface {
     field: 'email',
     type: FieldDefinition.Type.EMAIL,
     description: "Lead's email address",
+  }, {
+    field: 'partitionId',
+    type: FieldDefinition.Type.NUMERIC,
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+    description: 'ID of partition lead belongs to',
+    help: 'Only necessary to provide if Marketo has been configured to allow duplicate leads by email.',
   }];
   protected expectedRecords: ExpectedRecord[] = [{
     id: 'lead',
@@ -27,10 +33,11 @@ export class DeleteLeadStep extends BaseStep implements StepInterface {
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
     const email = stepData.email;
+    const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
 
     try {
       // @todo Consider refactoring this logic into the ClientWrapper.
-      const data: any = await this.client.findLeadByEmail(email);
+      const data: any = await this.client.findLeadByEmail(email, null, partitionId);
 
       if (data.success && data.result && data.result[0] && data.result[0].id) {
         const deleteRes: any = await this.client.deleteLeadById(data.result[0].id);
@@ -50,9 +57,10 @@ export class DeleteLeadStep extends BaseStep implements StepInterface {
           return this.error('Unable to delete lead %s: %s', [email, data]);
         }
       } else {
-        return this.error('Unable to delete lead %s: %s', [
+        return this.error('Unable to delete lead %s: %s%s', [
           email,
-          'a lead with that email address does not exist.',
+          'a lead with that email address does not exist',
+          partitionId ? ` in partition ${partitionId}` : '',
         ]);
       }
     } catch (e) {
