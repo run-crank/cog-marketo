@@ -28,6 +28,12 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
     type: FieldDefinition.Type.MAP,
     description: 'Represents additional parameters that should be used to validate an activity. The key in the object represents an attribute name and the value represents the expected value',
     optionality: FieldDefinition.Optionality.OPTIONAL,
+  }, {
+    field: 'partitionId',
+    type: FieldDefinition.Type.NUMERIC,
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+    description: 'ID of partition lead belongs to',
+    help: 'Only necessary to provide if Marketo has been configured to allow duplicate leads by email.',
   }];
   protected expectedRecords: ExpectedRecord[] = [{
     id: 'activity',
@@ -58,18 +64,20 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
     let activityTypeIdOrName = stepData.activityTypeIdOrName;
     const minutesAgo = stepData.minutes;
     const withAttributes = stepData.withAttributes || {};
+    const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
 
     try {
       const sinceDate = moment().subtract(minutesAgo, 'minutes').utc().format(moment.defaultFormatUtc);
       const tokenResponse = await this.client.getActivityPagingToken(sinceDate);
       const nextPageToken = tokenResponse.nextPageToken;
 
-      const lead = (await this.client.findLeadByEmail(email)).result[0];
+      const lead = (await this.client.findLeadByEmail(email, null, partitionId)).result[0];
 
       /* Error when lead is not found */
       if (!lead) {
-        return this.error('Lead %s was not found', [
+        return this.error('Lead %s was not found%s', [
           email,
+          partitionId ? ` in partition ${partitionId}` : '',
         ]);
       }
 
