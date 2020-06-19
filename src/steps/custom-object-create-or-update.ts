@@ -21,6 +21,12 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
     field: 'customObject',
     type: FieldDefinition.Type.MAP,
     description: 'Map of custom object data whose keys are field names.',
+  }, {
+    field: 'partitionId',
+    type: FieldDefinition.Type.NUMERIC,
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+    description: 'ID of partition lead belongs to',
+    help: 'Only necessary to provide if Marketo has been configured to allow duplicate leads by email.',
   }];
   protected expectedRecords: ExpectedRecord[] = [{
     id: 'customObject',
@@ -38,6 +44,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
     const name = stepData.name;
     const linkValue = stepData.linkValue;
     const object = stepData.customObject;
+    const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
 
     try {
       const customObject = await this.client.getCustomObject(name);
@@ -86,13 +93,15 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
                        : customObject.result[0].relationships[0].relatedTo.field;
 
       // Getting link field value from lead
-      const lead = await this.client.findLeadByEmail(linkValue, {
-        fields: ['email', linkField].join(','),
-      });
+      const lead = await this.client.findLeadByEmail(linkValue, { fields: ['email', linkField].join(',') }, partitionId);
 
       // Check if leads are retrieved
       if (!lead.result.length) {
-        return this.error("Error creating or updating %s: can't link object to %s, who does not exist.", [name, linkValue]);
+        return this.error("Error creating or updating %s: can't link object to %s, who does not exist%s.", [
+          name,
+          linkValue,
+          partitionId ? ` in partition ${partitionId}` : '',
+        ]);
       }
 
       // Check if LinkField has value
