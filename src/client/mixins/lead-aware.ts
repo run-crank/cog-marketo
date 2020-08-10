@@ -9,7 +9,7 @@ export class LeadAwareMixin {
 
   public async findLeadByEmail(email: string, justInCaseField: string = null, partitionId: number = null) {
     const fields = await this.describeLeadFields();
-    let fieldList: string[] = fields.result.map((field: any) => field.rest.name);
+    let fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
 
     // If the length of the get request would be over 7KB, then the request
     // would fail. Instead, just hard-code the list of fields to be returned.
