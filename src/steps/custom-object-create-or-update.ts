@@ -50,14 +50,14 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
       const customObject = await this.client.getCustomObject(name);
       // Custom Object exists validation
       if (!customObject.result.length) {
-        return this.error('Error creating or updating %s: no such marketo custom object', [
+        return this.fail('Error creating or updating %s: no such marketo custom object', [
           name,
         ]);
       }
 
       // Linked to lead validation
       if (!customObject.result[0].relationships || !customObject.result[0].relationships.some(relationship => relationship.relatedTo.name == 'Lead')) {
-        return this.error("Error creating or updating %s linked to %s: this custom object isn't linked to leads", [
+        return this.fail("Error creating or updating %s linked to %s: this custom object isn't linked to leads", [
           name,
           linkValue,
         ]);
@@ -97,7 +97,7 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
 
       // Check if leads are retrieved
       if (!lead.result.length) {
-        return this.error("Error creating or updating %s: can't link object to %s, who does not exist%s.", [
+        return this.fail("Error creating or updating %s: can't link object to %s, who does not exist%s.", [
           name,
           linkValue,
           partitionId ? ` in partition ${partitionId}` : '',

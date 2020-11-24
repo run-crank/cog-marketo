@@ -75,7 +75,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
       /* Error when lead is not found */
       if (!lead) {
-        return this.error('Lead %s was not found%s', [
+        return this.fail('Lead %s was not found%s', [
           email,
           partitionId ? ` in partition ${partitionId}` : '',
         ]);
