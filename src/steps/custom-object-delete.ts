@@ -52,14 +52,14 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
 
       // Custom Object exists validation
       if (!customObject.result.length) {
-        return this.error('Error deleting %s: no such marketo custom object', [
+        return this.fail('Error deleting %s: no such marketo custom object', [
           name,
         ]);
       }
 
       // Linked to lead validation
       if (!customObject.result[0].relationships || !customObject.result[0].relationships.some(relationship => relationship.relatedTo.name == 'Lead')) {
-        return this.error("Error deleting %s linked to %s: this custom object isn't linked to leads", [
+        return this.fail("Error deleting %s linked to %s: this custom object isn't linked to leads", [
           name,
           linkValue,
         ]);
@@ -76,7 +76,7 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
       const lead = await this.client.findLeadByEmail(linkValue, { fields: ['email', linkField].join(',') }, partitionId);
 
       if (!lead.result.length) {
-        return this.error('Error deleting %s: the %s lead does not exist%s.', [
+        return this.fail('Error deleting %s: the %s lead does not exist%s.', [
           name,
           linkValue,
           partitionId ? ` in partition ${partitionId}` : '',
@@ -103,7 +103,7 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
 
         // Check if filtered query has a result
         if (!filteredQueryResult.length) {
-          return this.error('%s lead is not linked to %s', [linkValue, name]);
+          return this.fail('%s lead is not linked to %s', [linkValue, name]);
         }
 
         // Filter query by dedupeField
@@ -117,7 +117,7 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
         if (filteredQueryResult.length > 1) {
           const headers = {};
           Object.keys(filteredQueryResult[0]).forEach(key => headers[key] = key);
-          return this.error(
+          return this.fail(
             'Error deleting %s linked to %s: more than one matching custom object was found. Please provide dedupe field values to specify which object',
             [linkValue, name],
             [this.table('matchedObjects', `Matched ${customObject.result[0].displayName}`, headers, filteredQueryResult)]);
