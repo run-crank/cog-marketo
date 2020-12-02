@@ -116,7 +116,7 @@ describe('LeadFieldEqualsStep', () => {
     }));
 
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
   });
 
   it('should respond with a failure if the field on the lead does not match the expectation', async () => {

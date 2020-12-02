@@ -199,7 +199,7 @@ describe('DeleteCustomObject', () => {
       object: objectValue,
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
   });
 
   it('should respond with error if custom object is not linked to Leads', async () => {
@@ -229,7 +229,7 @@ describe('DeleteCustomObject', () => {
       object: objectValue,
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
   });
 
   it('should respond with error if lead does not exist', async () => {
@@ -287,7 +287,7 @@ describe('DeleteCustomObject', () => {
       object: objectValue,
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
   });
 
   it('should respond with an error if the marketo throws an error', async () => {
