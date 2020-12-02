@@ -186,7 +186,7 @@ describe('CustomObjectFieldEquals', () => {
       dedupeField: dedupeFieldValues,
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
   });
 
   it('should respond with error if custom object is not linked to Leads', async () => {
@@ -219,7 +219,7 @@ describe('CustomObjectFieldEquals', () => {
       dedupeField: dedupeFieldValues,
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
   });
 
   it('should respond with error if lead does not exist', async () => {
@@ -274,7 +274,7 @@ describe('CustomObjectFieldEquals', () => {
       dedupeField: dedupeFieldValues,
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
   });
 
   it('should respond with error if query does not exist', async () => {

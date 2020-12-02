@@ -56,7 +56,7 @@ describe('DeleteLeadStep', () => {
 
       it('should respond with error', async () => {
         const response = await stepUnderTest.executeStep(protoStep);
-        expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+        expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
       });
     });
 
