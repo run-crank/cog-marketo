@@ -60,7 +60,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
-    const email = stepData.email;
+    const email: string = stepData.email;
     let activityTypeIdOrName = stepData.activityTypeIdOrName;
     const minutesAgo = stepData.minutes;
     const withAttributes = stepData.withAttributes || {};
