@@ -85,7 +85,7 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
 
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
-    const email = stepData.email;
+    const email: string = stepData.email;
     const campaignIdOrName = stepData.campaign;
     const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
     const isCampaignNameProvided = isNaN(campaignIdOrName);
