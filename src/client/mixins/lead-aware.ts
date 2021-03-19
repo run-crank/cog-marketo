@@ -7,6 +7,40 @@ export class LeadAwareMixin {
     return this.client.lead.createOrUpdate([lead], { lookupField: 'email' });
   }
 
+  public async findLeadByField(field: string, value: string, justInCaseField: string = null, partitionId: number = null) {
+    const fields = await this.describeLeadFields();
+    let fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
+
+    // If the length of the get request would be over 7KB, then the request
+    // would fail. Instead, just hard-code the list of fields to be returned.
+    // @todo There is a bug in Marketo's workaround for this, preventing a
+    // "real" solution (e.g. PUT request with _method=GET and fields list in
+    // request body).
+    if (fieldList.join(',').length > 7168) {
+      fieldList = [
+        justInCaseField,
+        'email',
+        'updatedAt',
+        'createdAt',
+        'lastName',
+        'firstName',
+        'id',
+        'leadPartitionId',
+      ].filter(f => !!f);
+    }
+
+    const response = await this.client.lead.find(field, [value], { fields: fieldList });
+
+    // If a partition ID was provided, filter the returned leads accordingly.
+    if (partitionId && response && response.result && response.result.length) {
+      response.result = response.result.filter((lead: Record<string, any>) => {
+        return lead.leadPartitionId && lead.leadPartitionId === partitionId;
+      });
+    }
+
+    return response;
+  }
+
   public async findLeadByEmail(email: string, justInCaseField: string = null, partitionId: number = null) {
     const fields = await this.describeLeadFields();
     let fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
