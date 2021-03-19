@@ -5,11 +5,11 @@ import * as sinonChai from 'sinon-chai';
 import 'mocha';
 
 import { Step as ProtoStep, StepDefinition, FieldDefinition, RunStepResponse } from '../../src/proto/cog_pb';
-import { Step } from '../../src/steps/lead-field-equals';
+import { Step } from '../../src/steps/lead-by-id-field-equals';
 
 chai.use(sinonChai);
 
-describe('LeadFieldEqualsStep', () => {
+describe('LeadByIdFieldEqualsStep', () => {
   const expect = chai.expect;
   let protoStep: ProtoStep;
   let stepUnderTest: Step;
@@ -18,15 +18,15 @@ describe('LeadFieldEqualsStep', () => {
   beforeEach(() => {
     protoStep = new ProtoStep();
     clientWrapperStub = sinon.stub();
-    clientWrapperStub.findLeadByEmail = sinon.stub();
+    clientWrapperStub.findLeadByField = sinon.stub();
     stepUnderTest = new Step(clientWrapperStub);
   });
 
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
-    expect(stepDef.getStepId()).to.equal('LeadFieldEqualsStep');
-    expect(stepDef.getName()).to.equal('Check a field on a Marketo Lead');
-    expect(stepDef.getExpression()).to.equal('the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+) should (?<operator>be set|not be set|be less than|be greater than|be one of|be|contain|not be one of|not be|not contain) ?(?<expectation>.+)?');
+    expect(stepDef.getStepId()).to.equal('LeadByIdFieldEqualsStep');
+    expect(stepDef.getName()).to.equal('Check a field on a Marketo Lead by Id');
+    expect(stepDef.getExpression()).to.equal('the (?<field>[a-zA-Z0-9_-]+) field on marketo lead with id (?<leadId>.+) should (?<operator>be set|not be set|be less than|be greater than|be one of|be|contain|not be one of|not be|not contain) ?(?<expectation>.+)?');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.VALIDATION);
   });
 
@@ -37,7 +37,7 @@ describe('LeadFieldEqualsStep', () => {
     });
 
     // Email field
-    expect(fields[0].key).to.equal('email');
+    expect(fields[0].key).to.equal('leadId');
     expect(fields[0].optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
     expect(fields[0].type).to.equal(FieldDefinition.Type.EMAIL);
 
@@ -64,19 +64,20 @@ describe('LeadFieldEqualsStep', () => {
 
   it('should call the client wrapper with the expected args', async () => {
     const expectedField: string = 'firstName';
-    const expectedEmail: string = 'expected@example.com';
+    const expectedId: string = '1';
     const expectedPartitionId: number = 3;
     protoStep.setData(Struct.fromJavaScript({
-      email: expectedEmail,
+      leadId: expectedId,
       field: expectedField,
       operator: 'be',
-      expectation: expectedEmail,
+      expectation: expectedId,
       partitionId: expectedPartitionId,
     }));
 
     await stepUnderTest.executeStep(protoStep);
-    expect(clientWrapperStub.findLeadByEmail).to.have.been.calledWith(
-      expectedEmail,
+    expect(clientWrapperStub.findLeadByField).to.have.been.calledWith(
+      'id',
+      expectedId,
       sinon.match.any,
       expectedPartitionId,
     );
@@ -84,14 +85,14 @@ describe('LeadFieldEqualsStep', () => {
 
   it('should respond with an error if the marketo client throws an error', async () => {
     // Cause the client to throw an error, and execute the step.
-    clientWrapperStub.findLeadByEmail.throws('any error');
+    clientWrapperStub.findLeadByField.throws('any error');
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
   });
 
   it('should respond with an error if the marketo client did not find a lead', async () => {
     // Have the client respond with no leads.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [],
     }));
@@ -103,12 +104,12 @@ describe('LeadFieldEqualsStep', () => {
   it('should respond with an error if the lead found does not contain the given field', async () => {
     protoStep.setData(Struct.fromJavaScript({
       expectation: 'anything',
-      email: 'anyone@example.com',
+      leadId: 1,
       field: 'firstname',
     }));
 
     // Have the client respond with an object not containing the field above.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: '<-- Notice the case',
@@ -123,12 +124,12 @@ describe('LeadFieldEqualsStep', () => {
     const expectedValue: string = 'Atoma';
     protoStep.setData(Struct.fromJavaScript({
       expectation: expectedValue,
-      email: 'anyone@example.com',
+      leadId: 1,
       field: 'firstName',
     }));
 
     // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: `Not ${expectedValue}`,
@@ -143,12 +144,12 @@ describe('LeadFieldEqualsStep', () => {
     const expectedValue: string = 'Atoma';
     protoStep.setData(Struct.fromJavaScript({
       expectation: expectedValue,
-      email: 'anyone@example.com',
+      leadId: 1,
       field: 'firstName',
     }));
 
     // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: expectedValue,
@@ -163,13 +164,13 @@ describe('LeadFieldEqualsStep', () => {
     const expectedValue: string = 'Atoma';
     protoStep.setData(Struct.fromJavaScript({
       expectation: expectedValue,
-      email: 'anyone@example.com',
+      leadId: 1,
       field: 'firstName',
       operator: 'be',
     }));
 
     // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: expectedValue,
@@ -184,13 +185,13 @@ describe('LeadFieldEqualsStep', () => {
     const expectedValue: string = 'Atoma';
     protoStep.setData(Struct.fromJavaScript({
       expectation: expectedValue,
-      email: 'anyone@example.com',
+      leadId: 1,
       field: 'firstName',
       operator: 'contain',
     }));
 
     // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: 'AtomaWithExtraLetters',
@@ -205,13 +206,13 @@ describe('LeadFieldEqualsStep', () => {
     const expectedValue: string = '5';
     protoStep.setData(Struct.fromJavaScript({
       expectation: expectedValue,
-      email: 'anyone@example.com',
+      leadId: 1,
       field: 'someNumberField',
       operator: 'be greater than',
     }));
 
     // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: 'someName',
@@ -227,13 +228,13 @@ describe('LeadFieldEqualsStep', () => {
     const expectedValue: string = '2000-01-01';
     protoStep.setData(Struct.fromJavaScript({
       expectation: expectedValue,
-      email: 'anyone@example.com',
+      leadId: 1,
       field: 'someDateField',
       operator: 'be greater than',
     }));
 
     // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: 'someName',
@@ -249,13 +250,13 @@ describe('LeadFieldEqualsStep', () => {
     const expectedValue: string = 'Atoma';
     protoStep.setData(Struct.fromJavaScript({
       expectation: expectedValue,
-      email: 'anyone@example.com',
+      leadId: 1,
       field: 'firstName',
       operator: 'not be',
     }));
 
     // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: 'someOtherValue',
@@ -270,13 +271,13 @@ describe('LeadFieldEqualsStep', () => {
     const expectedValue: string = 'Atoma';
     protoStep.setData(Struct.fromJavaScript({
       expectation: expectedValue,
-      email: 'anyone@example.com',
+      leadId: 1,
       field: 'firstName',
       operator: 'not contain',
     }));
 
     // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: 'Atom',
@@ -291,13 +292,13 @@ describe('LeadFieldEqualsStep', () => {
     const expectedValue: string = '10';
     protoStep.setData(Struct.fromJavaScript({
       expectation: expectedValue,
-      email: 'anyone@example.com',
+      leadId: 1,
       field: 'someNumberField',
       operator: 'be less than',
     }));
 
     // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: 'someName',
@@ -313,13 +314,13 @@ describe('LeadFieldEqualsStep', () => {
     const expectedValue: string = '2000-02-01';
     protoStep.setData(Struct.fromJavaScript({
       expectation: expectedValue,
-      email: 'anyone@example.com',
+      leadId: 1,
       field: 'someDateField',
       operator: 'be less than',
     }));
 
     // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: 'someName',
@@ -335,13 +336,13 @@ describe('LeadFieldEqualsStep', () => {
     const expectedValue: string = 'notANumber';
     protoStep.setData(Struct.fromJavaScript({
       expectation: expectedValue,
-      email: 'anyone@example.com',
+      leadId: 1,
       field: 'someDateField',
       operator: 'be less than',
     }));
 
     // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: 'someName',
@@ -357,13 +358,13 @@ describe('LeadFieldEqualsStep', () => {
     const expectedValue: string = 'notANumber';
     protoStep.setData(Struct.fromJavaScript({
       expectation: expectedValue,
-      email: 'anyone@example.com',
+      leadId: 1,
       field: 'someDateField',
       operator: 'be greater than',
     }));
 
     // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: 'someName',
@@ -379,13 +380,13 @@ describe('LeadFieldEqualsStep', () => {
     const expectedValue: string = '12345';
     protoStep.setData(Struct.fromJavaScript({
       expectation: expectedValue,
-      email: 'anyone@example.com',
+      leadId: 1,
       field: 'someDateField',
       operator: 'someOtherOperator',
     }));
 
     // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: 'someName',
@@ -399,7 +400,7 @@ describe('LeadFieldEqualsStep', () => {
 
   it('should respond with error when expectedValue is not passed and operators are not either "be set" or "not be set"', async () => {
     protoStep.setData(Struct.fromJavaScript({
-      email: 'anyone@example.com',
+      leadId: 1,
       field: 'someDateField',
       operator: 'be',
     }));
