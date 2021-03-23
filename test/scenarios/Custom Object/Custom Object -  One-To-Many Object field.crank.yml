@@ -17,7 +17,7 @@ steps:
       name: Something
 - step: Then the associatedLead field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be {{test.email}}
 - step: And the customPrimaryKey field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should not be 54321
-- step: And the createdAt field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should contain 2020
+- step: And the associatedLead field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should contain one2many
 - step: And the createdAt field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be less than 2022-05-05
 - step: And the updatedAt field on the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}} should be greater than 2019-05-05
 - step: Finally, delete the {{test.obj}} Marketo Custom Object linked to Lead {{test.email}}
