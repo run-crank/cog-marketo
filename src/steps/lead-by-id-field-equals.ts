@@ -69,7 +69,6 @@ export class LeadByIdFieldEqualsStep extends BaseStep implements StepInterface {
   }];
 
   async executeStep(step: Step) {
-    console.log('LeadByIdFieldEqualsStep');
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
     const expectedValue = stepData.expectation;
     const leadId = stepData.leadId;
@@ -83,7 +82,6 @@ export class LeadByIdFieldEqualsStep extends BaseStep implements StepInterface {
 
     try {
       const data: any = await this.client.findLeadByField('id', leadId, field, partitionId);
-      console.log(data);
 
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
         const result = this.assert(operator, data.result[0][field], expectedValue, field);
