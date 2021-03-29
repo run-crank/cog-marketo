@@ -39,7 +39,7 @@ describe('LeadByIdFieldEqualsStep', () => {
     // Email field
     expect(fields[0].key).to.equal('leadId');
     expect(fields[0].optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
-    expect(fields[0].type).to.equal(FieldDefinition.Type.EMAIL);
+    expect(fields[0].type).to.equal(FieldDefinition.Type.STRING);
 
     // Field Name field
     expect(fields[1].key).to.equal('field');
