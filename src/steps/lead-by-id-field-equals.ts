@@ -14,7 +14,7 @@ export class LeadByIdFieldEqualsStep extends BaseStep implements StepInterface {
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
     field: 'leadId',
-    type: FieldDefinition.Type.EMAIL,
+    type: FieldDefinition.Type.STRING,
     description: "Lead's Id",
   }, {
     field: 'field',
