@@ -34,7 +34,7 @@ export class LeadByIdFieldEqualsStep extends BaseStep implements StepInterface {
     field: 'partitionId',
     type: FieldDefinition.Type.NUMERIC,
     optionality: FieldDefinition.Optionality.OPTIONAL,
-    description: 'Partition Id',
+    description: 'ID of partition lead belongs to',
     help: 'Only necessary to provide if Marketo has been configured to allow duplicate leads by email.',
   }];
   protected expectedRecords: ExpectedRecord[] = [{
