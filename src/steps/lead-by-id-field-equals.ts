@@ -14,7 +14,7 @@ export class LeadByIdFieldEqualsStep extends BaseStep implements StepInterface {
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
     field: 'leadId',
-    type: FieldDefinition.Type.EMAIL,
+    type: FieldDefinition.Type.STRING,
     description: "Lead's Id",
   }, {
     field: 'field',
@@ -34,7 +34,7 @@ export class LeadByIdFieldEqualsStep extends BaseStep implements StepInterface {
     field: 'partitionId',
     type: FieldDefinition.Type.NUMERIC,
     optionality: FieldDefinition.Optionality.OPTIONAL,
-    description: 'ID of partition lead belongs to',
+    description: 'Partition Id',
     help: 'Only necessary to provide if Marketo has been configured to allow duplicate leads by email.',
   }];
   protected expectedRecords: ExpectedRecord[] = [{
@@ -69,6 +69,7 @@ export class LeadByIdFieldEqualsStep extends BaseStep implements StepInterface {
   }];
 
   async executeStep(step: Step) {
+    console.log('LeadByIdFieldEqualsStep');
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
     const expectedValue = stepData.expectation;
     const leadId = stepData.leadId;
@@ -82,6 +83,7 @@ export class LeadByIdFieldEqualsStep extends BaseStep implements StepInterface {
 
     try {
       const data: any = await this.client.findLeadByField('id', leadId, field, partitionId);
+      console.log(data);
 
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
         const result = this.assert(operator, data.result[0][field], expectedValue, field);
