@@ -25,5 +25,5 @@ steps:
 - step: And the lastName field on marketo lead {{test.email}} should not contain anything
 - step: And the middleName field on marketo lead {{test.email}} should contain test
   failAfter: 20
-- step: And the middleName field on marketo lead {{test.email}} should not be Testing
+- step: And the middleName field on marketo lead {{test.email}} should not be Not Testing
 - step: Finally, delete the {{test.email}} marketo lead
