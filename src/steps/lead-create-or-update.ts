@@ -8,7 +8,14 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
   protected stepName: string = 'Create or update a Marketo Lead';
   protected stepExpression: string = 'create or update a marketo lead';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
-  protected expectedFields: Field[] = [{
+  protected expectedFields: Field[] = [
+  {
+    field: 'partitionId',
+    type: FieldDefinition.Type.NUMERIC,
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+    description: 'A map of field names to field values',
+  },
+  {
     field: 'lead',
     type: FieldDefinition.Type.MAP,
     description: 'A map of field names to field values',
@@ -26,10 +33,11 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
 
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
+    const partitionId = stepData.partitionId || 1;
     const lead = stepData.lead;
 
     try {
-      const data: any = await this.client.createOrUpdateLead(lead);
+      const data: any = await this.client.createOrUpdateLead(lead, partitionId);
       if (data.success && data.result && data.result[0] && data.result[0].status !== 'skipped') {
         return this.pass(
           'Successfully created or updated lead %s with status %s',

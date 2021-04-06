@@ -3,8 +3,11 @@ export class LeadAwareMixin {
   client: Marketo;
   leadDescription: any;
 
-  public async createOrUpdateLead(lead: Record<string, any>) {
-    return this.client.lead.createOrUpdate([lead], { lookupField: 'email' });
+  public async createOrUpdateLead(lead: Record<string, any>, partitionId: number) {
+    const partitions = await this.client.lead.partitions();
+    const partition = partitions.result.find(option => option.id.toString() === partitionId.toString()).name;
+
+    return this.client.lead.createOrUpdate([lead], { lookupField: 'email', partitionName: partition });
   }
 
   public async findLeadByField(field: string, value: string, justInCaseField: string = null, partitionId: number = null) {

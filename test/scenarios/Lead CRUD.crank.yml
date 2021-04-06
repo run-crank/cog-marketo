@@ -6,6 +6,7 @@ description: |
 steps:
 - step: When I create or update a marketo lead
   data:
+    partitionId: 1
     lead:
         email: onetwomkto@thisisjust.atomatest.com
         firstName: james
