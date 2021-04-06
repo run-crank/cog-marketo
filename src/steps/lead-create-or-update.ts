@@ -45,6 +45,10 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
           [lead.email, data.result[0].status],
           [this.keyValue('lead', 'Created Lead', { id: data.result[0].id })],
         );
+      } else if (data && data.error && !data.error.partition) {
+        return this.fail('There is no Partition with id %s', [
+          partitionId,
+        ]);
       } else {
         if (data.result && data.result[0] && data.result[0].reasons && data.result[0].reasons[0]) {
           return this.fail('Unable to create or update lead: %s', [

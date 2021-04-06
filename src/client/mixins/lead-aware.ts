@@ -6,6 +6,11 @@ export class LeadAwareMixin {
   public async createOrUpdateLead(lead: Record<string, any>, partitionId: number = 1) {
     const partitions = await this.client.lead.partitions();
     const partition = partitions.result.find(option => option.id === partitionId);
+
+    if (!partition) {
+      return Promise.resolve({ error: { partition: false } });
+    }
+
     return this.client.lead.createOrUpdate([lead], { lookupField: 'email', partitionName: partition ? partition.name : 'Default' });
   }
 
