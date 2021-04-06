@@ -9,17 +9,18 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
   protected stepExpression: string = 'create or update a marketo lead';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
   protected expectedFields: Field[] = [
-  {
-    field: 'partitionId',
-    type: FieldDefinition.Type.NUMERIC,
-    optionality: FieldDefinition.Optionality.OPTIONAL,
-    description: 'A map of field names to field values',
-  },
-  {
-    field: 'lead',
-    type: FieldDefinition.Type.MAP,
-    description: 'A map of field names to field values',
-  }];
+    {
+      field: 'partitionId',
+      type: FieldDefinition.Type.NUMERIC,
+      optionality: FieldDefinition.Optionality.OPTIONAL,
+      description: 'A map of field names to field values',
+    },
+    {
+      field: 'lead',
+      type: FieldDefinition.Type.MAP,
+      description: 'A map of field names to field values',
+    },
+  ];
   protected expectedRecords: ExpectedRecord[] = [{
     id: 'lead',
     type: RecordDefinition.Type.KEYVALUE,
