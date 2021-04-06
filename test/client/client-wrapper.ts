@@ -21,6 +21,7 @@ describe('ClientWrapper', () => {
         find: sinon.spy(),
         createOrUpdate: sinon.spy(),
         describe: sinon.spy(),
+        partitions: sinon.spy(),
       },
       activities: {
         getActivityTypes: sinon.spy(),
@@ -43,6 +44,10 @@ describe('ClientWrapper', () => {
         },
       }],
     }));
+    marketoClientStub.lead.partitions = sinon.stub();
+    marketoClientStub.lead.partitions.resolves({ result: [
+      { id: 1, name: 'Default' },
+    ]});
   });
 
   it('authentication', () => {
@@ -83,15 +88,18 @@ describe('ClientWrapper', () => {
     expect(marketoConstructorStub).to.have.been.calledWith(expectedCallArgs);
   });
 
-  it('createOrUpdateLead', () => {
+  it('createOrUpdateLead', (done) => {
     const expectedLead = { email: 'test@example.com' };
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
     clientWrapperUnderTest.createOrUpdateLead(expectedLead);
 
-    expect(marketoClientStub.lead.createOrUpdate).to.have.been.calledWith(
-      [expectedLead],
-      { lookupField: 'email' },
-    );
+    setTimeout(() => {
+      expect(marketoClientStub.lead.createOrUpdate).to.have.been.calledWith(
+        [expectedLead],
+        { lookupField: 'email', partitionName: 'Default'},
+      );
+      done();
+    });
   });
 
   it('findLeadByEmail (no options)', (done) => {

@@ -62,6 +62,19 @@ describe('CreateOrUpdateLeadByFieldStep', () => {
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
   });
 
+  it('should respond with fail if the partition does not exist', async () => {
+    const expectedEmail: string = 'expected@example.com';
+    const expectedReason: string = 'reason it failed';
+    clientWrapperStub.createOrUpdateLead.returns(Promise.resolve({ error: { partition: false } }));
+    protoStep.setData(Struct.fromJavaScript({
+      lead: {
+        email: 'sampleEmail@example.com',
+      },
+    }));
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
+  });
+
   it('should respond with fail if the marketo skips creation of lead with reason', async () => {
     const expectedReason: string = 'reason it failed';
     clientWrapperStub.createOrUpdateLead.returns(Promise.resolve({
