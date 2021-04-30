@@ -94,11 +94,10 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
 
     try {
       const allCampaigns = await this.client.getCampaigns();
-
-      campaignObj = allCampaigns.result.find(cam => cam.id == campaignIdOrName);
+      campaignObj = allCampaigns.find(cam => cam.id == campaignIdOrName);
 
       if (isCampaignNameProvided) {
-        const matchingCampaigns = allCampaigns.result.filter(c => c.name.toLowerCase() == campaignIdOrName.toLowerCase());
+        const matchingCampaigns = allCampaigns.filter(c => c.name ? c.name.toLowerCase() == campaignIdOrName.toLowerCase() : false);
 
         if (matchingCampaigns.length != 1) {
           return this.error("Can't add %s to %s: found %d matching campaigns", [email, campaignIdOrName, matchingCampaigns.length]);

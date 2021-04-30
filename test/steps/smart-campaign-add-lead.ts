@@ -56,16 +56,13 @@ describe('AddLeadToSmartCampaignStep', () => {
 
   it('should respond with success if the marketo executes succesfully with non numeric campaign', async () => {
     const expectedResponseMessage: string = 'Successfully added lead %s to smart campaign %s';
-    clientWrapperStub.getCampaigns.returns(Promise.resolve({
-      success: true,
-      result: [
-        {
-          name: 'someCampaign',
-          id: '11111',
-          isRequestable: true,
-        },
-      ],
-    }));
+    clientWrapperStub.getCampaigns.returns(Promise.resolve([
+      {
+        name: 'someCampaign',
+        id: '11111',
+        isRequestable: true,
+      },
+    ]));
     clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
       success: true,
       result: [
@@ -90,16 +87,13 @@ describe('AddLeadToSmartCampaignStep', () => {
 
   it('should respond with success if the marketo executes succesfully with numeric campaign', async () => {
     const expectedResponseMessage: string = 'Successfully added lead %s to smart campaign %s';
-    clientWrapperStub.getCampaigns.returns(Promise.resolve({
-      success: true,
-      result: [
-        {
-          name: 'someCampaign',
-          id: '11111',
-          isRequestable: true,
-        },
-      ],
-    }));
+    clientWrapperStub.getCampaigns.returns(Promise.resolve([
+      {
+        name: 'someCampaign',
+        id: '11111',
+        isRequestable: true,
+      },
+    ]));
     clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
       success: true,
       result: [
@@ -124,21 +118,18 @@ describe('AddLeadToSmartCampaignStep', () => {
 
   it('should respond with error if the marketo returns more than 1 campaign', async () => {
     const expectedResponseMessage: string = "Can't add %s to %s: found %d matching campaigns";
-    clientWrapperStub.getCampaigns.returns(Promise.resolve({
-      success: true,
-      result: [
-        {
-          name: 'someCampaign',
-          id: '11111',
-          isRequestable: true,
-        },
-        {
-          name: 'someCampaign',
-          id: '22222',
-          isRequestable: true,
-        },
-      ],
-    }));
+    clientWrapperStub.getCampaigns.returns(Promise.resolve([
+      {
+        name: 'someCampaign',
+        id: '11111',
+        isRequestable: true,
+      },
+      {
+        name: 'someCampaign',
+        id: '22222',
+        isRequestable: true,
+      },
+    ]));
     protoStep.setData(Struct.fromJavaScript({
       email: 'someEmail',
       campaign: 'someCampaign',
@@ -150,15 +141,12 @@ describe('AddLeadToSmartCampaignStep', () => {
 
   it('should respond with an error if the marketo throws an error related to trigger campaign', async () => {
     const expectedResponseMessage: string = "Cannot add lead to smart campaign %s. In order to test this campaign, you must add a 'Campaign is Requested' trigger with 'Source' set to 'Web Service API'";
-    clientWrapperStub.getCampaigns.returns(Promise.resolve({
-      success: true,
-      result: [
-        {
-          name: 'someCampaign',
-          id: '11111',
-        },
-      ],
-    }));
+    clientWrapperStub.getCampaigns.returns(Promise.resolve([
+      {
+        name: 'someCampaign',
+        id: '11111',
+      },
+    ]));
     clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
       success: true,
       result: [
@@ -180,16 +168,13 @@ describe('AddLeadToSmartCampaignStep', () => {
 
   it('should respond with fail if the marketo fails to add lead to smart campaign', async () => {
     const expectedResponseMessage: string = 'Unable to add lead %s to smart campaign %s: %s';
-    clientWrapperStub.getCampaigns.returns(Promise.resolve({
-      success: true,
-      result: [
-        {
-          name: 'someCampaign',
-          id: '11111',
-          isRequestable: true,
-        },
-      ],
-    }));
+    clientWrapperStub.getCampaigns.returns(Promise.resolve([
+      {
+        name: 'someCampaign',
+        id: '11111',
+        isRequestable: true,
+      },
+    ]));
     clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
       success: true,
       result: [
