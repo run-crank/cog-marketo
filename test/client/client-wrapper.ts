@@ -187,12 +187,12 @@ describe('ClientWrapper', () => {
     expect(marketoClientStub.campaign.request).to.have.been.calledWith(campaignIdInput, [leadInput]);
   });
 
-  it('getCampaigns', () => {
-    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
-    clientWrapperUnderTest.getCampaigns();
+  // it('getCampaigns', () => {
+  //   clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+  //   clientWrapperUnderTest.getCampaigns();
 
-    expect(marketoClientStub.campaign.getCampaigns).to.have.been.calledWith();
-  });
+  //   expect(marketoClientStub.campaign.getCampaigns).to.have.been.calledWith();
+  // });
 
   it('createOrUpdateCustomObject', () => {
     const customObjectName = 'any';
