@@ -7,11 +7,11 @@ export class SmartCampaignAwareMixin {
   }
 
   public async getCampaigns() {
-    var result = [];
+    const result = [];
     await Promise.all([0, 1, 2, 3, 4].map((i) => {
       return new Promise(async (resolve) => {
         try {
-          const response = await this.client.campaign.getSmartCampaigns({maxReturn: 200, offset: i * 200});
+          const response = await this.client.campaign.getSmartCampaigns({ maxReturn: 200, offset: i * 200 });
           if (response.hasOwnProperty('result')) {
             response.result.forEach((campaign) => {
               result.push(campaign);
@@ -21,7 +21,7 @@ export class SmartCampaignAwareMixin {
         } catch (e) {
           resolve(e);
         }
-      })
+      });
     }));
 
     result.sort((a, b) => {
