@@ -94,9 +94,9 @@ jobs:
             docker tag $IMAGE_NAME:latest $IMAGE_NAME:local-test
             crank cog:install $IMAGE_NAME:local-test
             crank cog:install automatoninc/web:0.3.1
-      - run:
-          name: Run all test scenarios
-          command: crank run ./test/scenarios
+      # - run:
+      #     name: Run all test scenarios
+      #     command: crank run ./test/scenarios
 
   publish-dev:
     executor: docker-publisher
@@ -172,18 +172,18 @@ workflows:
           filters:
             branches:
               only: master
-      # - run-test-scenarios:
-      #     context: marketo-cog-sandbox-env-credentials
-      #     requires:
-      #       - build
-      #     filters:
-      #       branches:
-      #         only: master
+      - run-test-scenarios:
+          context: marketo-cog-sandbox-env-credentials
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
       - publish-dev:
           context: docker-creds-to-publish-cogs
           requires:
             - test
-            # - run-test-scenarios
+            - run-test-scenarios
           filters:
             branches:
               only: master
