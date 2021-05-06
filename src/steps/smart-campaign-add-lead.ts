@@ -62,7 +62,7 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
     }, {
       field: 'name',
       type: FieldDefinition.Type.STRING,
-      description: "Campaign's Email",
+      description: "Campaign's Name",
     }, {
       field: 'description',
       type: FieldDefinition.Type.STRING,
@@ -78,7 +78,7 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
     }, {
       field: 'createdAt',
       type: FieldDefinition.Type.DATETIME,
-      description: "Campaign's Update Date",
+      description: "Campaign's Create Date",
     }],
     dynamicFields: true,
   }];
