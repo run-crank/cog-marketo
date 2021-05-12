@@ -13,7 +13,7 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
       field: 'partitionId',
       type: FieldDefinition.Type.NUMERIC,
       optionality: FieldDefinition.Optionality.OPTIONAL,
-      description: 'ID of partition lead belongs to',
+      description: 'ID of partition the lead will be created',
     },
     {
       field: 'lead',
