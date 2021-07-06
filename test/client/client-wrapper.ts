@@ -318,4 +318,11 @@ describe('ClientWrapper', () => {
       },
     });
   });
+
+  it('getDailyApiUsage', () => {
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+    clientWrapperUnderTest.getDailyApiUsage();
+
+    expect(marketoClientStub._connection.get).to.have.been.calledWith('/v1/stats/usage.json');
+  });
 });
