@@ -64,7 +64,7 @@ describe('CheckApiUsageStep', () => {
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
   });
 
-  it('should respond with a failure if the api calls are not found', async () => {
+  it('should respond with an error if no usage is found', async () => {
     const expectedLimit: number = 50000;
     protoStep.setData(Struct.fromJavaScript({
       requestLimit: expectedLimit,
@@ -73,7 +73,7 @@ describe('CheckApiUsageStep', () => {
       success: true,
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
   });
 
   it('should respond with an error if the marketo client throws an error', async () => {
