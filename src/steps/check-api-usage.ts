@@ -27,12 +27,7 @@ export class CheckApiUsageStep extends BaseStep implements StepInterface {
 
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
-    let requestLimit: number;
-    if (stepData.requestLimit) {
-      requestLimit = stepData.requestLimit;
-    } else {
-      requestLimit = 50000;
-    }
+    const requestLimit = stepData.requestLimit || 50000;
 
     try {
       const usage = (await this.client.getDailyApiUsage()).result;
