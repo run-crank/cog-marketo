@@ -32,14 +32,15 @@ export class CheckApiUsageStep extends BaseStep implements StepInterface {
     try {
       const usage = (await this.client.getDailyApiUsage()).result;
       const dailyUsage = usage.map(record => record.total).reduce((a, b) => a + b, 0);
+      const percentUsage = (dailyUsage / requestLimit) * 100;
 
       if (dailyUsage < (0.9 * requestLimit)) {
-        return this.pass('Your daily usage is %d, which is less than 90%% of your daily limit of %d.',
-                         [dailyUsage, requestLimit],
+        return this.pass('You have used %d of your %d API calls for the day, which is %d%% of your allocated calls.',
+                         [dailyUsage, requestLimit, percentUsage],
                          [this.keyValue('requests', 'Checked API Usage', { apiUsage: dailyUsage })]);
       }
-      return this.fail('Your daily usage is %d, which is more than 90%% of your daily limit of %d.',
-                       [dailyUsage, requestLimit],
+      return this.fail('You have used %d of your %d API calls for the day, which is %d%% of your allocated calls.',
+                       [dailyUsage, requestLimit, percentUsage],
                        [this.keyValue('requests', 'Checked API Usage', { apiUsage: dailyUsage })]);
     } catch (e) {
       return this.error('There was a problem checking the API Usage: %s', [e.toString()]);
