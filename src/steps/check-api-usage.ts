@@ -30,17 +30,22 @@ export class CheckApiUsageStep extends BaseStep implements StepInterface {
     const requestLimit = stepData.requestLimit || 50000;
 
     try {
-      const usage = (await this.client.getDailyApiUsage()).result;
-      const dailyUsage = usage.map(record => record.total).reduce((a, b) => a + b, 0);
+      const dailyUsageArray = (await this.client.getDailyApiUsage()).result;
+      const dailyUsage = dailyUsageArray.map(record => record.total).reduce((a, b) => a + b, 0);
       const percentUsage = (dailyUsage / requestLimit) * 100;
 
+      const weeklyUsageArray = (await this.client.getWeeklyApiUsage()).result;
+      const weeklyUsage = weeklyUsageArray.map(record => record.total).reduce((a, b) => a + b, 0);
+      const weeklyUsagePerDay = weeklyUsage / 7;
+      const comparison = dailyUsage > weeklyUsagePerDay ? 'greater' : 'less';
+
       if (dailyUsage < (0.9 * requestLimit)) {
-        return this.pass('You have used %d of your %d API calls for the day, which is %d%% of your allocated calls.',
-                         [dailyUsage, requestLimit, percentUsage],
+        return this.pass('You have used %d of your %d API calls for today, which is %d%% of your daily API limit. In the past week, you have used %d API calls which averages out to be %d per day. Today’s API calls are %s than your trailing 7 day average.',
+                         [dailyUsage, requestLimit, percentUsage, weeklyUsage, weeklyUsagePerDay, comparison],
                          [this.keyValue('requests', 'Checked API Usage', { apiUsage: dailyUsage })]);
       }
-      return this.fail('You have used %d of your %d API calls for the day, which is %d%% of your allocated calls.',
-                       [dailyUsage, requestLimit, percentUsage],
+      return this.fail('You have used %d of your %d API calls for today, which is %d%% of your daily API limit. In the past week, you have used %d API calls which averages out to be %d per day. Today’s API calls are %s than your trailing 7 day average.',
+                       [dailyUsage, requestLimit, percentUsage, weeklyUsage, weeklyUsagePerDay, comparison],
                        [this.keyValue('requests', 'Checked API Usage', { apiUsage: dailyUsage })]);
     } catch (e) {
       return this.error('There was a problem checking the API Usage: %s', [e.toString()]);

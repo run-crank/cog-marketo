@@ -325,4 +325,11 @@ describe('ClientWrapper', () => {
 
     expect(marketoClientStub._connection.get).to.have.been.calledWith('/v1/stats/usage.json');
   });
+
+  it('getWeeklyApiUsage', () => {
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
+    clientWrapperUnderTest.getWeeklyApiUsage();
+
+    expect(marketoClientStub._connection.get).to.have.been.calledWith('/v1/stats/usage/last7days.json');
+  });
 });
