@@ -19,6 +19,7 @@ describe('CheckApiUsageStep', () => {
     protoStep = new ProtoStep();
     clientWrapperStub = sinon.stub();
     clientWrapperStub.getDailyApiUsage = sinon.stub();
+    clientWrapperStub.getWeeklyApiUsage = sinon.stub();
     stepUnderTest = new Step(clientWrapperStub);
   });
 
@@ -43,6 +44,14 @@ describe('CheckApiUsageStep', () => {
         },
       ],
     }));
+    clientWrapperStub.getWeeklyApiUsage.returns(Promise.resolve({
+      success: true,
+      result: [
+        {            
+          total: 90000,
+        },
+      ],
+    }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
   });
@@ -57,6 +66,14 @@ describe('CheckApiUsageStep', () => {
       result: [
         {            
           total: 49000,
+        },
+      ],
+    }));
+    clientWrapperStub.getWeeklyApiUsage.returns(Promise.resolve({
+      success: true,
+      result: [
+        {            
+          total: 900000,
         },
       ],
     }));
