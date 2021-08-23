@@ -8,7 +8,7 @@ export class SmartCampaignAwareMixin {
 
   public async getCampaigns() {
     const result = [];
-    await Promise.all([0, 1, 2, 3, 4].map((i) => {
+    await Promise.all([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => {
       return new Promise(async (resolve) => {
         try {
           const response = await this.client.campaign.getSmartCampaigns({ maxReturn: 200, offset: i * 200 });
