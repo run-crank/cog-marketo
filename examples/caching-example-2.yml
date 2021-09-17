@@ -1,0 +1,32 @@
+scenario: Demonstrate the Marketo Cog Caching
+description: A contrived scenario that shows basic caching.
+
+steps:
+- step: When I create or update a Marketo lead
+  data:
+    lead:
+      email: atoma.tommy@example.com
+      firstName: Atoma
+      lastName: Tommy
+      company: Stack Moxie
+      country: Spain
+- step: Then the firstName field on Marketo lead atoma.tommy@example.com should be Atoma
+- step: And the lastName field on Marketo lead atoma.tommy@example.com should be Tommy
+- step: And the country field on Marketo lead atoma.tommy@example.com should be Spain
+- step: And the company field on Marketo lead atoma.tommy@example.com should be Stack Moxie
+- step: And the email field on Marketo lead atoma.tommy@example.com should be atoma.tommy@example.com
+- step: When I create or update a testCar_c marketo custom object linked to lead atoma.tommy@example.com
+  data:
+    name: testCar_c
+    linkValue: atoma.tommy@example.com
+    customObject:
+      make: Honda
+      model: Civic  
+      color: black
+      plateNumber: 123  
+- step: Then the make field on the testCar_c marketo custom object linked to lead atoma.tommy@example.com should be Honda
+- step: And the model field on the testCar_c marketo custom object linked to lead atoma.tommy@example.com should be Civic
+- step: And the color field on the testCar_c marketo custom object linked to lead atoma.tommy@example.com should be black
+- step: And the plateNumber field on the testCar_c marketo custom object linked to lead atoma.tommy@example.com should be 123
+- step: Then delete the testCar_c marketo custom object linked to lead atoma.tommy@example.com
+- step: Finally, delete the atoma.tommy@example.com Marketo lead

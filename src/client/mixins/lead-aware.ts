@@ -4,6 +4,7 @@ export class LeadAwareMixin {
   leadDescription: any;
 
   public async createOrUpdateLead(lead: Record<string, any>, partitionId: number = 1) {
+    console.log('Making API request to create or update lead');
     const partitions = await this.client.lead.partitions();
     const partition = partitions.result.find(option => option.id === partitionId);
 
@@ -15,6 +16,7 @@ export class LeadAwareMixin {
   }
 
   public async findLeadByField(field: string, value: string, justInCaseField: string = null, partitionId: number = null) {
+    console.log('Making API request to find lead by field');
     const fields = await this.describeLeadFields();
     let fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
 
@@ -49,6 +51,7 @@ export class LeadAwareMixin {
   }
 
   public async findLeadByEmail(email: string, justInCaseField: string = null, partitionId: number = null) {
+    console.log('Making API request to find lead by email');
     const fields = await this.describeLeadFields();
     let fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
 
@@ -82,7 +85,8 @@ export class LeadAwareMixin {
     return response;
   }
 
-  public async deleteLeadById(leadId: number) {
+  public async deleteLeadById(leadId: number, email: string = null) {
+    console.log('Making API request to delete lead by ID');
     // @todo Contribute this back up to the package.
     return this.client._connection.postJson(
       '/v1/leads.json',
@@ -92,6 +96,7 @@ export class LeadAwareMixin {
   }
 
   public async describeLeadFields() {
+    console.log('Making API request to get lead description');
     // This safely reduces the number of API calls that might have to be made
     // in lead field check steps, but is an imcomplete solution.
     // @todo Incorporate true caching based on https://github.com/run-crank/cli/pull/40

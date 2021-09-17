@@ -13,8 +13,9 @@ export class Cog implements ICogServiceServer {
 
   private steps: StepInterface[];
 
-  constructor (private clientWrapperClass, private stepMap: Record<string, any> = {}) {
+  constructor (private clientWrapperClass, private stepMap: Record<string, any> = {}, private redisClient: {}) {
     this.steps = [].concat(...Object.values(this.getSteps(`${__dirname}/../steps`, clientWrapperClass)));
+    this.redisClient = redisClient;
   }
 
   private getSteps(dir: string, clientWrapperClass) {
@@ -72,7 +73,7 @@ export class Cog implements ICogServiceServer {
   }
 
   runSteps(call: grpc.ServerDuplexStream<RunStepRequest, RunStepResponse>) {
-    const client = this.getClientWrapper(call.metadata);
+    // const client = this.getClientWrapper(call.metadata);
     let processing = 0;
     let clientEnded = false;
 
@@ -80,7 +81,16 @@ export class Cog implements ICogServiceServer {
       processing = processing + 1;
 
       const step: Step = runStepRequest.getStep();
-      const response: RunStepResponse = await this.dispatchStep(step, call.metadata, client);
+      const idMap: {} = {
+        requestId: runStepRequest.getRequestId(),
+        scenarioId: runStepRequest.getScenarioId(),
+        requestorId: runStepRequest.getRequestorId(),
+      };
+      // const requestId: string = runStepRequest.getRequestId();
+      // const scenarioId: string = runStepRequest.getScenarioId();
+      // const requestorId: string = runStepRequest.getRequestorId();
+      // console.log('idMap runSteps', idMap);
+      const response: RunStepResponse = await this.dispatchStep(runStepRequest, call.metadata);
       call.write(response);
 
       processing = processing - 1;
@@ -106,18 +116,25 @@ export class Cog implements ICogServiceServer {
     call: grpc.ServerUnaryCall<RunStepRequest>,
     callback: grpc.sendUnaryData<RunStepResponse>,
   ) {
-    const step: Step = call.request.getStep();
-    const response: RunStepResponse = await this.dispatchStep(step, call.metadata);
+    const response: RunStepResponse = await this.dispatchStep(call.request, call.metadata);
     callback(null, response);
   }
 
   private async dispatchStep(
-    step: Step,
+    // step: Step,
+    runStepRequest: RunStepRequest,
     metadata: grpc.Metadata,
     client = null,
   ): Promise<RunStepResponse> {
+    // Get scoped IDs for building cache keys
+    const idMap: {} = {
+      requestId: runStepRequest.getRequestId(),
+      scenarioId: runStepRequest.getScenarioId(),
+      requestorId: runStepRequest.getRequestorId(),
+    };
     // If a pre-auth'd client was provided, use it. Otherwise, create one.
-    const wrapper = client || this.getClientWrapper(metadata);
+    const wrapper = client || this.getClientWrapper(metadata, idMap);
+    const step = runStepRequest.getStep();
     const stepId = step.getStepId();
     let response: RunStepResponse = new RunStepResponse();
 
@@ -139,8 +156,8 @@ export class Cog implements ICogServiceServer {
     return response;
   }
 
-  private getClientWrapper(auth: grpc.Metadata) {
-    return new this.clientWrapperClass(auth);
+  private getClientWrapper(auth: grpc.Metadata, idMap: {} = null) {
+    const client = new ClientWrapper(auth)
+    return new this.clientWrapperClass(client, this.redisClient, idMap);
   }
-
 }

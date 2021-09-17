@@ -8,7 +8,7 @@ import { Step as ProtoStep, StepDefinition, FieldDefinition, RunStepResponse, Ru
 import { Cog } from '../../src/core/cog';
 import { CogManifest } from '../../src/proto/cog_pb';
 import { Metadata } from 'grpc';
-import { Duplex } from 'stream';
+import { Duplex } from 'stream'
 
 chai.use(sinonChai);
 
@@ -16,10 +16,11 @@ describe('Cog:GetManifest', () => {
   const expect = chai.expect;
   let cogUnderTest: Cog;
   let clientWrapperSpy: any;
+  let redisClient: any;
 
   beforeEach(() => {
     clientWrapperSpy = sinon.spy();
-    cogUnderTest = new Cog(clientWrapperSpy);
+    cogUnderTest = new Cog(clientWrapperSpy, {}, redisClient);
   });
 
   it('should return expected cog metadata', (done) => {
@@ -85,15 +86,27 @@ describe('Cog:RunStep', () => {
   let grpcUnaryCall: any = {};
   let cogUnderTest: Cog;
   let clientWrapperStub: any;
+  let redisClient: any;
+  let requestId: string = '1';
+  let scenarioId: string = '2';
+  let requestorId: string = '3';
+  let idMap: any = {
+    requestId: requestId,
+    scenarioId: scenarioId,
+    requestorId: requestorId,
+  };
 
   beforeEach(() => {
     protoStep = new ProtoStep();
     grpcUnaryCall.request = {
       getStep: function () {return protoStep},
+      getRequestId: function () {return requestId},
+      getScenarioId: function () {return scenarioId},
+      getRequestorId: function () {return requestorId},
       metadata: null
     };
     clientWrapperStub = sinon.stub();
-    cogUnderTest = new Cog(clientWrapperStub);
+    cogUnderTest = new Cog(clientWrapperStub, {}, redisClient);
   });
 
   it('authenticates client wrapper with call metadata', (done) => {
@@ -104,7 +117,7 @@ describe('Cog:RunStep', () => {
     cogUnderTest.runStep(grpcUnaryCall, (err, response: RunStepResponse) => {
       expect(clientWrapperStub).to.have.been.calledWith(grpcUnaryCall.metadata);
       done();
-    })
+    });
   });
 
   it('responds with error when called with unknown stepId', (done) => {
@@ -124,7 +137,7 @@ describe('Cog:RunStep', () => {
     const mockTestStepMap: any = {TestStepId: sinon.stub()}
     mockTestStepMap.TestStepId.returns(mockStepExecutor);
 
-    cogUnderTest = new Cog(clientWrapperStub, mockTestStepMap);
+    cogUnderTest = new Cog(clientWrapperStub, mockTestStepMap, redisClient);
     protoStep.setStepId('TestStepId');
 
     cogUnderTest.runStep(grpcUnaryCall, (err, response: RunStepResponse) => {
@@ -141,7 +154,7 @@ describe('Cog:RunStep', () => {
     const mockTestStepMap: any = {TestStepId: sinon.stub()}
     mockTestStepMap.TestStepId.returns(mockStepExecutor);
 
-    cogUnderTest = new Cog(clientWrapperStub, mockTestStepMap);
+    cogUnderTest = new Cog(clientWrapperStub, mockTestStepMap, redisClient);
     protoStep.setStepId('TestStepId');
 
     cogUnderTest.runStep(grpcUnaryCall, (err, response: RunStepResponse) => {
@@ -159,6 +172,16 @@ describe('Cog:RunSteps', () => {
   let grpcDuplexStream: any;
   let cogUnderTest: Cog;
   let clientWrapperStub: any;
+  let client: any;
+  let redisClient: any;
+  let requestId: string = '';
+  let scenarioId: string = '';
+  let requestorId: string = '';
+  let idMap: any = {
+    requestId: requestId,
+    scenarioId: scenarioId,
+    requestorId: requestorId,
+  };
 
   beforeEach(() => {
     protoStep = new ProtoStep();
@@ -168,7 +191,7 @@ describe('Cog:RunSteps', () => {
     grpcDuplexStream._read = sinon.stub();
     grpcDuplexStream.metadata = new Metadata();
     clientWrapperStub = sinon.stub();
-    cogUnderTest = new Cog(clientWrapperStub);
+    cogUnderTest = new Cog(clientWrapperStub, {}, redisClient);
   });
 
   it('authenticates client wrapper with call metadata', () => {
@@ -207,7 +230,7 @@ describe('Cog:RunSteps', () => {
     mockStepExecutor.executeStep.resolves(expectedResponse);
     const mockTestStepMap: any = {TestStepId: sinon.stub()}
     mockTestStepMap.TestStepId.returns(mockStepExecutor);
-    cogUnderTest = new Cog(clientWrapperStub, mockTestStepMap);
+    cogUnderTest = new Cog(clientWrapperStub, mockTestStepMap, redisClient);
     protoStep.setStepId('TestStepId');
     runStepRequest.setStep(protoStep);
 
@@ -230,7 +253,7 @@ describe('Cog:RunSteps', () => {
     mockStepExecutor.executeStep.throws()
     const mockTestStepMap: any = {TestStepId: sinon.stub()}
     mockTestStepMap.TestStepId.returns(mockStepExecutor);
-    cogUnderTest = new Cog(clientWrapperStub, mockTestStepMap);
+    cogUnderTest = new Cog(clientWrapperStub, mockTestStepMap, redisClient);
     protoStep.setStepId('TestStepId');
     runStepRequest.setStep(protoStep);
 
