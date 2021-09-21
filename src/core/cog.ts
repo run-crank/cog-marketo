@@ -81,16 +81,7 @@ export class Cog implements ICogServiceServer {
       processing = processing + 1;
 
       const step: Step = runStepRequest.getStep();
-      const idMap: {} = {
-        requestId: runStepRequest.getRequestId(),
-        scenarioId: runStepRequest.getScenarioId(),
-        requestorId: runStepRequest.getRequestorId(),
-      };
-      // const requestId: string = runStepRequest.getRequestId();
-      // const scenarioId: string = runStepRequest.getScenarioId();
-      // const requestorId: string = runStepRequest.getRequestorId();
-      // console.log('idMap runSteps', idMap);
-      const response: RunStepResponse = await this.dispatchStep(runStepRequest, call.metadata);
+      const response: RunStepResponse = await this.dispatchStep(step, runStepRequest, call.metadata);
       call.write(response);
 
       processing = processing - 1;
@@ -116,12 +107,13 @@ export class Cog implements ICogServiceServer {
     call: grpc.ServerUnaryCall<RunStepRequest>,
     callback: grpc.sendUnaryData<RunStepResponse>,
   ) {
-    const response: RunStepResponse = await this.dispatchStep(call.request, call.metadata);
+    const step: Step = call.request.getStep()
+    const response: RunStepResponse = await this.dispatchStep(step, call.request, call.metadata);
     callback(null, response);
   }
 
   private async dispatchStep(
-    // step: Step,
+    step: Step,
     runStepRequest: RunStepRequest,
     metadata: grpc.Metadata,
     client = null,
@@ -134,7 +126,6 @@ export class Cog implements ICogServiceServer {
     };
     // If a pre-auth'd client was provided, use it. Otherwise, create one.
     const wrapper = client || this.getClientWrapper(metadata, idMap);
-    const step = runStepRequest.getStep();
     const stepId = step.getStepId();
     let response: RunStepResponse = new RunStepResponse();
 

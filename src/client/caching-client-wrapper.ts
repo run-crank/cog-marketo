@@ -26,9 +26,10 @@ class CachingClientWrapper {
     const stored = await getCache.call(this, cachekey);
     // if not there, call findLeadByEmail in lead-aware.ts
     if (stored) {
+      console.log('Lead found in cache by email')
       return stored;
     } else {
-      console.log('Lead not found in cache...');
+      console.log('Lead not found in cache by email...');
       const newLead = await this.client.findLeadByEmail(email, justInCaseField, partitionId);
       await setCache.call(this, cachekey, newLead);
       return newLead;
@@ -41,9 +42,10 @@ class CachingClientWrapper {
     const stored = await getCache.call(this, cachekey);
     // if not there, call findLeadByField in lead-aware.ts
     if (stored) {
+      console.log('Lead found in cache by ID')
       return stored;
     } else {
-      console.log('Lead not found in cache...');
+      console.log('Lead not found in cache by ID...');
       const newLead = await this.client.findLeadByField(field, value, justInCaseField, partitionId);
       await setCache.call(this, cachekey, newLead);
       return newLead;
@@ -74,6 +76,7 @@ class CachingClientWrapper {
     const stored = await getCache.call(this, cachekey);
     // if not there, call describeLeadFields in lead-aware.ts
     if (stored) {
+      console.log('Lead Description found in cache...')
       return stored;
     } else {
       console.log('Lead Description not found in cache...');
@@ -103,6 +106,7 @@ class CachingClientWrapper {
     const stored = await getCache.call(this, cachekey);
     // if not there, call getCustomObject in custom-object-aware.ts
     if (stored) {
+      console.log('Custom Object found in cache...')
       return stored;
     } else {
       console.log('Custom Object not found in cache...');
@@ -118,6 +122,7 @@ class CachingClientWrapper {
     const stored = await getCache.call(this, cachekey);
     // if not there, call queryCustomObject in custom-object-aware.ts
     if (stored) {
+      console.log('Query found in cache...')
       return stored;
     } else {
       console.log('Query not found in cache...');
@@ -133,7 +138,40 @@ class CachingClientWrapper {
     await deleteQueryCache.call(this, this.cachePrefix, email, customObjectName);
     return await this.client.deleteCustomObjectById(customObjectName, customObjectGUID);
   }
+
+  // smart-campaign-aware methods
+  // -------------------------------------------------------------------
+
+  public async getCampaigns() {
+    const cachekey = `${this.cachePrefix}Campaigns`;
+    // check cache
+    const stored = await getCache.call(this, cachekey);
+    // if not there, call getCustomObject in custom-object-aware.ts
+    if (stored) {
+      console.log('Campaigns found in cache...')
+      return stored;
+    } else {
+      console.log('Campaigns not found in cache...');
+      const campaigns = await this.client.getCampaigns();
+      await setCache.call(this, cachekey, campaigns);
+      return campaigns;
+    }
+  }
+
+  // all non-cached functions, just refenceing the original function
+  // -------------------------------------------------------------------
+
+  public async addLeadToSmartCampaign(campaignId: string, lead: Record<string, any>) {
+    return this.client.addLeadToSmartCampaign(campaignId, lead);
+  }
+
+
+  
+
 }
+
+
+
 ​
 // Redis methods for get, set, and delete
 // -------------------------------------------------------------------
@@ -142,7 +180,6 @@ async function getCache(key: string) {
   try {
     const stored = await this.redisClient.get(key);
     if (stored) {
-      console.log('loaded data from cache');
       return JSON.parse(stored);
     }
     return null;
