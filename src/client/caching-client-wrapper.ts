@@ -26,7 +26,7 @@ class CachingClientWrapper {
     const stored = await getCache.call(this, cachekey);
     // if not there, call findLeadByEmail in lead-aware.ts
     if (stored) {
-      console.log('Lead found in cache by email')
+      console.log('Lead found in cache by email');
       return stored;
     } else {
       console.log('Lead not found in cache by email...');
@@ -42,7 +42,7 @@ class CachingClientWrapper {
     const stored = await getCache.call(this, cachekey);
     // if not there, call findLeadByField in lead-aware.ts
     if (stored) {
-      console.log('Lead found in cache by ID')
+      console.log('Lead found in cache by ID');
       return stored;
     } else {
       console.log('Lead not found in cache by ID...');
@@ -52,22 +52,22 @@ class CachingClientWrapper {
     }
   }
 
-  public async createOrUpdateLead(lead: Record<string, any>, partitionId: number = 1) {   
+  public async createOrUpdateLead(lead: Record<string, any>, partitionId: number = 1) {
     // making request as normal
-    const newLead = await this.client.createOrUpdateLead(lead, partitionId)
+    const newLead = await this.client.createOrUpdateLead(lead, partitionId);
     // deleting cache
     await deleteLeadCache.call(this, this.cachePrefix, lead.email, newLead.result[0].id);
-    await deleteDescriptionCache.call(this, this.cachePrefix, lead.email)
+    await deleteDescriptionCache.call(this, this.cachePrefix, lead.email);
     return newLead;
   }
 ​
   public async deleteLeadById(leadId: number, email: string) {
     // deleting cache
     await deleteLeadCache.call(this, this.cachePrefix, email, leadId);
-    await deleteDescriptionCache.call(this, this.cachePrefix, email)
+    await deleteDescriptionCache.call(this, this.cachePrefix, email);
 
     // also calling real delete method
-    return await this.client.deleteLeadById(leadId)
+    return await this.client.deleteLeadById(leadId);
   }
 
   public async describeLeadFields(email: string = '') {
@@ -76,7 +76,7 @@ class CachingClientWrapper {
     const stored = await getCache.call(this, cachekey);
     // if not there, call describeLeadFields in lead-aware.ts
     if (stored) {
-      console.log('Lead Description found in cache...')
+      console.log('Lead Description found in cache...');
       return stored;
     } else {
       console.log('Lead Description not found in cache...');
@@ -106,7 +106,7 @@ class CachingClientWrapper {
     const stored = await getCache.call(this, cachekey);
     // if not there, call getCustomObject in custom-object-aware.ts
     if (stored) {
-      console.log('Custom Object found in cache...')
+      console.log('Custom Object found in cache...');
       return stored;
     } else {
       console.log('Custom Object not found in cache...');
@@ -122,7 +122,7 @@ class CachingClientWrapper {
     const stored = await getCache.call(this, cachekey);
     // if not there, call queryCustomObject in custom-object-aware.ts
     if (stored) {
-      console.log('Query found in cache...')
+      console.log('Query found in cache...');
       return stored;
     } else {
       console.log('Query not found in cache...');
@@ -141,6 +141,7 @@ class CachingClientWrapper {
 
   // smart-campaign-aware methods
   // -------------------------------------------------------------------
+  // Campaigns will be cached with cacheKey = cachePrefix + 'Campaigns'
 
   public async getCampaigns() {
     const cachekey = `${this.cachePrefix}Campaigns`;
@@ -148,7 +149,7 @@ class CachingClientWrapper {
     const stored = await getCache.call(this, cachekey);
     // if not there, call getCustomObject in custom-object-aware.ts
     if (stored) {
-      console.log('Campaigns found in cache...')
+      console.log('Campaigns found in cache...');
       return stored;
     } else {
       console.log('Campaigns not found in cache...');
@@ -158,20 +159,33 @@ class CachingClientWrapper {
     }
   }
 
-  // all non-cached functions, just refenceing the original function
+  // all non-cached functions, just referencing the original function
   // -------------------------------------------------------------------
 
   public async addLeadToSmartCampaign(campaignId: string, lead: Record<string, any>) {
     return this.client.addLeadToSmartCampaign(campaignId, lead);
   }
 
+  public async getActivityTypes() {
+    return await this.client.getActivityTypes();
+  }
 
-  
+  public async getActivityPagingToken(sinceDate) {
+    return await this.client.getActivityPagingToken(sinceDate);
+  }
 
+  public async getActivities(nextPageToken, leadId, activityId) {
+    return await this.client.getActivities(nextPageToken, leadId, activityId);
+  }
+
+  public async getDailyApiUsage() {
+    return await this.client.getDailyApiUsage();
+  }
+
+  public async getWeeklyApiUsage() {
+    return await this.client.getWeeklyApiUsage();
+  }
 }
-
-
-
 ​
 // Redis methods for get, set, and delete
 // -------------------------------------------------------------------
