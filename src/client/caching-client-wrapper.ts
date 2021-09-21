@@ -163,7 +163,7 @@ class CachingClientWrapper {
   // -------------------------------------------------------------------
 
   public async addLeadToSmartCampaign(campaignId: string, lead: Record<string, any>) {
-    return this.client.addLeadToSmartCampaign(campaignId, lead);
+    return await this.client.addLeadToSmartCampaign(campaignId, lead);
   }
 
   public async getActivityTypes() {
