@@ -197,7 +197,7 @@ describe('CachingClientWrapper', () => {
     setTimeout(() => {
       expect(cachingClientWrapperUnderTest.deleteDescriptionCache).to.have.been.called;
       expect(cachingClientWrapperUnderTest.deleteLeadCache).to.have.been.called;
-      expect(clientWrapperStub.deleteLeadById).to.have.been.called;
+      expect(clientWrapperStub.deleteLeadById).to.have.been.calledWith(expectedId);
       done();
     });
   });
