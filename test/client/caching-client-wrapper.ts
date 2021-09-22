@@ -30,13 +30,12 @@ describe('CachingClientWrapper', () => {
       getActivityTypes: sinon.spy(),
       deleteCustomObjectById: sinon.spy(),
       findLeadByEmail: sinon.spy(), 
-      // deleteCustomObjectCache: sinon.spy(),
-      // deleteDescriptionCache: sinon.spy(),
-      // deleteQueryCache: sinon.spy(), 
+      findLeadByField: sinon.spy(),
+      deleteLeadById: sinon.spy()
     };
     
     redisClientStub = {
-      get: sinon.spy(),
+      get: sinon.stub(),
       setex: sinon.spy(),
       del: sinon.spy(),
     };
@@ -128,67 +127,80 @@ describe('CachingClientWrapper', () => {
   //   });
   // });
 
-  it('findLeadByEmail (no options)', (done) => {
+  it('findLeadByEmail using original function', (done) => {
     const expectedEmail = 'test@example.com';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClient, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest.getAsync = sinon.stub().returns(false);
     cachingClientWrapperUnderTest.findLeadByEmail(expectedEmail);
 
-    expect(clientWrapperStub.findLeadByEmail).to.have.been.calledWith(expectedEmail);
+    setTimeout(() => {
+      expect(clientWrapperStub.findLeadByEmail).to.have.been.calledWith(expectedEmail);
+      done();
+    });
   });
 
-  // it('findLeadByEmail (with options)', (done) => {
-  //   const expectedEmail = 'test@example.com';
-  //   clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
-  //   clientWrapperUnderTest.findLeadByEmail(expectedEmail);
+  it('findLeadByEmail using cache', (done) => {
+    const expectedEmail = 'test@example.com';
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest.getAsync = sinon.stub();
+    cachingClientWrapperUnderTest.getAsync.returns('"expectedCachedValue"');
+    let actualCachedValue: string;
+    (async () => {
+      actualCachedValue = await cachingClientWrapperUnderTest.findLeadByEmail(expectedEmail);
+    })()
+    
+    setTimeout(() => {
+      expect(clientWrapperStub.findLeadByEmail).to.not.have.been.called;
+      expect(actualCachedValue).to.equal('expectedCachedValue');
+      done();
+    });
+  });
 
-  //   setTimeout(() => {
-  //     expect(marketoClientStub.lead.find).to.have.been.calledWith(
-  //       'email',
-  //       [expectedEmail],
-  //       { fields: ['email'] },
-  //     );
+  it('findLeadByField using original function', (done) => {
+    const expectedField = 'firstName';
+    const expectedId = '123';
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest.getAsync = sinon.stub().returns(false);
+    cachingClientWrapperUnderTest.findLeadByField(expectedField, expectedId);
 
-  //     done();
-  //   });
-  // });
+    setTimeout(() => {
+      expect(clientWrapperStub.findLeadByField).to.have.been.calledWith(expectedField, expectedId);
+      done();
+    });
+  });
 
-  // it('findLeadByEmail (with partition id)', (done) => {
-  //   const expectedEmail = 'test-in-partition-2@example.com';
-  //   const expectedPartition = 1;
+  it('findLeadByField using cache', (done) => {
+    const expectedField = 'firstName';
+    const expectedId = '123';
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest.getAsync = sinon.stub();
+    cachingClientWrapperUnderTest.getAsync.returns('"expectedCachedValue"');
+    let actualCachedValue: string;
+    (async () => {
+      actualCachedValue = await cachingClientWrapperUnderTest.findLeadByField(expectedField, expectedId);
+    })()
+    
+    setTimeout(() => {
+      expect(clientWrapperStub.findLeadByField).to.not.have.been.called;
+      expect(actualCachedValue).to.equal('expectedCachedValue');
+      done();
+    });
+  });
 
-  //   marketoClientStub.lead.find = sinon.stub();
-  //   marketoClientStub.lead.find.returns(Promise.resolve({
-  //     result: [{
-  //       email: `not-${expectedEmail}`,
-  //       leadPartitionId: expectedPartition * 2,
-  //     }, {
-  //       email: expectedEmail,
-  //       leadPartitionId: expectedPartition,
-  //     }],
-  //   }));
+  it('deleteLeadById', (done) => {
+    const expectedId = 123;
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest.deleteDescriptionCache = sinon.spy();
+    cachingClientWrapperUnderTest.deleteLeadCache = sinon.spy();
+    cachingClientWrapperUnderTest.deleteLeadById(expectedId);
 
-  //   clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
-  //   clientWrapperUnderTest.findLeadByEmail(expectedEmail, null, expectedPartition).then((res) => {
-  //     try {
-  //       expect(res.result[0].email).to.equal(expectedEmail);
-  //     } catch (e) {
-  //       return done(e);
-  //     }
-  //     done();
-  //   });
-  // });
-
-  // it('deleteLeadById', () => {
-  //   const expectedId = 123;
-  //   clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
-  //   clientWrapperUnderTest.deleteLeadById(expectedId);
-
-  //   expect(marketoClientStub._connection.postJson).to.have.been.calledWith(
-  //     '/v1/leads.json',
-  //     { input: [ { id: expectedId } ] },
-  //     { query: { _method: 'DELETE' } }
-  //   );
-  // });
+    setTimeout(() => {
+      expect(cachingClientWrapperUnderTest.deleteDescriptionCache).to.have.been.called;
+      expect(cachingClientWrapperUnderTest.deleteLeadCache).to.have.been.called;
+      expect(clientWrapperStub.deleteLeadById).to.have.been.called;
+      done();
+    });
+  });
 
   // it('describeLeadFields', () => {
   //   clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
@@ -305,42 +317,47 @@ describe('CachingClientWrapper', () => {
   //   );
   // });
 
-  it('getActivityTypes', () => {
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClient, idMap);
+  it('getActivityTypes', (done) => {
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getActivityTypes();
 
-    expect(clientWrapperStub.getActivityTypes).to.have.been.calledWith();
+    expect(clientWrapperStub.getActivityTypes).to.have.been.called;
+    done()
   });
 
-  it('getActivityPagingToken', () => {
+  it('getActivityPagingToken', (done) => {
     const sinceDate = 'anyDate';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClient, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getActivityPagingToken(sinceDate);
 
     expect(clientWrapperStub.getActivityPagingToken).to.have.been.calledWith(sinceDate);
+    done()
   });
 
-  it('getActivities', () => {
+  it('getActivities', (done) => {
     const nextPageToken = 'anyToken';
     const leadId = 'anyId';
     const activityId = 'anyActivityId';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClient, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getActivities(nextPageToken, leadId, activityId);
 
     expect(clientWrapperStub.getActivities).to.have.been.calledWith(nextPageToken, leadId, activityId);
+    done()
   });
 
-  it('getDailyApiUsage', () => {
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClient, idMap);
+  it('getDailyApiUsage', (done) => {
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getDailyApiUsage();
 
-    expect(clientWrapperStub.getDailyApiUsage).to.have.been.calledWith();
+    expect(clientWrapperStub.getDailyApiUsage).to.have.been.called;
+    done()
   });
 
-  it('getWeeklyApiUsage', () => {
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClient, idMap);
+  it('getWeeklyApiUsage', (done) => {
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getWeeklyApiUsage();
 
-    expect(clientWrapperStub.getWeeklyApiUsage).to.have.been.calledWith();
+    expect(clientWrapperStub.getWeeklyApiUsage).to.have.been.called;
+    done()
   });
 });

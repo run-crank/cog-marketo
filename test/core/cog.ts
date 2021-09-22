@@ -115,7 +115,7 @@ describe('Cog:RunStep', () => {
     grpcUnaryCall.metadata.add('anythingReally', 'some-value');
 
     cogUnderTest.runStep(grpcUnaryCall, (err, response: RunStepResponse) => {
-      expect(clientWrapperStub).to.have.been.calledWith()
+      expect(clientWrapperStub).to.have.been.called;
       done();
     });
   });
@@ -193,8 +193,7 @@ describe('Cog:RunSteps', () => {
 
     cogUnderTest.runSteps(grpcDuplexStream);
     grpcDuplexStream.emit('data', runStepRequest);
-    //moving real test to client-wrapper.ts, leaving calledWith() parameter empty so we are only checking clientWrapperStub is instantiated
-    expect(clientWrapperStub).to.have.been.calledWith(); 
+    expect(clientWrapperStub).to.have.been.called; 
   });
 
   it('responds with error when called with unknown stepId', (done) => {

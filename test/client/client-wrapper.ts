@@ -175,7 +175,7 @@ describe('ClientWrapper', () => {
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub);
     clientWrapperUnderTest.describeLeadFields();
 
-    expect(marketoClientStub.lead.describe).to.have.been.calledWith();
+    expect(marketoClientStub.lead.describe).to.have.been.called;
   });
 
   it('addLeadToSmartCampaign', () => {
