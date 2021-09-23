@@ -26,10 +26,8 @@ class CachingClientWrapper {
     const stored = await this.getCache(cachekey);
     // if not there, call findLeadByEmail in lead-aware.ts
     if (stored) {
-      console.log('Lead found in cache by email');
       return stored;
     } else {
-      console.log('Lead not found in cache by email...');
       const newLead = await this.client.findLeadByEmail(email, justInCaseField, partitionId);
       await this.setCache(cachekey, newLead);
       return newLead;
@@ -42,10 +40,8 @@ class CachingClientWrapper {
     const stored = await this.getCache(cachekey);
     // if not there, call findLeadByField in lead-aware.ts
     if (stored) {
-      console.log('Lead found in cache by ID');
       return stored;
     } else {
-      console.log('Lead not found in cache by ID...');
       const newLead = await this.client.findLeadByField(field, value, justInCaseField, partitionId);
       await this.setCache(cachekey, newLead);
       return newLead;
@@ -55,8 +51,9 @@ class CachingClientWrapper {
   public async createOrUpdateLead(lead: Record<string, any>, partitionId: number = 1) {
     // making request as normal
     const newLead = await this.client.createOrUpdateLead(lead, partitionId);
+    const id = newLead ? newLead.result[0].id : null
     // deleting cache
-    await this.deleteLeadCache(this.cachePrefix, lead.email, newLead.result[0].id);
+    await this.deleteLeadCache(this.cachePrefix, lead.email, id);
     await this.deleteDescriptionCache(this.cachePrefix, lead.email);
     return newLead;
   }
@@ -75,10 +72,8 @@ class CachingClientWrapper {
     const stored = await this.getCache(cachekey);
     // if not there, call describeLeadFields in lead-aware.ts
     if (stored) {
-      console.log('Lead Description found in cache...');
       return stored;
     } else {
-      console.log('Lead Description not found in cache...');
       const newLeadDescription = await this.client.describeLeadFields();
       await this.setCache(cachekey, newLeadDescription);
       return newLeadDescription;
@@ -90,25 +85,14 @@ class CachingClientWrapper {
   // Custom Objects will be cached with cacheKey = cachePrefix + 'Object' + email + customObjectName
   // Custom Object Queries will be cached with cacheKey = cachePrefix + 'Query' + email + customObjectName
 
-  public async createOrUpdateCustomObject(customObjectName, customObject: Record<string, any>) {
-    // making request as normal
-    const newObject = await this.client.createOrUpdateCustomObject(customObjectName, customObject);
-    // deleting cache
-    await this.deleteCustomObjectCache(this.cachePrefix, customObject.linkField, customObjectName);
-    await this.deleteDescriptionCache(this.cachePrefix, customObject.linkField);
-    return newObject;
-  }
-
   public async getCustomObject(customObjectName, email: string = null) {
     const cachekey = `${this.cachePrefix}Object${email + customObjectName}`;
     // check cache
     const stored = await this.getCache(cachekey);
     // if not there, call getCustomObject in custom-object-aware.ts
     if (stored) {
-      console.log('Custom Object found in cache...');
       return stored;
     } else {
-      console.log('Custom Object not found in cache...');
       const newCustomObject = await this.client.getCustomObject(customObjectName);
       await this.setCache(cachekey, newCustomObject);
       return newCustomObject;
@@ -121,14 +105,21 @@ class CachingClientWrapper {
     const stored = await this.getCache(cachekey);
     // if not there, call queryCustomObject in custom-object-aware.ts
     if (stored) {
-      console.log('Query found in cache...');
       return stored;
     } else {
-      console.log('Query not found in cache...');
       const newCustomObjectQuery = await this.client.queryCustomObject(customObjectName, filterType, searchFields, requestFields);
       await this.setCache(cachekey, newCustomObjectQuery);
       return newCustomObjectQuery;
     }
+  }
+
+  public async createOrUpdateCustomObject(customObjectName, customObject: Record<string, any>) {
+    // making request as normal
+    const newObject = await this.client.createOrUpdateCustomObject(customObjectName, customObject);
+    // deleting cache
+    await this.deleteCustomObjectCache(this.cachePrefix, customObject.linkField, customObjectName);
+    await this.deleteDescriptionCache(this.cachePrefix, customObject.linkField);
+    return newObject;
   }
 
   public async deleteCustomObjectById(customObjectName, customObjectGUID, email: string = '') {
@@ -148,10 +139,8 @@ class CachingClientWrapper {
     const stored = await this.getCache(cachekey);
     // if not there, call getCampaigns in smart-campaign-aware.ts
     if (stored) {
-      console.log('Campaigns found in cache...');
       return stored;
     } else {
-      console.log('Campaigns not found in cache...');
       const campaigns = await this.client.getCampaigns();
       await this.setCache(cachekey, campaigns);
       return campaigns;
@@ -191,6 +180,7 @@ class CachingClientWrapper {
   // Async getter/setter
   public getAsync = promisify(this.redisClient.get).bind(this.redisClient);
   public setAsync = promisify(this.redisClient.setex).bind(this.redisClient);
+  public delAsync = promisify(this.redisClient.del).bind(this.redisClient);
 
   public async getCache(key: string) {
     try {
@@ -205,52 +195,42 @@ class CachingClientWrapper {
   }
 
   public async setCache(key: string, value: any) {
-    this.redisClient.setex = promisify(this.redisClient.setex);
     try {
-      await this.redisClient.setex(key, 600, JSON.stringify(value));
-      console.log('stored data in cache');
+      await this.setAsync(key, 600, JSON.stringify(value));
     } catch (err) {
       console.log(err);
     }
   }
   ​
   public async deleteLeadCache(prefix: string, email: string, id: number) {
-    this.redisClient.del = promisify(this.redisClient.del);
     // delete all stored leads that match the prefix
     try {
-      await this.redisClient.del(`${prefix}Lead${email}`);
-      await this.redisClient.del(`${prefix}Lead${id}`);
-      console.log('deleted Lead data from cache');
+      await this.delAsync(`${prefix}Lead${email}`);
+      await this.delAsync(`${prefix}Lead${id}`);
     } catch (err) {
       console.log(err);
     }
   }
 
   public async deleteDescriptionCache(prefix: string, email: string) {
-    this.redisClient.del = promisify(this.redisClient.del);
     try {
-      await this.redisClient.del(`${prefix}Description${email}`);
-      console.log('deleted Lead Descripton data from cache');
+      await this.delAsync(`${prefix}Description${email}`);
     } catch (err) {
       console.log(err);
     }
   }
   ​
   public async deleteCustomObjectCache(prefix: string, email: string, customObjectName: string) {
-    this.redisClient.del = promisify(this.redisClient.del);
     try {
-      await this.redisClient.del(`${prefix}Object${email}${customObjectName}`);
-      console.log('deleted Custom Object data from cache');
+      await this.delAsync(`${prefix}Object${email}${customObjectName}`);
     } catch (err) {
       console.log(err);
     }
   }
 
   public async deleteQueryCache(prefix: string, email: string, customObjectName: string) {
-    this.redisClient.del = promisify(this.redisClient.del);
     try {
-      await this.redisClient.del(`${prefix}Query${email}${customObjectName}`);
-      console.log('deleted Query data from cache');
+      await this.delAsync(`${prefix}Query${email}${customObjectName}`);
     } catch (err) {
       console.log(err);
     }
