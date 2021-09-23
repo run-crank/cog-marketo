@@ -35,7 +35,7 @@ describe('CachingClientWrapper', () => {
     };
 
     redisClientStub = {
-      get: sinon.stub(),
+      get: sinon.spy(),
       setex: sinon.spy(),
       del: sinon.spy(),
     };
@@ -277,8 +277,7 @@ describe('CachingClientWrapper', () => {
 
   it('getCampaigns using cache', (done) => {
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
-    cachingClientWrapperUnderTest.getAsync = sinon.stub();
-    cachingClientWrapperUnderTest.getAsync.returns('"expectedCachedValue"');
+    cachingClientWrapperUnderTest.getAsync = sinon.stub().returns('"expectedCachedValue"');
     let actualCachedValue: string;
     (async () => {
       actualCachedValue = await cachingClientWrapperUnderTest.getCampaigns();
