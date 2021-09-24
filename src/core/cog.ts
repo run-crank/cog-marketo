@@ -107,7 +107,7 @@ export class Cog implements ICogServiceServer {
     call: grpc.ServerUnaryCall<RunStepRequest>,
     callback: grpc.sendUnaryData<RunStepResponse>,
   ) {
-    const step: Step = call.request.getStep()
+    const step: Step = call.request.getStep();
     const response: RunStepResponse = await this.dispatchStep(step, call.request, call.metadata);
     callback(null, response);
   }
@@ -148,7 +148,7 @@ export class Cog implements ICogServiceServer {
   }
 
   private getClientWrapper(auth: grpc.Metadata, idMap: {} = null) {
-    const client = new ClientWrapper(auth)
+    const client = new ClientWrapper(auth);
     return new this.clientWrapperClass(client, this.redisClient, idMap);
   }
 }

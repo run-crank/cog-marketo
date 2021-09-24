@@ -199,7 +199,7 @@ describe('CachingClientWrapper', () => {
     const customObjectName = 'any';
     const filterType = 'anyFilterType';
     const searchFields = [{ anySearchField: 'anySearchFieldValue' }];
-    const requestFields = ['anyField'];    
+    const requestFields = ['anyField'];
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getAsync = sinon.stub().returns(false);
     cachingClientWrapperUnderTest.queryCustomObject(customObjectName, filterType, searchFields, requestFields);
@@ -214,7 +214,7 @@ describe('CachingClientWrapper', () => {
     const customObjectName = 'any';
     const filterType = 'anyFilterType';
     const searchFields = [{ anySearchField: 'anySearchFieldValue' }];
-    const requestFields = ['anyField'];    
+    const requestFields = ['anyField'];
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getAsync = sinon.stub();
     cachingClientWrapperUnderTest.getAsync.returns('"expectedCachedValue"');
@@ -232,7 +232,7 @@ describe('CachingClientWrapper', () => {
 
   it('createOrUpdateCustomObject', (done) => {
     const customObjectName = 'any';
-    const customObject = { anyField: 'anyValue'};
+    const customObject = { anyField: 'anyValue' };
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.deleteCustomObjectCache = sinon.spy();
     cachingClientWrapperUnderTest.deleteDescriptionCache = sinon.spy();
@@ -252,7 +252,7 @@ describe('CachingClientWrapper', () => {
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.deleteDescriptionCache = sinon.spy();
     cachingClientWrapperUnderTest.deleteCustomObjectCache = sinon.spy();
-    cachingClientWrapperUnderTest.deleteQueryCache = sinon.spy()
+    cachingClientWrapperUnderTest.deleteQueryCache = sinon.spy();
     cachingClientWrapperUnderTest.deleteCustomObjectById(customObjectName, customObjectGUID);
 
     setTimeout(() => {
@@ -289,7 +289,7 @@ describe('CachingClientWrapper', () => {
       done();
     });
   });
- 
+
   it('addLeadToSmartCampaign using original function', () => {
     const campaignIdInput = 'someId';
     const leadInput = { name: 'someLead' };
@@ -344,7 +344,7 @@ describe('CachingClientWrapper', () => {
   });
 
   it('getCache', (done) => {
-    redisClientStub.get = sinon.stub().yields()
+    redisClientStub.get = sinon.stub().yields();
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getCache('expectedKey');
 
@@ -355,7 +355,7 @@ describe('CachingClientWrapper', () => {
   });
 
   it('setCache', (done) => {
-    redisClientStub.setex = sinon.stub().yields()
+    redisClientStub.setex = sinon.stub().yields();
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.setCache('expectedKey', 'expectedValue');
 
@@ -368,7 +368,7 @@ describe('CachingClientWrapper', () => {
   it('deleteLeadCache', (done) => {
     const expectedCacheKey1 = 'prefix' + 'Lead' + 'test@example.com';
     const expectedCacheKey2 = 'prefix' + 'Lead' + '1';
-    redisClientStub.del = sinon.stub().yields()
+    redisClientStub.del = sinon.stub().yields();
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.deleteLeadCache('prefix', 'test@example.com', 1);
 
@@ -381,7 +381,7 @@ describe('CachingClientWrapper', () => {
 
   it('deleteDescriptionCache', (done) => {
     const expectedCacheKey1 = 'prefix' + 'Description' + 'test@example.com';
-    redisClientStub.del = sinon.stub().yields()
+    redisClientStub.del = sinon.stub().yields();
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.deleteDescriptionCache('prefix', 'test@example.com');
 
@@ -393,7 +393,7 @@ describe('CachingClientWrapper', () => {
 
   it('deleteCustomObjectCache', (done) => {
     const expectedCacheKey1 = 'prefix' + 'Object' + 'test@example.com' + 'objectName';
-    redisClientStub.del = sinon.stub().yields()
+    redisClientStub.del = sinon.stub().yields();
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.deleteCustomObjectCache('prefix', 'test@example.com', 'objectName');
 
@@ -405,7 +405,7 @@ describe('CachingClientWrapper', () => {
 
   it('deleteQueryCache', (done) => {
     const expectedCacheKey1 = 'prefix' + 'Query' + 'test@example.com' + 'objectName';
-    redisClientStub.del = sinon.stub().yields()
+    redisClientStub.del = sinon.stub().yields();
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.deleteQueryCache('prefix', 'test@example.com', 'objectName');
 
@@ -414,6 +414,5 @@ describe('CachingClientWrapper', () => {
       done();
     });
   });
-
 
 });

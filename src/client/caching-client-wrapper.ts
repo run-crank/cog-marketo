@@ -51,7 +51,7 @@ class CachingClientWrapper {
   public async createOrUpdateLead(lead: Record<string, any>, partitionId: number = 1) {
     // making request as normal
     const newLead = await this.client.createOrUpdateLead(lead, partitionId);
-    const id = newLead ? newLead.result[0].id : null
+    const id = newLead ? newLead.result[0].id : null;
     // deleting cache
     await this.deleteLeadCache(this.cachePrefix, lead.email, id);
     await this.deleteDescriptionCache(this.cachePrefix, lead.email);
