@@ -73,7 +73,6 @@ export class Cog implements ICogServiceServer {
   }
 
   runSteps(call: grpc.ServerDuplexStream<RunStepRequest, RunStepResponse>) {
-    // const client = this.getClientWrapper(call.metadata);
     let processing = 0;
     let clientEnded = false;
 
