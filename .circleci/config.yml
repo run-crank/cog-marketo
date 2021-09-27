@@ -9,7 +9,7 @@ executors:
     environment:
       IMAGE_NAME: automatoninc/marketo
     machine:
-      image: circleci/classic:latest
+      image: circleci/classic:latest  
 
 jobs:
   test:
@@ -59,6 +59,8 @@ jobs:
 
   install-built-cog:
     executor: docker-user
+    machine: 
+      image: circleci/redis    
     steps:
       - attach_workspace:
           at: /tmp/workspace
