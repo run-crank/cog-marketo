@@ -70,7 +70,6 @@ jobs:
           command: |
             sudo apt update
             sudo apt install redis-server
-            redis-server
             curl -s https://get.crank.run/install.sh | sh
             docker tag $IMAGE_NAME:latest $IMAGE_NAME:local-test
             crank cog:install $IMAGE_NAME:local-test --ignore-auth
