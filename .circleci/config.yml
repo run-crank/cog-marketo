@@ -65,11 +65,12 @@ jobs:
       - run:
           name: Load archived Docker image
           command: docker load -i /tmp/workspace/image.tar
+      - run: 
+          name: Install Redis
+          command: sudo apt install redis-server
       - run:
           name: Install Crank and the built Cog
           command: |
-            sudo apt update
-            sudo apt install redis-server
             curl -s https://get.crank.run/install.sh | sh
             docker tag $IMAGE_NAME:latest $IMAGE_NAME:local-test
             crank cog:install $IMAGE_NAME:local-test --ignore-auth
