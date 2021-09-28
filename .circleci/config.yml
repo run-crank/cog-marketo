@@ -70,7 +70,7 @@ jobs:
           command: |
             sudo apt update
             sudo apt install redis-server
-            redis server
+            redis-server
       - run:
           name: Install Crank and the built Cog
           command: |
