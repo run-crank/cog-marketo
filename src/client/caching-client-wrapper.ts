@@ -5,12 +5,12 @@ import * as redis from 'redis';
 class CachingClientWrapper {
   // cachePrefix is scoped to the specific scenario, request, and requestor
   private cachePrefix = this.idMap.requestId + this.idMap.scenarioId + this.idMap.requestorId;
-  private redisClient: any;
+  public redisClient: any;
   public getAsync: any;
   public setAsync: any;
   public delAsync: any;
 
-  constructor(private client: ClientWrapper, public redisUrl: any, public idMap: any) {
+  constructor(private client: ClientWrapper, public idMap: any, public redisUrl: any = undefined) {
     if (redisUrl) {
       this.redisClient = redis.createClient(redisUrl);
     } else {
