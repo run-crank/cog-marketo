@@ -1,5 +1,11 @@
 version: 2.1
 executors:
+  docker-redis:
+    environment:
+      IMAGE_NAME: automatoninc/marketo
+    docker:
+      - image: ubuntu:18.04
+      - image: redis
   docker-publisher:
     environment:
       IMAGE_NAME: automatoninc/marketo
@@ -56,6 +62,20 @@ jobs:
           root: .
           paths:
             - ./image.tar
+
+  install-redis:
+    executor: docker-redis
+    steps: 
+      - run:
+          name: Update yum cache
+          command: apt-get update
+      - run:
+          name: Install base packages
+          command: apt-get install redis-server
+      - run:
+          name: Start Redis
+          command: sudo redis-server --daemonize yes
+      - run: redis-cli ping
 
   install-built-cog:
     executor: docker-user
