@@ -74,7 +74,7 @@ jobs:
           command: apt-get -y install redis-server 
       - run:
           name: Start Redis
-          command: sudo redis-server --daemonize yes
+          command: redis-server --daemonize yes
       - run: redis-cli ping
 
   install-built-cog:
