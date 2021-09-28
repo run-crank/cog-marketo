@@ -29,20 +29,19 @@ describe('CheckLeadActivityByIdStep', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('CheckLeadActivityByIdStep');
     expect(stepDef.getName()).to.equal('Check a Marketo Lead\'s Activity by Id');
-    expect(stepDef.getExpression()).to.equal('there should be an? (?<activityTypeIdOrName>.+) activity for marketo lead with (?<identifier>.+) (?<identifierValue>.+) in the last (?<minutes>\\d+) minutes?');
+    expect(stepDef.getExpression()).to.equal('there should be an? (?<activityTypeIdOrName>.+) activity for marketo lead with id (?<id>.+) in the last (?<minutes>\\d+) minutes?');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.VALIDATION);
   });
 
   describe('executeStep', () => {
     describe('Lead not found', () => {
-      const identifier = 'email';
+      const id = 'email';
       const expectedEmailValue = 'test@thisisjust.atomatest.com';
       const expectedActivityTypeIdOrName = 'Lead created';
       const expectedMinutes = 15;
       beforeEach(() => {
         protoStep.setData(Struct.fromJavaScript({
-          identifier: identifier,
-          identifierValue: expectedEmailValue,
+          id: id,
           activityTypeIdOrName: expectedActivityTypeIdOrName,
           minutes: expectedMinutes,
         }));
@@ -63,14 +62,13 @@ describe('CheckLeadActivityByIdStep', () => {
     });
 
     describe('On exception', () => {
-      const identifier = 'email';
+      const id = 'email';
       const expectedEmailValue = 'test@thisisjust.atomatest.com';
       const expectedActivityTypeIdOrName = 'Lead created';
       const expectedMinutes = 15;
       beforeEach(() => {
         protoStep.setData(Struct.fromJavaScript({
-          identifier: identifier,
-          identifierValue: expectedEmailValue,
+          id: id,
           activityTypeIdOrName: expectedActivityTypeIdOrName,
           minutes: expectedMinutes,
         }));
@@ -85,14 +83,13 @@ describe('CheckLeadActivityByIdStep', () => {
     });
 
     describe('Activity Type not found', () => {
-      const identifier = 'email';
+      const id = 'email';
       const expectedEmailValue = 'test@thisisjust.atomatest.com';
       const expectedActivityTypeIdOrName = 'Lead created';
       const expectedMinutes = 15;
       beforeEach(() => {
         protoStep.setData(Struct.fromJavaScript({
-          identifier: identifier,
-          identifierValue: expectedEmailValue,
+          id: id,
           activityTypeIdOrName: expectedActivityTypeIdOrName,
           minutes: expectedMinutes,
         }));
@@ -117,14 +114,13 @@ describe('CheckLeadActivityByIdStep', () => {
     });
 
     describe('No activities found for activity type', () => {
-      const identifier = 'email';
+      const id = 'email';
       const expectedEmailValue = 'test@thisisjust.atomatest.com';
       const expectedActivityTypeIdOrName = 'Lead created';
       const expectedMinutes = 15;
       beforeEach(() => {
         protoStep.setData(Struct.fromJavaScript({
-          identifier: identifier,
-          identifierValue: expectedEmailValue,
+          id: id,
           activityTypeIdOrName: expectedActivityTypeIdOrName,
           minutes: expectedMinutes,
         }));
@@ -151,14 +147,13 @@ describe('CheckLeadActivityByIdStep', () => {
     });
 
     describe('Activities found. withAttributes is not supplied', () => {
-      const identifier = 'email';
+      const id = 'email';
       const expectedEmailValue = 'test@thisisjust.atomatest.com';
       const expectedActivityTypeIdOrName = 'Lead created';
       const expectedMinutes = 15;
       beforeEach(() => {
         protoStep.setData(Struct.fromJavaScript({
-          identifier: identifier,
-          identifierValue: expectedEmailValue,
+          id: id,
           activityTypeIdOrName: expectedActivityTypeIdOrName,
           minutes: expectedMinutes,
         }));
@@ -187,14 +182,13 @@ describe('CheckLeadActivityByIdStep', () => {
     });
 
     describe('Expected Attributes Matching', () => {
-      const identifier = 'email';
+      const id = 'email';
       const expectedEmailValue = 'test@thisisjust.atomatest.com';
       const expectedActivityTypeIdOrName = 'Lead created';
       const expectedMinutes = 15;
       beforeEach(() => {
         protoStep.setData(Struct.fromJavaScript({
-          identifier: identifier,
-          identifierValue: expectedEmailValue,
+          id: id,
           activityTypeIdOrName: expectedActivityTypeIdOrName,
           minutes: expectedMinutes,
         }));
@@ -226,8 +220,7 @@ describe('CheckLeadActivityByIdStep', () => {
       describe('Has at least one match', () => {
         beforeEach(() => {
           protoStep.setData(Struct.fromJavaScript({
-            identifier: identifier,
-            identifierValue: expectedEmailValue,
+            id: id,
             activityTypeIdOrName: expectedActivityTypeIdOrName,
             minutes: expectedMinutes,
             withAttributes: {
@@ -245,8 +238,7 @@ describe('CheckLeadActivityByIdStep', () => {
       describe('Has no matches', () => {
         beforeEach(() => {
           protoStep.setData(Struct.fromJavaScript({
-            identifier: identifier,
-            identifierValue: expectedEmailValue,
+            id: id,
             activityTypeIdOrName: expectedActivityTypeIdOrName,
             minutes: expectedMinutes,
             withAttributes: {
@@ -264,8 +256,7 @@ describe('CheckLeadActivityByIdStep', () => {
       describe('Primary attribute is matching', () => {
         beforeEach(() => {
           protoStep.setData(Struct.fromJavaScript({
-            identifier: identifier,
-            identifierValue: expectedEmailValue,
+            id: id,
             activityTypeIdOrName: expectedActivityTypeIdOrName,
             minutes: expectedMinutes,
             withAttributes: {
