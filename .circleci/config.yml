@@ -10,18 +10,12 @@ executors:
       IMAGE_NAME: automatoninc/marketo
     machine:
       image: circleci/classic:latest
-  docker-ubuntu:
-    environment:
-      IMAGE_NAME: automatoninc/marketo
-      REDIS_URL: localhost:6379
-    docker:
-      - image: cimg/base:2021.04
-      - image: redis
 
 jobs:
   test:
     docker:
       - image: circleci/node:10
+      - image: redis
     steps:
       - checkout
       - restore_cache:
@@ -65,11 +59,10 @@ jobs:
             - ./image.tar
 
   install-built-cog:
-    executor: docker-ubuntu
+    executor: docker-user
     steps:
       - attach_workspace:
           at: /tmp/workspace
-      - setup_remote_docker
       - run:
           name: Load archived Docker image
           command: docker load -i /tmp/workspace/image.tar
@@ -87,12 +80,11 @@ jobs:
           command: crank cog:uninstall $IMAGE_NAME --force
 
   run-test-scenarios:
-    executor: docker-ubuntu
+    executor: docker-user
     steps:
       - checkout
       - attach_workspace:
           at: /tmp/workspace
-      - setup_remote_docker
       - run:
           name: Load archived Docker image
           command: docker load -i /tmp/workspace/image.tar
