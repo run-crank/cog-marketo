@@ -221,7 +221,6 @@ describe('CheckLeadActivityByIdStep', () => {
         beforeEach(() => {
           protoStep.setData(Struct.fromJavaScript({
             id: id,
-            idValue: expectedEmailValue,
             activityTypeIdOrName: expectedActivityTypeIdOrName,
             minutes: expectedMinutes,
             withAttributes: {
@@ -240,7 +239,6 @@ describe('CheckLeadActivityByIdStep', () => {
         beforeEach(() => {
           protoStep.setData(Struct.fromJavaScript({
             id: id,
-            idValue: expectedEmailValue,
             activityTypeIdOrName: expectedActivityTypeIdOrName,
             minutes: expectedMinutes,
             withAttributes: {
@@ -259,7 +257,6 @@ describe('CheckLeadActivityByIdStep', () => {
         beforeEach(() => {
           protoStep.setData(Struct.fromJavaScript({
             id: id,
-            idValue: expectedEmailValue,
             activityTypeIdOrName: expectedActivityTypeIdOrName,
             minutes: expectedMinutes,
             withAttributes: {
