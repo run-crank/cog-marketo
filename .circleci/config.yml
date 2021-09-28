@@ -76,6 +76,7 @@ jobs:
           name: Start Redis
           command: redis-server --daemonize yes
       - run: redis-cli ping
+      - run: sleep 120
 
   install-built-cog:
     executor: docker-user
@@ -185,6 +186,7 @@ workflows:
           requires:
             - test
             - build
+            - install-redis
           filters:
             branches:
               ignore:
