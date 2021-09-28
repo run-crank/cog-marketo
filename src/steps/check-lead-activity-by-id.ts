@@ -9,17 +9,13 @@ import * as moment from 'moment';
 export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface {
 
   protected stepName: string = 'Check a Marketo Lead\'s Activity by Id';
-  protected stepExpression: string = 'there should be an? (?<activityTypeIdOrName>.+) activity for marketo lead with (?<identifier>.+) (?<identifierValue>.+) in the last (?<minutes>\\d+) minutes?';
+  protected stepExpression: string = 'there should be an? (?<activityTypeIdOrName>.+) activity for marketo lead with id (?<id>.+) in the last (?<minutes>\\d+) minutes?';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
-  protected expectedFields: Field[] = [{
-    field: 'identifier',
-    type: FieldDefinition.Type.STRING,
-    description: 'The Identifier of the Marketo Lead',
-  },
+  protected expectedFields: Field[] = [
   {
-    field: 'identifierValue',
+    field: 'id',
     type: FieldDefinition.Type.STRING,
-    description: 'The value of the Identifier',
+    description: 'The Lead\s Id',
   }, {
     field: 'activityTypeIdOrName',
     type: FieldDefinition.Type.ANYSCALAR,
@@ -65,8 +61,7 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
 
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
-    const identifier: string = stepData.identifier;
-    const identifierValue: string = stepData.identifierValue;
+    const id: string = stepData.id;
     let activityTypeIdOrName = stepData.activityTypeIdOrName;
     const minutesAgo = stepData.minutes;
     const withAttributes = stepData.withAttributes || {};
@@ -77,12 +72,12 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
       const tokenResponse = await this.client.getActivityPagingToken(sinceDate);
       const nextPageToken = tokenResponse.nextPageToken;
 
-      const lead = (await this.client.findLeadByField(identifier, identifierValue, null, partitionId)).result[0];
+      const lead = (await this.client.findLeadByField('id', id, null, partitionId)).result[0];
 
       /* Error when lead is not found */
       if (!lead) {
         return this.fail('Lead %s was not found%s', [
-          identifierValue,
+          id,
           partitionId ? ` in partition ${partitionId}` : '',
         ]);
       }
@@ -106,7 +101,7 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
       if (!activities) {
         return this.fail('No %s activity found for lead %s within the last %d minute(s)', [
           stepData.activityTypeIdOrName,
-          identifierValue,
+          id,
           minutesAgo,
         ]);
       }
@@ -145,7 +140,7 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
         if (validated) {
           return this.pass(
             'Found %s activity for lead %s within the last %d minute(s), including attributes: \n\n%s',
-            [stepData.activityTypeIdOrName, identifierValue, minutesAgo, JSON.stringify(expectedAttributes, null, 2)],
+            [stepData.activityTypeIdOrName, id, minutesAgo, JSON.stringify(expectedAttributes, null, 2)],
             [this.createRecord(validatedActivity)],
           );
         }
@@ -156,7 +151,7 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
           'Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s).',
           [
             stepData.activityTypeIdOrName,
-            identifierValue,
+            id,
             minutesAgo,
             expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', '),
           ],
@@ -166,7 +161,7 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
 
       return this.pass(
         '%s activity found for lead %s within the last %d minute(s)',
-        [stepData.activityTypeIdOrName, identifierValue, minutesAgo],
+        [stepData.activityTypeIdOrName, id, minutesAgo],
         [this.createRecord(activities[0])],
       );
 
