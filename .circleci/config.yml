@@ -67,7 +67,9 @@ jobs:
           command: docker load -i /tmp/workspace/image.tar
       - run:
           name: Install redis
-          command: sudo apt install redis-server && sudo systemctl status redis
+          command: |
+            sudo apt update
+            sudo apt install redis-server && sudo systemctl status redis
       - run:
           name: Install Crank and the built Cog
           command: |
