@@ -27,7 +27,7 @@ if (process.env.REDIS_URL) {
   redisClient = redis.createClient(process.env.REDIS_URL);
 } else {
   // Local client (requires no auth details).
-  // redisClient = redis.createClient();
+  redisClient = redis.createClient();
 }
 server.addService(CogService, new Cog(ClientWrapper));
 server.bind(`${host}:${port}`, credentials);
