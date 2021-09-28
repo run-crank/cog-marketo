@@ -76,7 +76,7 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
     }
 
     try {
-      const customObject = await this.client.getCustomObject(name);
+      const customObject = await this.client.getCustomObject(name, linkValue);
       // Custom Object exists validation
       if (!customObject.result.length) {
         return this.fail('Error finding %s: no such marketo custom object', [
@@ -94,7 +94,7 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
 
       // @todo Remove describe related linkField value assignement code once marketo custom object bug is fixed
       // Getting of api name of field if relateTo field is Display Name
-      const leadDescribe = await this.client.describeLeadFields();
+      const leadDescribe = await this.client.describeLeadFields(linkValue);
       const linkField = leadDescribe.result.find(field => field.displayName == customObject.result[0].relationships[0].relatedTo.field)
                       ?  leadDescribe.result.find(field => field.displayName == customObject.result[0].relationships[0].relatedTo.field).rest.name
                       : customObject.result[0].relationships[0].relatedTo.field;
@@ -124,7 +124,7 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
       }
 
       // Querying link leads in custom object
-      const queryResult = await this.client.queryCustomObject(name, filterType, searchFields, fields);
+      const queryResult = await this.client.queryCustomObject(name, filterType, searchFields, fields, linkValue);
       // Check if query ran as expected
       if (queryResult.success) {
         let filteredQueryResult = queryResult.result;

@@ -48,7 +48,7 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
     const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
 
     try {
-      const customObject = await this.client.getCustomObject(name);
+      const customObject = await this.client.getCustomObject(name, linkValue);
 
       // Custom Object exists validation
       if (!customObject.result.length) {
@@ -67,7 +67,7 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
 
       // @todo Remove describe related linkField value assignement code once marketo custom object bug is fixed
       // Getting of api name of field if relateTo field is Display Name
-      const leadDescribe = await this.client.describeLeadFields();
+      const leadDescribe = await this.client.describeLeadFields(linkValue);
       const linkField = leadDescribe.result.find(field => field.displayName == customObject.result[0].relationships[0].relatedTo.field)
                        ?  leadDescribe.result.find(field => field.displayName == customObject.result[0].relationships[0].relatedTo.field).rest.name
                        : customObject.result[0].relationships[0].relatedTo.field;
@@ -96,7 +96,7 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
       }
 
       // Querying link leads in custom object
-      const queryResult = await this.client.queryCustomObject(name, filterType, searchFields, fields);
+      const queryResult = await this.client.queryCustomObject(name, filterType, searchFields, fields, linkValue);
 
       if (queryResult.success) {
         let filteredQueryResult = queryResult.result;
@@ -124,7 +124,7 @@ export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
         }
 
         // Delete using idField from customObject and its value from queried link
-        const data = await this.client.deleteCustomObjectById(name, filteredQueryResult[0][customObject.result[0].idField]);
+        const data = await this.client.deleteCustomObjectById(name, filteredQueryResult[0][customObject.result[0].idField], linkValue);
         if (data.success && data.result.length > 0 && data.result[0].status != 'skipped') {
           const custObjRecord = this.keyValue('customObject', `Deleted ${customObject.result[0].displayName}`, {
             marketoGUID: data.result[0].marketoGUID,

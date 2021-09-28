@@ -40,7 +40,7 @@ export class DeleteLeadStep extends BaseStep implements StepInterface {
       const data: any = await this.client.findLeadByEmail(email, null, partitionId);
 
       if (data.success && data.result && data.result[0] && data.result[0].id) {
-        const deleteRes: any = await this.client.deleteLeadById(data.result[0].id);
+        const deleteRes: any = await this.client.deleteLeadById(data.result[0].id, email);
 
         if (
           deleteRes.success &&
