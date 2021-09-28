@@ -186,7 +186,6 @@ workflows:
           requires:
             - test
             - build
-            - install-redis
           filters:
             branches:
               ignore:
