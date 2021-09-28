@@ -9,7 +9,13 @@ executors:
     environment:
       IMAGE_NAME: automatoninc/marketo
     machine:
-      image: circleci/classic:latest  
+      image: circleci/classic:latest
+  docker-ubuntu:
+    environment:
+      IMAGE_NAME: automatoninc/marketo
+    docker:
+      - image: cimg/base:2021.04
+      - image: redis
 
 jobs:
   test:
@@ -58,7 +64,7 @@ jobs:
             - ./image.tar
 
   install-built-cog:
-    executor: docker-user
+    executor: docker-ubuntu
     steps:
       - attach_workspace:
           at: /tmp/workspace
@@ -79,7 +85,7 @@ jobs:
           command: crank cog:uninstall $IMAGE_NAME --force
 
   run-test-scenarios:
-    executor: docker-user
+    executor: docker-ubuntu
     steps:
       - checkout
       - attach_workspace:
