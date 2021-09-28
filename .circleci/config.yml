@@ -69,7 +69,7 @@ jobs:
           name: Install redis
           command: |
             sudo apt update
-            sudo apt install redis-server && sudo systemctl status redis
+            sudo apt install redis-server
       - run:
           name: Install Crank and the built Cog
           command: |
