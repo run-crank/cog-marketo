@@ -11,8 +11,7 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
   protected stepName: string = 'Check a Marketo Lead\'s Activity by Id';
   protected stepExpression: string = 'there should be an? (?<activityTypeIdOrName>.+) activity for marketo lead with id (?<id>.+) in the last (?<minutes>\\d+) minutes?';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
-  protected expectedFields: Field[] = [
-  {
+  protected expectedFields: Field[] = [{
     field: 'id',
     type: FieldDefinition.Type.STRING,
     description: 'The Lead\s Id',
