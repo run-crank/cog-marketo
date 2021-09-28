@@ -71,7 +71,7 @@ jobs:
           command: apt-get update
       - run:
           name: Install base packages
-          command: apt-get install redis-server
+          command: apt-get -y install redis-server 
       - run:
           name: Start Redis
           command: sudo redis-server --daemonize yes
