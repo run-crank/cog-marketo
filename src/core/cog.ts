@@ -13,9 +13,9 @@ export class Cog implements ICogServiceServer {
 
   private steps: StepInterface[];
 
-  constructor (private clientWrapperClass, private stepMap: Record<string, any> = {}, private redisClient: {}) {
+  constructor (private clientWrapperClass, private stepMap: Record<string, any> = {}, private redisUrl: string) {
     this.steps = [].concat(...Object.values(this.getSteps(`${__dirname}/../steps`, clientWrapperClass)));
-    this.redisClient = redisClient;
+    this.redisUrl = redisUrl;
   }
 
   private getSteps(dir: string, clientWrapperClass) {
@@ -148,6 +148,6 @@ export class Cog implements ICogServiceServer {
 
   private getClientWrapper(auth: grpc.Metadata, idMap: {} = null) {
     const client = new ClientWrapper(auth);
-    return new this.clientWrapperClass(client, this.redisClient, idMap);
+    return new this.clientWrapperClass(client, this.redisUrl, idMap);
   }
 }
