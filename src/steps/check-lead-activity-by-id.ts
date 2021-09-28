@@ -6,15 +6,20 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../prot
 
 import * as moment from 'moment';
 
-export class CheckLeadActivityStep extends BaseStep implements StepInterface {
+export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface {
 
   protected stepName: string = 'Check a Marketo Lead\'s Activity';
-  protected stepExpression: string = 'there should be an? (?<activityTypeIdOrName>.+) activity for marketo lead (?<email>.+) in the last (?<minutes>\\d+) minutes?';
+  protected stepExpression: string = 'there should be an? (?<activityTypeIdOrName>.+) activity for marketo lead with (?<identifier>.+) (?<identifierValue>.+) in the last (?<minutes>\\d+) minutes?';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
-    field: 'email',
-    type: FieldDefinition.Type.EMAIL,
-    description: 'The email address of the Marketo Lead',
+    field: 'identifier',
+    type: FieldDefinition.Type.STRING,
+    description: 'The Identifier of the Marketo Lead',
+  },
+  {
+    field: 'identifierValue',
+    type: FieldDefinition.Type.STRING,
+    description: 'The value of the Identifier',
   }, {
     field: 'activityTypeIdOrName',
     type: FieldDefinition.Type.ANYSCALAR,
@@ -60,7 +65,8 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
-    const email: string = stepData.email;
+    const identifier: string = stepData.identifier;
+    const identifierValue: string = stepData.identifierValue;
     let activityTypeIdOrName = stepData.activityTypeIdOrName;
     const minutesAgo = stepData.minutes;
     const withAttributes = stepData.withAttributes || {};
@@ -71,12 +77,12 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
       const tokenResponse = await this.client.getActivityPagingToken(sinceDate);
       const nextPageToken = tokenResponse.nextPageToken;
 
-      const lead = (await this.client.findLeadByEmail(email, null, partitionId)).result[0];
+      const lead = (await this.client.findLeadByField(identifier, identifierValue, null, partitionId)).result[0];
 
       /* Error when lead is not found */
       if (!lead) {
         return this.fail('Lead %s was not found%s', [
-          email,
+          identifierValue,
           partitionId ? ` in partition ${partitionId}` : '',
         ]);
       }
@@ -100,7 +106,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
       if (!activities) {
         return this.fail('No %s activity found for lead %s within the last %d minute(s)', [
           stepData.activityTypeIdOrName,
-          email,
+          identifierValue,
           minutesAgo,
         ]);
       }
@@ -139,7 +145,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
         if (validated) {
           return this.pass(
             'Found %s activity for lead %s within the last %d minute(s), including attributes: \n\n%s',
-            [stepData.activityTypeIdOrName, email, minutesAgo, JSON.stringify(expectedAttributes, null, 2)],
+            [stepData.activityTypeIdOrName, identifierValue, minutesAgo, JSON.stringify(expectedAttributes, null, 2)],
             [this.createRecord(validatedActivity)],
           );
         }
@@ -150,7 +156,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
           'Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s).',
           [
             stepData.activityTypeIdOrName,
-            email,
+            identifierValue,
             minutesAgo,
             expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', '),
           ],
@@ -160,7 +166,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
       return this.pass(
         '%s activity found for lead %s within the last %d minute(s)',
-        [stepData.activityTypeIdOrName, email, minutesAgo],
+        [stepData.activityTypeIdOrName, identifierValue, minutesAgo],
         [this.createRecord(activities[0])],
       );
 
@@ -218,4 +224,4 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
   }
 }
 
-export { CheckLeadActivityStep as Step };
+export { CheckLeadActivityByIdStep as Step };
