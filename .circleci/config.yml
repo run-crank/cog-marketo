@@ -66,11 +66,9 @@ jobs:
   install-built-cog:
     executor: docker-ubuntu
     steps:
-      - setup_remote_docker:
-          version: 19.03.13
-          docker_layer_caching: true
       - attach_workspace:
           at: /tmp/workspace
+      - setup_remote_docker
       - run:
           name: Load archived Docker image
           command: docker load -i /tmp/workspace/image.tar
@@ -93,6 +91,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: /tmp/workspace
+      - setup_remote_docker
       - run:
           name: Load archived Docker image
           command: docker load -i /tmp/workspace/image.tar
