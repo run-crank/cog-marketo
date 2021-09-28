@@ -1,5 +1,10 @@
 version: 2.1
 executors:
+  docker-redis: 
+    environment:
+      IMAGE_NAME: automatoninc/marketo
+    docker:
+      - image: redis
   docker-publisher:
     environment:
       IMAGE_NAME: automatoninc/marketo
@@ -57,6 +62,15 @@ jobs:
           paths:
             - ./image.tar
 
+  install-redis:
+    executor: docker-redis
+    steps:
+      - run:
+          name: Install and Run Redis
+          command: |
+            sudo apt update
+            sudo redis-server --daemonize yes
+
   install-built-cog:
     executor: docker-user
     steps:
@@ -65,11 +79,6 @@ jobs:
       - run:
           name: Load archived Docker image
           command: docker load -i /tmp/workspace/image.tar
-      - run:
-          name: Install and start redis
-          command: 
-            sudo apt update
-            sudo redis-server --daemonize yes
       - run:
           name: Install Crank and the built Cog
           command: |
