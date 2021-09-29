@@ -80,7 +80,15 @@ export class Cog implements ICogServiceServer {
       processing = processing + 1;
 
       const step: Step = runStepRequest.getStep();
-      const response: RunStepResponse = await this.dispatchStep(step, runStepRequest, call.metadata);
+      // Get scoped IDs for building cache keys
+      const idMap: {} = {
+        requestId: runStepRequest.getRequestId(),
+        scenarioId: runStepRequest.getScenarioId(),
+        requestorId: runStepRequest.getRequestorId(),
+      };
+      console.log('idMap', idMap);
+      const client = this.getClientWrapper(call.metadata, idMap);
+      const response: RunStepResponse = await this.dispatchStep(step, call.metadata, idMap, client);
       call.write(response);
 
       processing = processing - 1;
@@ -107,22 +115,22 @@ export class Cog implements ICogServiceServer {
     callback: grpc.sendUnaryData<RunStepResponse>,
   ) {
     const step: Step = call.request.getStep();
-    const response: RunStepResponse = await this.dispatchStep(step, call.request, call.metadata);
+    const idMap: {} = {
+      requestId: call.request.getRequestId(),
+      scenarioId: call.request.getScenarioId(),
+      requestorId: call.request.getRequestorId(),
+    };
+    console.log('idMap2', idMap);
+    const response: RunStepResponse = await this.dispatchStep(step, call.metadata, idMap);
     callback(null, response);
   }
 
   private async dispatchStep(
     step: Step,
-    runStepRequest: RunStepRequest,
     metadata: grpc.Metadata,
+    idMap = null,
     client = null,
   ): Promise<RunStepResponse> {
-    // Get scoped IDs for building cache keys
-    const idMap: {} = {
-      requestId: runStepRequest.getRequestId(),
-      scenarioId: runStepRequest.getScenarioId(),
-      requestorId: runStepRequest.getRequestorId(),
-    };
     // If a pre-auth'd client was provided, use it. Otherwise, create one.
     const wrapper = client || this.getClientWrapper(metadata, idMap);
     const stepId = step.getStepId();
