@@ -82,7 +82,7 @@ export class LeadAwareMixin {
     return response;
   }
 
-  public async deleteLeadById(leadId: number) {
+  public async deleteLeadById(leadId: number, email: string = null) {
     // @todo Contribute this back up to the package.
     return this.client._connection.postJson(
       '/v1/leads.json',
