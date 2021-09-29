@@ -74,20 +74,25 @@ export class Cog implements ICogServiceServer {
 
   runSteps(call: grpc.ServerDuplexStream<RunStepRequest, RunStepResponse>) {
     let processing = 0;
+    let count = 0;
     let clientEnded = false;
+    let client: any;
+    let idMap: any;
 
     call.on('data', async (runStepRequest: RunStepRequest) => {
+      if (count === 0) {
+        // Get scoped IDs for building cache keys
+        idMap = {
+          requestId: runStepRequest.getRequestId(),
+          scenarioId: runStepRequest.getScenarioId(),
+          requestorId: runStepRequest.getRequestorId(),
+        };
+        client = this.getClientWrapper(call.metadata, idMap);
+      }
       processing = processing + 1;
+      count = count + 1;
 
       const step: Step = runStepRequest.getStep();
-      // Get scoped IDs for building cache keys
-      const idMap: {} = {
-        requestId: runStepRequest.getRequestId(),
-        scenarioId: runStepRequest.getScenarioId(),
-        requestorId: runStepRequest.getRequestorId(),
-      };
-      console.log('idMap', idMap);
-      const client = this.getClientWrapper(call.metadata, idMap);
       const response: RunStepResponse = await this.dispatchStep(step, call.metadata, idMap, client);
       call.write(response);
 
@@ -120,7 +125,6 @@ export class Cog implements ICogServiceServer {
       scenarioId: call.request.getScenarioId(),
       requestorId: call.request.getRequestorId(),
     };
-    console.log('idMap2', idMap);
     const response: RunStepResponse = await this.dispatchStep(step, call.metadata, idMap);
     callback(null, response);
   }
