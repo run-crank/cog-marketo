@@ -1,6 +1,7 @@
 import * as grpc from 'grpc';
 import { Struct, Value } from 'google-protobuf/google/protobuf/struct_pb';
 import * as fs from 'fs';
+import * as redis from 'redis';
 
 import { Field, StepInterface } from './base-step';
 
@@ -12,10 +13,11 @@ import { ClientWrapper } from '../client/client-wrapper';
 export class Cog implements ICogServiceServer {
 
   private steps: StepInterface[];
+  private redisClient: any;
 
-  constructor (private clientWrapperClass, private stepMap: Record<string, any> = {}, private redisUrl: string) {
+  constructor (private clientWrapperClass, private stepMap: Record<string, any> = {}, private redisUrl: string = undefined) {
     this.steps = [].concat(...Object.values(this.getSteps(`${__dirname}/../steps`, clientWrapperClass)));
-    this.redisUrl = redisUrl;
+    this.redisClient = redis.createClient(this.redisUrl);
   }
 
   private getSteps(dir: string, clientWrapperClass) {
@@ -148,6 +150,6 @@ export class Cog implements ICogServiceServer {
 
   private getClientWrapper(auth: grpc.Metadata, idMap: {} = null) {
     const client = new ClientWrapper(auth);
-    return new this.clientWrapperClass(client, idMap, this.redisUrl);
+    return new this.clientWrapperClass(client, this.redisClient, idMap);
   }
 }

@@ -6,7 +6,7 @@ import { CachingClientWrapper } from '../client/caching-client-wrapper';
 const server = new grpc.Server();
 const port = process.env.PORT || 28866;
 const host = process.env.HOST || '0.0.0.0';
-const redisUrl = process.env.REDIS_URL || '';
+const redisUrl = process.env.REDIS_URL || 'redis://:p54b68c8e0d07be9010838d91531d5d036265f0bd780c2b0d64e8fd420ed0f561@ec2-44-197-54-235.compute-1.amazonaws.com:11689';
 let credentials: grpc.ServerCredentials;
 
 if (process.env.USE_SSL) {

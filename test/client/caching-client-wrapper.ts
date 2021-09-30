@@ -11,6 +11,7 @@ describe('CachingClientWrapper', () => {
   const expect = chai.expect;
   let cachingClientWrapperUnderTest: CachingClientWrapper;
   let clientWrapperStub: any;
+  let redisClientStub: any;
   let idMap: any;
 
   beforeEach(() => {
@@ -33,6 +34,12 @@ describe('CachingClientWrapper', () => {
       createOrUpdateCustomObject: sinon.spy(),
     };
 
+    redisClientStub = {
+      get: sinon.spy(),
+      setex: sinon.spy(),
+      del: sinon.spy(),
+    };
+
     idMap = {
       requestId: '1',
       scenarioId: '2',
@@ -42,21 +49,19 @@ describe('CachingClientWrapper', () => {
 
   it('findLeadByEmail using original function', (done) => {
     const expectedEmail = 'test@example.com';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getAsync = sinon.stub().returns(false);
-    cachingClientWrapperUnderTest.setAsync = sinon.spy();
     cachingClientWrapperUnderTest.findLeadByEmail(expectedEmail);
 
     setTimeout(() => {
       expect(clientWrapperStub.findLeadByEmail).to.have.been.calledWith(expectedEmail);
-      expect(cachingClientWrapperUnderTest.setAsync).to.have.been.called;
       done();
     });
   });
 
   it('findLeadByEmail using cache', (done) => {
     const expectedEmail = 'test@example.com';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getAsync = sinon.stub();
     cachingClientWrapperUnderTest.getAsync.returns('"expectedCachedValue"');
     let actualCachedValue: string;
@@ -74,14 +79,12 @@ describe('CachingClientWrapper', () => {
   it('findLeadByField using original function', (done) => {
     const expectedField = 'firstName';
     const expectedId = '123';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getAsync = sinon.stub().returns(false);
-    cachingClientWrapperUnderTest.setAsync = sinon.spy();
     cachingClientWrapperUnderTest.findLeadByField(expectedField, expectedId);
 
     setTimeout(() => {
       expect(clientWrapperStub.findLeadByField).to.have.been.calledWith(expectedField, expectedId);
-      expect(cachingClientWrapperUnderTest.setAsync).to.have.been.called;
       done();
     });
   });
@@ -89,7 +92,7 @@ describe('CachingClientWrapper', () => {
   it('findLeadByField using cache', (done) => {
     const expectedField = 'firstName';
     const expectedId = '123';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getAsync = sinon.stub();
     cachingClientWrapperUnderTest.getAsync.returns('"expectedCachedValue"');
     let actualCachedValue: string;
@@ -106,7 +109,7 @@ describe('CachingClientWrapper', () => {
 
   it('createOrUpdateLead', (done) => {
     const expectedLead = { email: 'test@example.com' };
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.deleteLeadCache = sinon.spy();
     cachingClientWrapperUnderTest.deleteDescriptionCache = sinon.spy();
     cachingClientWrapperUnderTest.createOrUpdateLead(expectedLead);
@@ -121,7 +124,7 @@ describe('CachingClientWrapper', () => {
 
   it('deleteLeadById', (done) => {
     const expectedId = 123;
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.deleteDescriptionCache = sinon.spy();
     cachingClientWrapperUnderTest.deleteLeadCache = sinon.spy();
     cachingClientWrapperUnderTest.deleteLeadById(expectedId);
@@ -136,21 +139,19 @@ describe('CachingClientWrapper', () => {
 
   it('describeLeadFields using original function', (done) => {
     const expectedEmail = 'test@example.com';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getAsync = sinon.stub().returns(false);
-    cachingClientWrapperUnderTest.setAsync = sinon.spy();
     cachingClientWrapperUnderTest.describeLeadFields(expectedEmail);
 
     setTimeout(() => {
       expect(clientWrapperStub.describeLeadFields).to.have.been.called;
-      expect(cachingClientWrapperUnderTest.setAsync).to.have.been.called;
       done();
     });
   });
 
   it('describeLeadFields using cache', (done) => {
     const expectedEmail = 'test@example.com';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getAsync = sinon.stub();
     cachingClientWrapperUnderTest.getAsync.returns('"expectedCachedValue"');
     let actualCachedValue: string;
@@ -167,21 +168,19 @@ describe('CachingClientWrapper', () => {
 
   it('getCustomObject using original function', (done) => {
     const customObjectName = 'any';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getAsync = sinon.stub().returns(false);
-    cachingClientWrapperUnderTest.setAsync = sinon.spy()
     cachingClientWrapperUnderTest.getCustomObject(customObjectName);
 
     setTimeout(() => {
       expect(clientWrapperStub.getCustomObject).to.have.been.calledWith(customObjectName);
-      expect(cachingClientWrapperUnderTest.setAsync).to.have.been.called;
       done();
     });
   });
 
   it('getCustomObject using cache', (done) => {
     const customObjectName = 'any';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getAsync = sinon.stub();
     cachingClientWrapperUnderTest.getAsync.returns('"expectedCachedValue"');
     let actualCachedValue: string;
@@ -201,14 +200,12 @@ describe('CachingClientWrapper', () => {
     const filterType = 'anyFilterType';
     const searchFields = [{ anySearchField: 'anySearchFieldValue' }];
     const requestFields = ['anyField'];
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getAsync = sinon.stub().returns(false);
-    cachingClientWrapperUnderTest.setAsync = sinon.spy()
     cachingClientWrapperUnderTest.queryCustomObject(customObjectName, filterType, searchFields, requestFields);
 
     setTimeout(() => {
       expect(clientWrapperStub.queryCustomObject).to.have.been.calledWith(customObjectName, filterType, searchFields, requestFields);
-      expect(cachingClientWrapperUnderTest.setAsync).to.have.been.called;
       done();
     });
   });
@@ -218,7 +215,7 @@ describe('CachingClientWrapper', () => {
     const filterType = 'anyFilterType';
     const searchFields = [{ anySearchField: 'anySearchFieldValue' }];
     const requestFields = ['anyField'];
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getAsync = sinon.stub();
     cachingClientWrapperUnderTest.getAsync.returns('"expectedCachedValue"');
     let actualCachedValue: string;
@@ -236,7 +233,7 @@ describe('CachingClientWrapper', () => {
   it('createOrUpdateCustomObject', (done) => {
     const customObjectName = 'any';
     const customObject = { anyField: 'anyValue' };
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.deleteCustomObjectCache = sinon.spy();
     cachingClientWrapperUnderTest.deleteDescriptionCache = sinon.spy();
     cachingClientWrapperUnderTest.createOrUpdateCustomObject(customObjectName, customObject);
@@ -252,7 +249,7 @@ describe('CachingClientWrapper', () => {
   it('deleteCustomObjectById', (done) => {
     const customObjectName = 'any';
     const customObjectGUID = 'anyGUID';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.deleteDescriptionCache = sinon.spy();
     cachingClientWrapperUnderTest.deleteCustomObjectCache = sinon.spy();
     cachingClientWrapperUnderTest.deleteQueryCache = sinon.spy();
@@ -268,20 +265,18 @@ describe('CachingClientWrapper', () => {
   });
 
   it('getCampaigns using original function', (done) => {
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getAsync = sinon.stub().returns(false);
-    cachingClientWrapperUnderTest.setAsync = sinon.spy()
     cachingClientWrapperUnderTest.getCampaigns();
 
     setTimeout(() => {
       expect(clientWrapperStub.getCampaigns).to.have.been.called;
-      expect(cachingClientWrapperUnderTest.setAsync).to.have.been.called;
       done();
     });
   });
 
   it('getCampaigns using cache', (done) => {
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getAsync = sinon.stub().returns('"expectedCachedValue"');
     let actualCachedValue: string;
     (async () => {
@@ -298,14 +293,14 @@ describe('CachingClientWrapper', () => {
   it('addLeadToSmartCampaign using original function', () => {
     const campaignIdInput = 'someId';
     const leadInput = { name: 'someLead' };
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.addLeadToSmartCampaign(campaignIdInput, leadInput);
 
     expect(clientWrapperStub.addLeadToSmartCampaign).to.have.been.calledWith(campaignIdInput, leadInput);
   });
 
   it('getActivityTypes using original function', (done) => {
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getActivityTypes();
 
     expect(clientWrapperStub.getActivityTypes).to.have.been.called;
@@ -314,7 +309,7 @@ describe('CachingClientWrapper', () => {
 
   it('getActivityPagingToken using original function', (done) => {
     const sinceDate = 'anyDate';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getActivityPagingToken(sinceDate);
 
     expect(clientWrapperStub.getActivityPagingToken).to.have.been.calledWith(sinceDate);
@@ -325,7 +320,7 @@ describe('CachingClientWrapper', () => {
     const nextPageToken = 'anyToken';
     const leadId = 'anyId';
     const activityId = 'anyActivityId';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getActivities(nextPageToken, leadId, activityId);
 
     expect(clientWrapperStub.getActivities).to.have.been.calledWith(nextPageToken, leadId, activityId);
@@ -333,7 +328,7 @@ describe('CachingClientWrapper', () => {
   });
 
   it('getDailyApiUsage using original function', (done) => {
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getDailyApiUsage();
 
     expect(clientWrapperStub.getDailyApiUsage).to.have.been.called;
@@ -341,7 +336,7 @@ describe('CachingClientWrapper', () => {
   });
 
   it('getWeeklyApiUsage using original function', (done) => {
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getWeeklyApiUsage();
 
     expect(clientWrapperStub.getWeeklyApiUsage).to.have.been.called;
@@ -349,23 +344,23 @@ describe('CachingClientWrapper', () => {
   });
 
   it('getCache', (done) => {
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
-    cachingClientWrapperUnderTest.getAsync = sinon.spy();
+    redisClientStub.get = sinon.stub().yields();
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.getCache('expectedKey');
 
     setTimeout(() => {
-      expect(cachingClientWrapperUnderTest.getAsync).to.have.been.calledWith('expectedKey');
+      expect(redisClientStub.get).to.have.been.calledWith('expectedKey');
       done();
     });
   });
 
   it('setCache', (done) => {
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
-    cachingClientWrapperUnderTest.setAsync = sinon.spy();
+    redisClientStub.setex = sinon.stub().yields();
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.setCache('expectedKey', 'expectedValue');
 
     setTimeout(() => {
-      expect(cachingClientWrapperUnderTest.setAsync).to.have.been.calledWith('expectedKey', 600, '"expectedValue"');
+      expect(redisClientStub.setex).to.have.been.calledWith('expectedKey', 600, '"expectedValue"');
       done();
     });
   });
@@ -373,49 +368,49 @@ describe('CachingClientWrapper', () => {
   it('deleteLeadCache', (done) => {
     const expectedCacheKey1 = 'prefix' + 'Lead' + 'test@example.com';
     const expectedCacheKey2 = 'prefix' + 'Lead' + '1';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
-    cachingClientWrapperUnderTest.delAsync = sinon.spy();
+    redisClientStub.del = sinon.stub().yields();
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.deleteLeadCache('prefix', 'test@example.com', 1);
 
     setTimeout(() => {
-      expect(cachingClientWrapperUnderTest.delAsync).to.have.been.calledWith(expectedCacheKey1);
-      expect(cachingClientWrapperUnderTest.delAsync).to.have.been.calledWith(expectedCacheKey2);
+      expect(redisClientStub.del).to.have.been.calledWith(expectedCacheKey1);
+      expect(redisClientStub.del).to.have.been.calledWith(expectedCacheKey2);
       done();
     });
   });
 
   it('deleteDescriptionCache', (done) => {
     const expectedCacheKey1 = 'prefix' + 'Description' + 'test@example.com';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
-    cachingClientWrapperUnderTest.delAsync = sinon.spy();
+    redisClientStub.del = sinon.stub().yields();
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.deleteDescriptionCache('prefix', 'test@example.com');
 
     setTimeout(() => {
-      expect(cachingClientWrapperUnderTest.delAsync).to.have.been.calledWith(expectedCacheKey1);
+      expect(redisClientStub.del).to.have.been.calledWith(expectedCacheKey1);
       done();
     });
   });
 
   it('deleteCustomObjectCache', (done) => {
     const expectedCacheKey1 = 'prefix' + 'Object' + 'test@example.com' + 'objectName';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
-    cachingClientWrapperUnderTest.delAsync = sinon.spy();
+    redisClientStub.del = sinon.stub().yields();
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.deleteCustomObjectCache('prefix', 'test@example.com', 'objectName');
 
     setTimeout(() => {
-      expect(cachingClientWrapperUnderTest.delAsync).to.have.been.calledWith(expectedCacheKey1);
+      expect(redisClientStub.del).to.have.been.calledWith(expectedCacheKey1);
       done();
     });
   });
 
   it('deleteQueryCache', (done) => {
     const expectedCacheKey1 = 'prefix' + 'Query' + 'test@example.com' + 'objectName';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, idMap);
-    cachingClientWrapperUnderTest.delAsync = sinon.spy();
+    redisClientStub.del = sinon.stub().yields();
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
     cachingClientWrapperUnderTest.deleteQueryCache('prefix', 'test@example.com', 'objectName');
 
     setTimeout(() => {
-      expect(cachingClientWrapperUnderTest.delAsync).to.have.been.calledWith(expectedCacheKey1);
+      expect(redisClientStub.del).to.have.been.calledWith(expectedCacheKey1);
       done();
     });
   });
