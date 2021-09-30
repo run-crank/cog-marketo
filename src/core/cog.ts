@@ -1,6 +1,7 @@
 import * as grpc from 'grpc';
 import { Struct, Value } from 'google-protobuf/google/protobuf/struct_pb';
 import * as fs from 'fs';
+import * as redis from 'redis';
 
 import { Field, StepInterface } from './base-step';
 
@@ -12,10 +13,12 @@ import { ClientWrapper } from '../client/client-wrapper';
 export class Cog implements ICogServiceServer {
 
   private steps: StepInterface[];
+  private redisClient: any;
 
-  constructor (private clientWrapperClass, private stepMap: Record<string, any> = {}, private redisUrl: string) {
+  constructor (private clientWrapperClass, private stepMap: Record<string, any> = {}, private redisUrl: string = undefined) {
     this.steps = [].concat(...Object.values(this.getSteps(`${__dirname}/../steps`, clientWrapperClass)));
-    this.redisUrl = redisUrl;
+    let url = this.redisUrl || "redis://:p54b68c8e0d07be9010838d91531d5d036265f0bd780c2b0d64e8fd420ed0f561@ec2-44-197-54-235.compute-1.amazonaws.com:11689";
+    this.redisClient = redis.createClient(url);
   }
 
   private getSteps(dir: string, clientWrapperClass) {
@@ -88,6 +91,7 @@ export class Cog implements ICogServiceServer {
       // If this was the last step to process and the client has ended the
       // stream, then end our stream as well.
       if (processing === 0 && clientEnded) {
+        this.redisClient.quit()
         call.end();
       }
     });
@@ -97,6 +101,7 @@ export class Cog implements ICogServiceServer {
 
       // Only end the stream if we are done processing all steps.
       if (processing === 0) {
+        this.redisClient.quit()
         call.end();
       }
     });
@@ -148,6 +153,6 @@ export class Cog implements ICogServiceServer {
 
   private getClientWrapper(auth: grpc.Metadata, idMap: {} = null) {
     const client = new ClientWrapper(auth);
-    return new this.clientWrapperClass(client, idMap, this.redisUrl);
+    return new this.clientWrapperClass(client, this.redisClient, idMap);
   }
 }

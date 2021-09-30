@@ -1,25 +1,12 @@
 import { ClientWrapper } from '../client/client-wrapper';
-import { promisify } from 'util';
-import * as redis from 'redis';
-​​
+import { promisify } from 'util';​​
 class CachingClientWrapper {
   // cachePrefix is scoped to the specific scenario, request, and requestor
   private cachePrefix = this.idMap.requestId + this.idMap.scenarioId + this.idMap.requestorId;
-  public redisClient: any;
-  public getAsync: any;
-  public setAsync: any;
-  public delAsync: any;
 
-  constructor(private client: ClientWrapper, public idMap: any, public redisUrl: any = undefined) {
-    if (redisUrl) {
-      this.redisClient = redis.createClient(redisUrl);
-    } else {
-      this.redisClient = redis.createClient();
-    }
+  constructor(private client: ClientWrapper, public redisClient: any, public idMap: any) {
+    this.redisClient = redisClient;
     this.idMap = idMap;
-    this.getAsync = promisify(this.redisClient.get).bind(this.redisClient);
-    this.setAsync = promisify(this.redisClient.setex).bind(this.redisClient);
-    this.delAsync = promisify(this.redisClient.del).bind(this.redisClient);
   }
 ​
   // lead-aware methods
@@ -190,6 +177,10 @@ class CachingClientWrapper {
   // -------------------------------------------------------------------
 
   // Async getter/setter
+  public getAsync = promisify(this.redisClient.get).bind(this.redisClient);
+  public setAsync = promisify(this.redisClient.setex).bind(this.redisClient);
+  public delAsync = promisify(this.redisClient.del).bind(this.redisClient);
+
   public async getCache(key: string) {
     try {
       const stored = await this.getAsync(key);
