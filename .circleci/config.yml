@@ -8,7 +8,7 @@ executors:
   docker-user:
     environment:
       IMAGE_NAME: automatoninc/marketo
-      REDIS_URL: CIRCLECI_REDIS_URL
+      REDIS_URL: $CIRCLECI_REDIS_URL
     machine:
       image: circleci/classic:latest
 
