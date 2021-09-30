@@ -17,8 +17,7 @@ export class Cog implements ICogServiceServer {
 
   constructor (private clientWrapperClass, private stepMap: Record<string, any> = {}, private redisUrl: string = undefined) {
     this.steps = [].concat(...Object.values(this.getSteps(`${__dirname}/../steps`, clientWrapperClass)));
-    const url = this.redisUrl || 'redis://:p54b68c8e0d07be9010838d91531d5d036265f0bd780c2b0d64e8fd420ed0f561@ec2-44-197-54-235.compute-1.amazonaws.com:11689';
-    this.redisClient = redis.createClient(url);
+    this.redisClient = redis.createClient(this.redisUrl);
   }
 
   private getSteps(dir: string, clientWrapperClass) {
