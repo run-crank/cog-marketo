@@ -15,7 +15,7 @@ describe('Cog:GetManifest', () => {
   const expect = chai.expect;
   let cogUnderTest: Cog;
   let clientWrapperSpy: any;
-  const redisClient: any = {};
+  const redisClient: any = '';
 
   beforeEach(() => {
     clientWrapperSpy = sinon.spy();
@@ -85,7 +85,7 @@ describe('Cog:RunStep', () => {
   const grpcUnaryCall: any = {};
   let cogUnderTest: Cog;
   let clientWrapperStub: any;
-  const redisClient: any = {};
+  const redisClient: any = '';
   const requestId: string = '1';
   const scenarioId: string = '2';
   const requestorId: string = '3';
@@ -116,7 +116,7 @@ describe('Cog:RunStep', () => {
     cogUnderTest.runStep(grpcUnaryCall, (err, response: RunStepResponse) => {
       expect(clientWrapperStub).to.have.been.called;
       done();
-    });
+    }).catch(done);
   });
 
   it('responds with error when called with unknown stepId', (done) => {
@@ -171,7 +171,7 @@ describe('Cog:RunSteps', () => {
   let grpcDuplexStream: any;
   let cogUnderTest: Cog;
   let clientWrapperStub: any;
-  const redisClient: any = {};
+  const redisClient: any = '';
 
   beforeEach(() => {
     protoStep = new ProtoStep();

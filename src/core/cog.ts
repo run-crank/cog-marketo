@@ -17,7 +17,53 @@ export class Cog implements ICogServiceServer {
 
   constructor (private clientWrapperClass, private stepMap: Record<string, any> = {}, private redisUrl: string = undefined) {
     this.steps = [].concat(...Object.values(this.getSteps(`${__dirname}/../steps`, clientWrapperClass)));
-    this.redisClient = this.redisUrl ? redis.createClient(this.redisUrl) : null;
+    if (this.redisUrl) {
+      this.getRedisClient().getClient();
+    } else {
+      this.redisClient = null;
+    }
+  }
+
+  private getRedisClient() {
+    // Start with a null client so the Cog works
+    // even when Redis server is down
+    this.redisClient = null;
+
+    // Attempt to create a new instance of an actual redis client
+    const c = redis.createClient(this.redisUrl, {
+      retry_strategy (options) {
+        if (options.error.code === 'ECONNREFUSED' || options.error.code === 'ETIMEDOUT') {
+          this.redisClient = null;
+            // This will suppress the ECONNREFUSED or ETIMEDOUT unhandled exception
+            // that results in app crash
+          return;
+        }
+      },
+    });
+
+    // Set the "client" variable to the actual redis client instance
+    // once a connection is established with the Redis server
+    c.on('ready', () => {
+      console.log('ready!');
+      this.redisClient = c;
+    });
+
+    c.on('error', () => {
+      console.log('error!');
+      this.redisClient = null;
+    });
+
+    /**
+     * Get a redis client
+     * @return {Object} client - eventually a proper redis client object (if redis is up) or a null (if redis is down)
+     */
+    const getClient = () => {
+      return this.redisClient;
+    };
+
+    return {
+      getClient,
+    };
   }
 
   private getSteps(dir: string, clientWrapperClass) {
