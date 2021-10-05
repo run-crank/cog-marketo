@@ -19,34 +19,17 @@ export class Cog implements ICogServiceServer {
     this.steps = [].concat(...Object.values(this.getSteps(`${__dirname}/../steps`, clientWrapperClass)));
     this.redisClient = null;
     if (this.redisUrl) {
-      this.handleRedisClient().getClient();
+      const c = redis.createClient(this.redisUrl);
+      // Set the "client" variable to the actual redis client instance
+      // once a connection is established with the Redis server
+      c.on('ready', () => {
+        this.redisClient = c;
+      });
+      // Handle the error event so that it doesn't crash
+      c.on('error', () => {
+        // do nothing
+      });
     }
-  }
-
-  private handleRedisClient() {
-    const c = redis.createClient(this.redisUrl);
-
-    // Set the "client" variable to the actual redis client instance
-    // once a connection is established with the Redis server
-    c.on('ready', () => {
-      this.redisClient = c;
-    });
-
-    c.on('error', () => {
-      // do nothing
-    });
-
-    /**
-     * Get a redis client
-     * @return {Object} client - eventually a proper redis client object (if redis is up) or a null (if redis is down)
-     */
-    const getClient = () => {
-      return this.redisClient;
-    };
-
-    return {
-      getClient,
-    };
   }
 
   private getSteps(dir: string, clientWrapperClass) {
