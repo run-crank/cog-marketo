@@ -27,6 +27,7 @@ class CachingClientWrapper {
     if (stored) {
       return stored;
     } else {
+      await this.delay(3);
       const newLead = await this.client.findLeadByEmail(email, justInCaseField, partitionId);
       await this.setCache(cachekey, newLead);
       return newLead;
@@ -41,6 +42,7 @@ class CachingClientWrapper {
     if (stored) {
       return stored;
     } else {
+      await this.delay(3);
       const newLead = await this.client.findLeadByField(field, value, justInCaseField, partitionId);
       await this.setCache(cachekey, newLead);
       return newLead;
@@ -49,6 +51,7 @@ class CachingClientWrapper {
 
   public async createOrUpdateLead(lead: Record<string, any>, partitionId: number = 1) {
     // making request as normal
+    await this.delay(3);
     const newLead = await this.client.createOrUpdateLead(lead, partitionId);
     const id = newLead ? newLead.result[0].id : null;
     // deleting cache
@@ -61,6 +64,7 @@ class CachingClientWrapper {
     // deleting cache
     await this.deleteLeadCache(this.cachePrefix, email, leadId);
     await this.deleteDescriptionCache(this.cachePrefix, email);
+    await this.delay(3);
     // also calling real delete method
     return await this.client.deleteLeadById(leadId);
   }
@@ -73,6 +77,7 @@ class CachingClientWrapper {
     if (stored) {
       return stored;
     } else {
+      await this.delay(3);
       const newLeadDescription = await this.client.describeLeadFields();
       await this.setCache(cachekey, newLeadDescription);
       return newLeadDescription;
@@ -92,6 +97,7 @@ class CachingClientWrapper {
     if (stored) {
       return stored;
     } else {
+      await this.delay(3);
       const newCustomObject = await this.client.getCustomObject(customObjectName);
       await this.setCache(cachekey, newCustomObject);
       return newCustomObject;
@@ -106,6 +112,7 @@ class CachingClientWrapper {
     if (stored) {
       return stored;
     } else {
+      await this.delay(3);
       const newCustomObjectQuery = await this.client.queryCustomObject(customObjectName, filterType, searchFields, requestFields);
       await this.setCache(cachekey, newCustomObjectQuery);
       return newCustomObjectQuery;
@@ -113,6 +120,7 @@ class CachingClientWrapper {
   }
 
   public async createOrUpdateCustomObject(customObjectName, customObject: Record<string, any>) {
+    await this.delay(3);
     // making request as normal
     const newObject = await this.client.createOrUpdateCustomObject(customObjectName, customObject);
     // deleting cache
@@ -140,6 +148,7 @@ class CachingClientWrapper {
     if (stored) {
       return stored;
     } else {
+      await this.delay(3);
       const campaigns = await this.client.getCampaigns();
       await this.setCache(cachekey, campaigns);
       return campaigns;
@@ -150,26 +159,32 @@ class CachingClientWrapper {
   // -------------------------------------------------------------------
 
   public async addLeadToSmartCampaign(campaignId: string, lead: Record<string, any>) {
+    await this.delay(3);
     return await this.client.addLeadToSmartCampaign(campaignId, lead);
   }
 
   public async getActivityTypes() {
+    await this.delay(3);
     return await this.client.getActivityTypes();
   }
 
   public async getActivityPagingToken(sinceDate) {
+    await this.delay(3);
     return await this.client.getActivityPagingToken(sinceDate);
   }
 
   public async getActivities(nextPageToken, leadId, activityId) {
+    await this.delay(3);
     return await this.client.getActivities(nextPageToken, leadId, activityId);
   }
 
   public async getDailyApiUsage() {
+    await this.delay(3);
     return await this.client.getDailyApiUsage();
   }
 
   public async getWeeklyApiUsage() {
+    await this.delay(3);
     return await this.client.getWeeklyApiUsage();
   }
 
@@ -234,6 +249,10 @@ class CachingClientWrapper {
       console.log(err);
     }
   }
+
+  public async delay(seconds: number) {
+    return new Promise( resolve => setTimeout(resolve, seconds * 1000) );
+}
 }
 ​
 export { CachingClientWrapper as CachingClientWrapper };
