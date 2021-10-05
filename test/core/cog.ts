@@ -108,13 +108,13 @@ describe('Cog:RunStep', () => {
     cogUnderTest = new Cog(clientWrapperStub, {}, redisClient);
   });
 
-  it('authenticates client wrapper with call metadata', (done) => {
+  it('bypasses caching with bad redisUrl', (done) => {
     // Construct grpc metadata and assert the client was authenticated.
     grpcUnaryCall.metadata = new Metadata();
     grpcUnaryCall.metadata.add('anythingReally', 'some-value');
 
     cogUnderTest.runStep(grpcUnaryCall, (err, response: RunStepResponse) => {
-      expect(clientWrapperStub).to.have.been.called;
+      expect(clientWrapperStub).to.have.not.been.called;
       done();
     }).catch(done);
   });
@@ -184,7 +184,7 @@ describe('Cog:RunSteps', () => {
     cogUnderTest = new Cog(clientWrapperStub, {}, redisClient);
   });
 
-  it('authenticates client wrapper with call metadata', () => {
+  it('bypasses caching with bad redisUrl', () => {
     runStepRequest.setStep(protoStep);
 
     // Construct grpc metadata and assert the client was authenticated.
@@ -192,7 +192,7 @@ describe('Cog:RunSteps', () => {
 
     cogUnderTest.runSteps(grpcDuplexStream);
     grpcDuplexStream.emit('data', runStepRequest);
-    expect(clientWrapperStub).to.have.been.called;
+    expect(clientWrapperStub).to.have.not.been.called;
   });
 
   it('responds with error when called with unknown stepId', (done) => {
