@@ -2,8 +2,10 @@ import * as Marketo from 'node-marketo-rest';
 export class LeadAwareMixin {
   client: Marketo;
   leadDescription: any;
+  delayInSeconds = 3;
 
   public async createOrUpdateLead(lead: Record<string, any>, partitionId: number = 1) {
+    await this.delay(this.delayInSeconds);
     const partitions = await this.client.lead.partitions();
     const partition = partitions.result.find(option => option.id === partitionId);
 
@@ -15,6 +17,7 @@ export class LeadAwareMixin {
   }
 
   public async findLeadByField(field: string, value: string, justInCaseField: string = null, partitionId: number = null) {
+    await this.delay(this.delayInSeconds);
     const fields = await this.describeLeadFields();
     let fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
 
@@ -49,6 +52,7 @@ export class LeadAwareMixin {
   }
 
   public async findLeadByEmail(email: string, justInCaseField: string = null, partitionId: number = null) {
+    await this.delay(this.delayInSeconds);
     const fields = await this.describeLeadFields();
     let fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
 
@@ -83,6 +87,7 @@ export class LeadAwareMixin {
   }
 
   public async deleteLeadById(leadId: number, email: string = null) {
+    await this.delay(this.delayInSeconds);
     // @todo Contribute this back up to the package.
     return this.client._connection.postJson(
       '/v1/leads.json',
@@ -92,6 +97,7 @@ export class LeadAwareMixin {
   }
 
   public async describeLeadFields() {
+    await this.delay(this.delayInSeconds);
     // This safely reduces the number of API calls that might have to be made
     // in lead field check steps, but is an imcomplete solution.
     // @todo Incorporate true caching based on https://github.com/run-crank/cli/pull/40
@@ -100,5 +106,9 @@ export class LeadAwareMixin {
     }
 
     return this.leadDescription;
+  }
+
+  public async delay(seconds: number) {
+    return new Promise(resolve => setTimeout(resolve, seconds * 1000));
   }
 }
