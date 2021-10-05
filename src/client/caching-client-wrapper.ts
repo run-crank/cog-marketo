@@ -1,5 +1,5 @@
 import { ClientWrapper } from '../client/client-wrapper';
-import { promisify } from 'util';​​
+import { promisify } from 'util';
 class CachingClientWrapper {
   // cachePrefix is scoped to the specific scenario, request, and requestor
   private cachePrefix = this.idMap.requestId + this.idMap.scenarioId + this.idMap.requestorId;
@@ -8,7 +8,7 @@ class CachingClientWrapper {
     this.redisClient = redisClient;
     this.idMap = idMap;
   }
-​
+
   // lead-aware methods
   // -------------------------------------------------------------------
   // Leads will be cached with one of the following cache key structures:
@@ -18,7 +18,7 @@ class CachingClientWrapper {
   // Lead descriptions will be cached with the cacheKey = cachePrefix + 'Description' + email
   //
   // If a lead is deleted, then all three of the cacheKeys mentioned above are deleted from Redis.
-​
+
   public async findLeadByEmail(email: string, justInCaseField: string = null, partitionId: number = null) {
     const cachekey = `${this.cachePrefix}Lead${email}`;
     // check cache
@@ -33,7 +33,7 @@ class CachingClientWrapper {
       return newLead;
     }
   }
-​
+
   public async findLeadByField(field: string, value: string, justInCaseField: string = null, partitionId: number = null) {
     const cachekey = `${this.cachePrefix}Lead${value}`;
     // check cache
@@ -59,7 +59,7 @@ class CachingClientWrapper {
     await this.deleteDescriptionCache(this.cachePrefix, lead.email);
     return newLead;
   }
-​
+
   public async deleteLeadById(leadId: number, email: string = null) {
     // deleting cache
     await this.deleteLeadCache(this.cachePrefix, email, leadId);
@@ -215,7 +215,7 @@ class CachingClientWrapper {
       console.log(err);
     }
   }
-  ​
+
   public async deleteLeadCache(prefix: string, email: string, id: number) {
     // delete all stored leads that match the prefix
     try {
@@ -233,7 +233,7 @@ class CachingClientWrapper {
       console.log(err);
     }
   }
-  ​
+
   public async deleteCustomObjectCache(prefix: string, email: string, customObjectName: string) {
     try {
       await this.delAsync(`${prefix}Object${email}${customObjectName}`);
@@ -251,8 +251,8 @@ class CachingClientWrapper {
   }
 
   public async delay(seconds: number) {
-    return new Promise( resolve => setTimeout(resolve, seconds * 1000) );
+    return new Promise(resolve => setTimeout(resolve, seconds * 1000));
+  }
 }
-}
-​
+
 export { CachingClientWrapper as CachingClientWrapper };
