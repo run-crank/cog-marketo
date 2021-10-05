@@ -15,7 +15,7 @@ describe('Cog:GetManifest', () => {
   const expect = chai.expect;
   let cogUnderTest: Cog;
   let clientWrapperSpy: any;
-  const redisClient: any = {};
+  const redisClient: any = '';
 
   beforeEach(() => {
     clientWrapperSpy = sinon.spy();
@@ -85,7 +85,7 @@ describe('Cog:RunStep', () => {
   const grpcUnaryCall: any = {};
   let cogUnderTest: Cog;
   let clientWrapperStub: any;
-  const redisClient: any = {};
+  const redisClient: any = '';
   const requestId: string = '1';
   const scenarioId: string = '2';
   const requestorId: string = '3';
@@ -108,15 +108,15 @@ describe('Cog:RunStep', () => {
     cogUnderTest = new Cog(clientWrapperStub, {}, redisClient);
   });
 
-  it('authenticates client wrapper with call metadata', (done) => {
+  it('bypasses caching with bad redisUrl', (done) => {
     // Construct grpc metadata and assert the client was authenticated.
     grpcUnaryCall.metadata = new Metadata();
     grpcUnaryCall.metadata.add('anythingReally', 'some-value');
 
     cogUnderTest.runStep(grpcUnaryCall, (err, response: RunStepResponse) => {
-      expect(clientWrapperStub).to.have.been.called;
+      expect(clientWrapperStub).to.have.not.been.called;
       done();
-    });
+    }).catch(done);
   });
 
   it('responds with error when called with unknown stepId', (done) => {
@@ -171,7 +171,7 @@ describe('Cog:RunSteps', () => {
   let grpcDuplexStream: any;
   let cogUnderTest: Cog;
   let clientWrapperStub: any;
-  const redisClient: any = {};
+  const redisClient: any = '';
 
   beforeEach(() => {
     protoStep = new ProtoStep();
@@ -184,7 +184,7 @@ describe('Cog:RunSteps', () => {
     cogUnderTest = new Cog(clientWrapperStub, {}, redisClient);
   });
 
-  it('authenticates client wrapper with call metadata', () => {
+  it('bypasses caching with bad redisUrl', () => {
     runStepRequest.setStep(protoStep);
 
     // Construct grpc metadata and assert the client was authenticated.
@@ -192,7 +192,7 @@ describe('Cog:RunSteps', () => {
 
     cogUnderTest.runSteps(grpcDuplexStream);
     grpcDuplexStream.emit('data', runStepRequest);
-    expect(clientWrapperStub).to.have.been.called;
+    expect(clientWrapperStub).to.have.not.been.called;
   });
 
   it('responds with error when called with unknown stepId', (done) => {
