@@ -2,6 +2,7 @@ import * as grpc from 'grpc';
 import { Struct, Value } from 'google-protobuf/google/protobuf/struct_pb';
 import * as fs from 'fs';
 import * as redis from 'redis';
+import * as mailgun from 'mailgun-js';
 
 import { Field, StepInterface } from './base-step';
 
@@ -15,11 +16,12 @@ export class Cog implements ICogServiceServer {
   private steps: StepInterface[];
   private redisClient: any;
 
-  constructor (private clientWrapperClass, private stepMap: Record<string, any> = {}, private redisUrl: string = undefined) {
+  constructor (private clientWrapperClass, private stepMap: Record<string, any> = {}, private redisUrl: string = undefined, private mailgunCredentials: Record<string, any> = {}) {
     this.steps = [].concat(...Object.values(this.getSteps(`${__dirname}/../steps`, clientWrapperClass)));
     this.redisClient = null;
     if (this.redisUrl) {
       const c = redis.createClient(this.redisUrl);
+      let emailSent = false;
       // Set the "client" variable to the actual redis client instance
       // once a connection is established with the Redis server
       c.on('ready', () => {
@@ -27,7 +29,21 @@ export class Cog implements ICogServiceServer {
       });
       // Handle the error event so that it doesn't crash
       c.on('error', () => {
-        // do nothing
+        // Send an email if a bad redisUrl is passed
+        if (this.mailgunCredentials.apiKey && this.mailgunCredentials.domain && this.mailgunCredentials.alertEmail && !emailSent) {
+          const mg = mailgun({ apiKey: this.mailgunCredentials.apiKey, domain: this.mailgunCredentials.domain });
+          const emailData = {
+            from: `Marketo Cog <noreply@${this.mailgunCredentials.domain}>`,
+            to: this.mailgunCredentials.alertEmail,
+            subject: 'Broken Redis Url in Marketo Cog',
+            text: 'The redis url in the Marketo Cog is no longer working. Caching is disabled for the Marketo Cog.',
+          };
+          mg.messages().send(emailData, (error, body) => {
+            console.log('email sent: ', body);
+          });
+          // Set emailSent to true so we don't send duplicate emails on multiple errors
+          emailSent = true;
+        }
       });
     }
   }
