@@ -58,6 +58,7 @@
     "@run-crank/utilities": "^0.4.4",
     "google-protobuf": "^3.8.0",
     "grpc": "^1.24.3",
+    "mailgun-js": "^0.22.0",
     "moment": "^2.24.0",
     "node-marketo-rest": "^0.7.8",
     "redis": "^3.1.2",
