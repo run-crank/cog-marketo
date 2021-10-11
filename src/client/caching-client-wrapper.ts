@@ -28,7 +28,9 @@ class CachingClientWrapper {
       return stored;
     } else {
       const newLead = await this.client.findLeadByEmail(email, justInCaseField, partitionId);
-      await this.setCache(cachekey, newLead);
+      if (newLead && newLead.success && newLead.result.length) {
+        await this.setCache(cachekey, newLead);
+      }
       return newLead;
     }
   }
@@ -42,7 +44,9 @@ class CachingClientWrapper {
       return stored;
     } else {
       const newLead = await this.client.findLeadByField(field, value, justInCaseField, partitionId);
-      await this.setCache(cachekey, newLead);
+      if (newLead && newLead.success && newLead.result.length) {
+        await this.setCache(cachekey, newLead);
+      }
       return newLead;
     }
   }
@@ -93,7 +97,9 @@ class CachingClientWrapper {
       return stored;
     } else {
       const newCustomObject = await this.client.getCustomObject(customObjectName);
-      await this.setCache(cachekey, newCustomObject);
+      if (newCustomObject && newCustomObject.success && newCustomObject.result.length) {
+        await this.setCache(cachekey, newCustomObject);
+      }
       return newCustomObject;
     }
   }
@@ -107,7 +113,9 @@ class CachingClientWrapper {
       return stored;
     } else {
       const newCustomObjectQuery = await this.client.queryCustomObject(customObjectName, filterType, searchFields, requestFields);
-      await this.setCache(cachekey, newCustomObjectQuery);
+      if (newCustomObjectQuery && newCustomObjectQuery.success && newCustomObjectQuery.result.length) {
+        await this.setCache(cachekey, newCustomObjectQuery);
+      }
       return newCustomObjectQuery;
     }
   }
@@ -141,7 +149,9 @@ class CachingClientWrapper {
       return stored;
     } else {
       const campaigns = await this.client.getCampaigns();
-      await this.setCache(cachekey, campaigns);
+      if (campaigns && campaigns.length) {
+        await this.setCache(cachekey, campaigns);
+      }
       return campaigns;
     }
   }
