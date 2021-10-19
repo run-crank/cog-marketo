@@ -1,0 +1,33 @@
+scenario: Demonstrate the Marketo Cog Caching
+description: A contrived scenario that shows basic caching.
+
+steps:
+- step: When I create or update a Marketo lead
+  data:
+    lead:
+      email: a211@example.com
+      firstName: Atoma
+      lastName: Tommy
+      company: Stack Moxie
+      country: Spain
+      site: google.com 
+      billingStreet: 123 Main
+      billingCity: Austin
+      billingState: Texas
+      billingCountry: USA
+      website: google.com
+      mainPhone: 123-456-7890
+      annualRevenue: 45000
+- step: Then the firstName field on Marketo lead with id {{marketo.lead.id}} should be Atoma
+- step: And the lastName field on Marketo lead with id {{marketo.lead.id}} should be Tommy
+- step: And the country field on Marketo lead with id {{marketo.lead.id}} should be Spain
+- step: And the company field on Marketo lead with id {{marketo.lead.id}} should be Stack Moxie
+- step: And the email field on Marketo lead with id {{marketo.lead.id}} should be a211@example.com
+- step: And the site field on Marketo lead with id {{marketo.lead.id}} should be google.com
+- step: And the billingCity field on Marketo lead with id {{marketo.lead.id}} should be Austin
+- step: And the billingState field on Marketo lead with id {{marketo.lead.id}} should be Texas
+- step: And the billingCountry field on Marketo lead with id {{marketo.lead.id}} should be USA
+- step: And the billingStreet field on Marketo lead with id {{marketo.lead.id}} should be 123 Main
+- step: And the mainPhone field on Marketo lead with id {{marketo.lead.id}} should be 123-456-7890
+- step: And the annualRevenue field on Marketo lead with id {{marketo.lead.id}} should be 45000
+- step: And the website field on Marketo lead with id {{marketo.lead.id}} should be google.com

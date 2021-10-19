@@ -20,13 +20,13 @@ export class LeadAwareMixin {
     await this.delay(this.delayInSeconds);
     const fields = await this.describeLeadFields();
     let fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
+    let response:any = {};
 
-    // If the length of the get request would be over 7KB, then the request
-    // would fail. Instead, just hard-code the list of fields to be returned.
-    // @todo There is a bug in Marketo's workaround for this, preventing a
-    // "real" solution (e.g. PUT request with _method=GET and fields list in
-    // request body).
-    if (fieldList.join(',').length > 7168) {
+    if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
+      // If the length of the get request would be over 7KB, then the request
+      // would fail. And if the amount of fields is over 1000, it is likely 
+      // not worth it to cache with the if statement below. 
+      // Instead, we will only request the needed fields.
       fieldList = [
         justInCaseField,
         'email',
@@ -37,9 +37,42 @@ export class LeadAwareMixin {
         'id',
         'leadPartitionId',
       ].filter(f => !!f);
+    
+      response = await this.client.lead.find(field, [value], { fields: fieldList });
     }
 
-    const response = await this.client.lead.find(field, [value], { fields: fieldList });
+    else if (fieldList.join(',').length > 7168) {
+      // If the length of the get request would be over 7KB, then the request
+      // would fail. Instead, we will split the request every 200 fields, and 
+      // combine the results.
+
+      let allFields:{ [key: string]: string; } = {};
+      const mustHaveFields = [
+        justInCaseField,
+        'email',
+        'updatedAt',
+        'createdAt',
+        'lastName',
+        'firstName',
+        'id',
+        'leadPartitionId',
+      ];
+
+      for (let i = 0; i < fieldList.length && i <= 800; i += 200) {
+        const currFields = i ? fieldList.slice(i, i + 200).filter(f => !!f) : [...mustHaveFields, ...fieldList.slice(i, i + 200)].filter(f => !!f);
+        const currResponse = await this.client.lead.find(field, [value], { fields: currFields });
+        allFields = {...allFields, ...currResponse.result[0]};
+        if (!i) {
+          response.requestId = currResponse.requestId;
+          response.success = currResponse.success;
+        }
+      }
+      response.result = [allFields];
+    }
+
+    else {
+      response = await this.client.lead.find(field, [value], { fields: fieldList });
+    }
 
     // If a partition ID was provided, filter the returned leads accordingly.
     if (partitionId && response && response.result && response.result.length) {
@@ -55,13 +88,13 @@ export class LeadAwareMixin {
     await this.delay(this.delayInSeconds);
     const fields = await this.describeLeadFields();
     let fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
+    let response:any = {};
 
-    // If the length of the get request would be over 7KB, then the request
-    // would fail. Instead, just hard-code the list of fields to be returned.
-    // @todo There is a bug in Marketo's workaround for this, preventing a
-    // "real" solution (e.g. PUT request with _method=GET and fields list in
-    // request body).
-    if (fieldList.join(',').length > 7168) {
+    if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
+      // If the length of the get request would be over 7KB, then the request
+      // would fail. And if the amount of fields is over 1000, it is likely 
+      // not worth it to cache with the if statement below. 
+      // Instead, we will only request the needed fields.
       fieldList = [
         justInCaseField,
         'email',
@@ -72,9 +105,42 @@ export class LeadAwareMixin {
         'id',
         'leadPartitionId',
       ].filter(f => !!f);
+    
+      response = await this.client.lead.find('email', [email], { fields: fieldList });
+    }
+  
+    else if (fieldList.join(',').length > 7168) {
+      // If the length of the get request would be over 7KB, then the request
+      // would fail. Instead, we will split the request every 200 fields, and 
+      // combine the results.
+
+      let allFields:{ [key: string]: string; } = {};
+      const mustHaveFields = [
+        justInCaseField,
+        'email',
+        'updatedAt',
+        'createdAt',
+        'lastName',
+        'firstName',
+        'id',
+        'leadPartitionId',
+      ];
+
+      for (let i = 0; i < fieldList.length && i <= 800; i += 200) {
+        const currFields = i ? fieldList.slice(i, i + 200).filter(f => !!f) : [...mustHaveFields, ...fieldList.slice(i, i + 200)].filter(f => !!f);
+        const currResponse = await this.client.lead.find('email', [email], { fields: currFields });
+        allFields = {...allFields, ...currResponse.result[0]};
+        if (!i) {
+          response.requestId = currResponse.requestId;
+          response.success = currResponse.success;
+        }
+      }
+      response.result = [allFields];
     }
 
-    const response = await this.client.lead.find('email', [email], { fields: fieldList });
+    else {
+      response = await this.client.lead.find('email', [email], { fields: fieldList });
+    }
 
     // If a partition ID was provided, filter the returned leads accordingly.
     if (partitionId && response && response.result && response.result.length) {
