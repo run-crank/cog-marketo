@@ -3,6 +3,15 @@ export class LeadAwareMixin {
   client: Marketo;
   leadDescription: any;
   delayInSeconds = 3;
+  mustHaveFields = [
+    'email',
+    'updatedAt',
+    'createdAt',
+    'lastName',
+    'firstName',
+    'id',
+    'leadPartitionId',
+  ].filter(f => !!f);
 
   public async createOrUpdateLead(lead: Record<string, any>, partitionId: number = 1) {
     await this.delay(this.delayInSeconds);
@@ -21,21 +30,11 @@ export class LeadAwareMixin {
     const fields = await this.describeLeadFields();
     const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
     let response:any = {};
-    const mustHaveFields = [
-      justInCaseField,
-      'email',
-      'updatedAt',
-      'createdAt',
-      'lastName',
-      'firstName',
-      'id',
-      'leadPartitionId',
-    ].filter(f => !!f);
 
     if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
-      response = await this.client.lead.find(field, [value], { fields: mustHaveFields });
+      response = await this.client.lead.find(field, [value], { fields: [justInCaseField, ...this.mustHaveFields] });
     } else if (fieldList.join(',').length > 7168) {
-      response = await this.marketoRequestHelperFuntion(fieldList, mustHaveFields, field, value);
+      response = await this.marketoRequestHelperFuntion(fieldList, field, value);
     } else {
       response = await this.client.lead.find(field, [value], { fields: fieldList });
     }
@@ -55,21 +54,11 @@ export class LeadAwareMixin {
     const fields = await this.describeLeadFields();
     const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
     let response:any = {};
-    const mustHaveFields = [
-      justInCaseField,
-      'email',
-      'updatedAt',
-      'createdAt',
-      'lastName',
-      'firstName',
-      'id',
-      'leadPartitionId',
-    ].filter(f => !!f);
 
     if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
-      response = await this.client.lead.find('email', [email], { fields: mustHaveFields });
+      response = await this.client.lead.find('email', [email], { fields: [justInCaseField, ...this.mustHaveFields] });
     } else if (fieldList.join(',').length > 7168) {
-      response = await this.marketoRequestHelperFuntion(fieldList, mustHaveFields, 'email', email);
+      response = await this.marketoRequestHelperFuntion(fieldList, 'email', email);
     } else {
       response = await this.client.lead.find('email', [email], { fields: fieldList });
     }
@@ -84,12 +73,12 @@ export class LeadAwareMixin {
     return response;
   }
 
-  private async marketoRequestHelperFuntion(fieldList, mustHaveFields, field, value) {
+  private async marketoRequestHelperFuntion(fieldList, field, value) {
     const response:any = {};
     let allFields:{ [key: string]: string; } = {};
 
     for (let i = 0; i < fieldList.length && i <= 800; i += 200) {
-      const currFields = i ? fieldList.slice(i, i + 200) : [...mustHaveFields, ...fieldList.slice(i, i + 200)];
+      const currFields = fieldList.slice(i, i + 200);
       const currResponse = await this.client.lead.find(field, [value], { fields: currFields });
       allFields = { ...allFields, ...currResponse.result[0] };
       if (!i) {
