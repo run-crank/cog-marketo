@@ -19,55 +19,31 @@ export class LeadAwareMixin {
   public async findLeadByField(field: string, value: string, justInCaseField: string = null, partitionId: number = null) {
     await this.delay(this.delayInSeconds);
     const fields = await this.describeLeadFields();
-    let fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
+    const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
     let response:any = {};
+    const mustHaveFields = [
+      justInCaseField,
+      'email',
+      'updatedAt',
+      'createdAt',
+      'lastName',
+      'firstName',
+      'id',
+      'leadPartitionId',
+    ].filter(f => !!f);
 
     if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
       // If the length of the get request would be over 7KB, then the request
       // would fail. And if the amount of fields is over 1000, it is likely
       // not worth it to cache with the if statement below.
       // Instead, we will only request the needed fields.
-      fieldList = [
-        justInCaseField,
-        'email',
-        'updatedAt',
-        'createdAt',
-        'lastName',
-        'firstName',
-        'id',
-        'leadPartitionId',
-      ].filter(f => !!f);
-
-      response = await this.client.lead.find(field, [value], { fields: fieldList });
+      response = await this.client.lead.find(field, [value], { fields: mustHaveFields });
 
     } else if (fieldList.join(',').length > 7168) {
       // If the length of the get request would be over 7KB, then the request
       // would fail. Instead, we will split the request every 200 fields, and
       // combine the results.
-
-      let allFields:{ [key: string]: string; } = {};
-      const mustHaveFields = [
-        justInCaseField,
-        'email',
-        'updatedAt',
-        'createdAt',
-        'lastName',
-        'firstName',
-        'id',
-        'leadPartitionId',
-      ];
-
-      for (let i = 0; i < fieldList.length && i <= 800; i += 200) {
-        const currFields = i ? fieldList.slice(i, i + 200).filter(f => !!f) : [...mustHaveFields, ...fieldList.slice(i, i + 200)].filter(f => !!f);
-        const currResponse = await this.client.lead.find(field, [value], { fields: currFields });
-        allFields = { ...allFields, ...currResponse.result[0] };
-        if (!i) {
-          response.requestId = currResponse.requestId;
-          response.success = currResponse.success;
-        }
-      }
-      response.result = [allFields];
-
+      response = await this.marketoRequestHelperFuntion(fieldList, mustHaveFields, field, value);
     } else {
       response = await this.client.lead.find(field, [value], { fields: fieldList });
     }
@@ -85,55 +61,23 @@ export class LeadAwareMixin {
   public async findLeadByEmail(email: string, justInCaseField: string = null, partitionId: number = null) {
     await this.delay(this.delayInSeconds);
     const fields = await this.describeLeadFields();
-    let fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
+    const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
     let response:any = {};
+    const mustHaveFields = [
+      justInCaseField,
+      'email',
+      'updatedAt',
+      'createdAt',
+      'lastName',
+      'firstName',
+      'id',
+      'leadPartitionId',
+    ].filter(f => !!f);
 
     if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
-      // If the length of the get request would be over 7KB, then the request
-      // would fail. And if the amount of fields is over 1000, it is likely
-      // not worth it to cache with the if statement below.
-      // Instead, we will only request the needed fields.
-      fieldList = [
-        justInCaseField,
-        'email',
-        'updatedAt',
-        'createdAt',
-        'lastName',
-        'firstName',
-        'id',
-        'leadPartitionId',
-      ].filter(f => !!f);
-
-      response = await this.client.lead.find('email', [email], { fields: fieldList });
-
+      response = await this.client.lead.find('email', [email], { fields: mustHaveFields });
     } else if (fieldList.join(',').length > 7168) {
-      // If the length of the get request would be over 7KB, then the request
-      // would fail. Instead, we will split the request every 200 fields, and
-      // combine the results.
-
-      let allFields:{ [key: string]: string; } = {};
-      const mustHaveFields = [
-        justInCaseField,
-        'email',
-        'updatedAt',
-        'createdAt',
-        'lastName',
-        'firstName',
-        'id',
-        'leadPartitionId',
-      ];
-
-      for (let i = 0; i < fieldList.length && i <= 800; i += 200) {
-        const currFields = i ? fieldList.slice(i, i + 200).filter(f => !!f) : [...mustHaveFields, ...fieldList.slice(i, i + 200)].filter(f => !!f);
-        const currResponse = await this.client.lead.find('email', [email], { fields: currFields });
-        allFields = { ...allFields, ...currResponse.result[0] };
-        if (!i) {
-          response.requestId = currResponse.requestId;
-          response.success = currResponse.success;
-        }
-      }
-      response.result = [allFields];
-
+      response = await this.marketoRequestHelperFuntion(fieldList, mustHaveFields, 'email', email);
     } else {
       response = await this.client.lead.find('email', [email], { fields: fieldList });
     }
@@ -144,6 +88,24 @@ export class LeadAwareMixin {
         return lead.leadPartitionId && lead.leadPartitionId === partitionId;
       });
     }
+
+    return response;
+  }
+
+  private async marketoRequestHelperFuntion(fieldList, mustHaveFields, field, value) {
+    const response:any = {};
+    let allFields:{ [key: string]: string; } = {};
+
+    for (let i = 0; i < fieldList.length && i <= 800; i += 200) {
+      const currFields = i ? fieldList.slice(i, i + 200) : [...mustHaveFields, ...fieldList.slice(i, i + 200)];
+      const currResponse = await this.client.lead.find(field, [value], { fields: currFields });
+      allFields = { ...allFields, ...currResponse.result[0] };
+      if (!i) {
+        response.requestId = currResponse.requestId;
+        response.success = currResponse.success;
+      }
+    }
+    response.result = [allFields];
 
     return response;
   }
