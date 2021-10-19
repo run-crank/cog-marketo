@@ -28,7 +28,7 @@ class CachingClientWrapper {
       return stored;
     } else {
       const newLead = await this.client.findLeadByEmail(email, justInCaseField, partitionId);
-      if (newLead && newLead.success && newLead.result.length) {
+      if (newLead && newLead.success && newLead.result.length && Object.keys(newLead.result[0]).length > 8 && Object.keys(newLead.result[0]).length < 1000) {
         await this.setCache(cachekey, newLead);
       }
       return newLead;
@@ -44,7 +44,7 @@ class CachingClientWrapper {
       return stored;
     } else {
       const newLead = await this.client.findLeadByField(field, value, justInCaseField, partitionId);
-      if (newLead && newLead.success && newLead.result.length) {
+      if (newLead && newLead.success && newLead.result.length && Object.keys(newLead.result[0]).length > 8 && Object.keys(newLead.result[0]).length < 1000) {
         await this.setCache(cachekey, newLead);
       }
       return newLead;

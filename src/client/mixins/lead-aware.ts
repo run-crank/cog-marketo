@@ -3,6 +3,15 @@ export class LeadAwareMixin {
   client: Marketo;
   leadDescription: any;
   delayInSeconds = 3;
+  mustHaveFields = [
+    'email',
+    'updatedAt',
+    'createdAt',
+    'lastName',
+    'firstName',
+    'id',
+    'leadPartitionId',
+  ].filter(f => !!f);
 
   public async createOrUpdateLead(lead: Record<string, any>, partitionId: number = 1) {
     await this.delay(this.delayInSeconds);
@@ -19,27 +28,23 @@ export class LeadAwareMixin {
   public async findLeadByField(field: string, value: string, justInCaseField: string = null, partitionId: number = null) {
     await this.delay(this.delayInSeconds);
     const fields = await this.describeLeadFields();
-    let fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
+    const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
+    let response:any = {};
 
-    // If the length of the get request would be over 7KB, then the request
-    // would fail. Instead, just hard-code the list of fields to be returned.
-    // @todo There is a bug in Marketo's workaround for this, preventing a
-    // "real" solution (e.g. PUT request with _method=GET and fields list in
-    // request body).
-    if (fieldList.join(',').length > 7168) {
-      fieldList = [
-        justInCaseField,
-        'email',
-        'updatedAt',
-        'createdAt',
-        'lastName',
-        'firstName',
-        'id',
-        'leadPartitionId',
-      ].filter(f => !!f);
+    if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
+      // If the length of the get request would be over 7KB, then the request
+      // would fail. And if the amount of fields is over 1000, it is likely
+      // not worth it to cache with the if statement below.
+      // Instead, we will only request the needed fields.
+      response = await this.client.lead.find(field, [value], { fields: [justInCaseField, ...this.mustHaveFields] });
+    } else if (fieldList.join(',').length > 7168) {
+      // If the length of the get request would be over 7KB, then the request
+      // would fail. Instead, we will split the request every 200 fields, and
+      // combine the results.
+      response = await this.marketoRequestHelperFuntion(fieldList, field, value);
+    } else {
+      response = await this.client.lead.find(field, [value], { fields: fieldList });
     }
-
-    const response = await this.client.lead.find(field, [value], { fields: fieldList });
 
     // If a partition ID was provided, filter the returned leads accordingly.
     if (partitionId && response && response.result && response.result.length) {
@@ -54,27 +59,16 @@ export class LeadAwareMixin {
   public async findLeadByEmail(email: string, justInCaseField: string = null, partitionId: number = null) {
     await this.delay(this.delayInSeconds);
     const fields = await this.describeLeadFields();
-    let fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
+    const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
+    let response:any = {};
 
-    // If the length of the get request would be over 7KB, then the request
-    // would fail. Instead, just hard-code the list of fields to be returned.
-    // @todo There is a bug in Marketo's workaround for this, preventing a
-    // "real" solution (e.g. PUT request with _method=GET and fields list in
-    // request body).
-    if (fieldList.join(',').length > 7168) {
-      fieldList = [
-        justInCaseField,
-        'email',
-        'updatedAt',
-        'createdAt',
-        'lastName',
-        'firstName',
-        'id',
-        'leadPartitionId',
-      ].filter(f => !!f);
+    if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
+      response = await this.client.lead.find('email', [email], { fields: [justInCaseField, ...this.mustHaveFields] });
+    } else if (fieldList.join(',').length > 7168) {
+      response = await this.marketoRequestHelperFuntion(fieldList, 'email', email);
+    } else {
+      response = await this.client.lead.find('email', [email], { fields: fieldList });
     }
-
-    const response = await this.client.lead.find('email', [email], { fields: fieldList });
 
     // If a partition ID was provided, filter the returned leads accordingly.
     if (partitionId && response && response.result && response.result.length) {
@@ -82,6 +76,24 @@ export class LeadAwareMixin {
         return lead.leadPartitionId && lead.leadPartitionId === partitionId;
       });
     }
+
+    return response;
+  }
+
+  private async marketoRequestHelperFuntion(fieldList, field, value) {
+    const response:any = {};
+    let allFields:{ [key: string]: string; } = {};
+
+    for (let i = 0; i < fieldList.length && i <= 800; i += 200) {
+      const currFields = fieldList.slice(i, i + 200);
+      const currResponse = await this.client.lead.find(field, [value], { fields: currFields });
+      allFields = { ...allFields, ...currResponse.result[0] };
+      if (!i) {
+        response.requestId = currResponse.requestId;
+        response.success = currResponse.success;
+      }
+    }
+    response.result = [allFields];
 
     return response;
   }
