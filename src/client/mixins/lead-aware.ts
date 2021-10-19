@@ -24,8 +24,8 @@ export class LeadAwareMixin {
 
     if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
       // If the length of the get request would be over 7KB, then the request
-      // would fail. And if the amount of fields is over 1000, it is likely 
-      // not worth it to cache with the if statement below. 
+      // would fail. And if the amount of fields is over 1000, it is likely
+      // not worth it to cache with the if statement below.
       // Instead, we will only request the needed fields.
       fieldList = [
         justInCaseField,
@@ -37,13 +37,12 @@ export class LeadAwareMixin {
         'id',
         'leadPartitionId',
       ].filter(f => !!f);
-    
-      response = await this.client.lead.find(field, [value], { fields: fieldList });
-    }
 
-    else if (fieldList.join(',').length > 7168) {
+      response = await this.client.lead.find(field, [value], { fields: fieldList });
+
+    } else if (fieldList.join(',').length > 7168) {
       // If the length of the get request would be over 7KB, then the request
-      // would fail. Instead, we will split the request every 200 fields, and 
+      // would fail. Instead, we will split the request every 200 fields, and
       // combine the results.
 
       let allFields:{ [key: string]: string; } = {};
@@ -61,16 +60,15 @@ export class LeadAwareMixin {
       for (let i = 0; i < fieldList.length && i <= 800; i += 200) {
         const currFields = i ? fieldList.slice(i, i + 200).filter(f => !!f) : [...mustHaveFields, ...fieldList.slice(i, i + 200)].filter(f => !!f);
         const currResponse = await this.client.lead.find(field, [value], { fields: currFields });
-        allFields = {...allFields, ...currResponse.result[0]};
+        allFields = { ...allFields, ...currResponse.result[0] };
         if (!i) {
           response.requestId = currResponse.requestId;
           response.success = currResponse.success;
         }
       }
       response.result = [allFields];
-    }
 
-    else {
+    } else {
       response = await this.client.lead.find(field, [value], { fields: fieldList });
     }
 
@@ -92,8 +90,8 @@ export class LeadAwareMixin {
 
     if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
       // If the length of the get request would be over 7KB, then the request
-      // would fail. And if the amount of fields is over 1000, it is likely 
-      // not worth it to cache with the if statement below. 
+      // would fail. And if the amount of fields is over 1000, it is likely
+      // not worth it to cache with the if statement below.
       // Instead, we will only request the needed fields.
       fieldList = [
         justInCaseField,
@@ -105,13 +103,12 @@ export class LeadAwareMixin {
         'id',
         'leadPartitionId',
       ].filter(f => !!f);
-    
+
       response = await this.client.lead.find('email', [email], { fields: fieldList });
-    }
-  
-    else if (fieldList.join(',').length > 7168) {
+
+    } else if (fieldList.join(',').length > 7168) {
       // If the length of the get request would be over 7KB, then the request
-      // would fail. Instead, we will split the request every 200 fields, and 
+      // would fail. Instead, we will split the request every 200 fields, and
       // combine the results.
 
       let allFields:{ [key: string]: string; } = {};
@@ -129,16 +126,15 @@ export class LeadAwareMixin {
       for (let i = 0; i < fieldList.length && i <= 800; i += 200) {
         const currFields = i ? fieldList.slice(i, i + 200).filter(f => !!f) : [...mustHaveFields, ...fieldList.slice(i, i + 200)].filter(f => !!f);
         const currResponse = await this.client.lead.find('email', [email], { fields: currFields });
-        allFields = {...allFields, ...currResponse.result[0]};
+        allFields = { ...allFields, ...currResponse.result[0] };
         if (!i) {
           response.requestId = currResponse.requestId;
           response.success = currResponse.success;
         }
       }
       response.result = [allFields];
-    }
 
-    else {
+    } else {
       response = await this.client.lead.find('email', [email], { fields: fieldList });
     }
 
