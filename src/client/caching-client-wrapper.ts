@@ -2,7 +2,7 @@ import { ClientWrapper } from '../client/client-wrapper';
 import { promisify } from 'util';​​
 class CachingClientWrapper {
   // cachePrefix is scoped to the specific scenario, request, and requestor
-  private cachePrefix = this.idMap.requestId + this.idMap.scenarioId + this.idMap.requestorId;
+  public cachePrefix = `${this.idMap.scenarioId}${this.idMap.requestorId}`;
 
   constructor(private client: ClientWrapper, public redisClient: any, public idMap: any) {
     this.redisClient = redisClient;
@@ -11,16 +11,9 @@ class CachingClientWrapper {
 ​
   // lead-aware methods
   // -------------------------------------------------------------------
-  // Leads will be cached with one of the following cache key structures:
-  //  1) When a lead is found by email, the cacheKey = cachePrefix + 'Lead' + email
-  //  2) When a lead is found by id number, the cacheKey = cachePrefix + 'Lead' + leadId
-  //
-  // Lead descriptions will be cached with the cacheKey = cachePrefix + 'Description' + email
-  //
-  // If a lead is deleted, then all three of the cacheKeys mentioned above are deleted from Redis.
 ​
   public async findLeadByEmail(email: string, justInCaseField: string = null, partitionId: number = null) {
-    const cachekey = `${this.cachePrefix}Lead${email}`;
+    const cachekey = `Marketo|Lead|${email}|${this.cachePrefix}`;
     // check cache
     const stored = await this.getCache(cachekey);
     // if not there, call findLeadByEmail in lead-aware.ts
@@ -36,7 +29,7 @@ class CachingClientWrapper {
   }
 ​
   public async findLeadByField(field: string, value: string, justInCaseField: string = null, partitionId: number = null) {
-    const cachekey = `${this.cachePrefix}Lead${value}`;
+    const cachekey = `Marketo|Lead|${value}|${this.cachePrefix}`;
     // check cache
     const stored = await this.getCache(cachekey);
     // if not there, call findLeadByField in lead-aware.ts
@@ -52,25 +45,17 @@ class CachingClientWrapper {
   }
 
   public async createOrUpdateLead(lead: Record<string, any>, partitionId: number = 1) {
-    // making request as normal
-    const newLead = await this.client.createOrUpdateLead(lead, partitionId);
-    const id = newLead ? newLead.result[0].id : null;
-    // deleting cache
-    await this.deleteLeadCache(this.cachePrefix, lead.email, id);
-    await this.deleteDescriptionCache(this.cachePrefix, lead.email);
-    return newLead;
+    await this.clearCache();
+    return await this.client.createOrUpdateLead(lead, partitionId);
   }
 ​
   public async deleteLeadById(leadId: number, email: string = null) {
-    // deleting cache
-    await this.deleteLeadCache(this.cachePrefix, email, leadId);
-    await this.deleteDescriptionCache(this.cachePrefix, email);
-    // also calling real delete method
+    await this.clearCache();
     return await this.client.deleteLeadById(leadId);
   }
 
   public async describeLeadFields(email: string = '') {
-    const cachekey = `${this.cachePrefix}Description${email}`;
+    const cachekey = `Marketo|Description|${email}|${this.cachePrefix}`;
     // check cache
     const stored = await this.getCache(cachekey);
     // if not there, call describeLeadFields in lead-aware.ts
@@ -85,11 +70,9 @@ class CachingClientWrapper {
 
   // custom-object-aware methods
   // -------------------------------------------------------------------
-  // Custom Objects will be cached with cacheKey = cachePrefix + 'Object' + email + customObjectName
-  // Custom Object Queries will be cached with cacheKey = cachePrefix + 'Query' + email + customObjectName
 
   public async getCustomObject(customObjectName, email: string = null) {
-    const cachekey = `${this.cachePrefix}Object${email + customObjectName}`;
+    const cachekey = `Marketo|Object|${email}${customObjectName}|${this.cachePrefix}`;
     // check cache
     const stored = await this.getCache(cachekey);
     // if not there, call getCustomObject in custom-object-aware.ts
@@ -105,7 +88,7 @@ class CachingClientWrapper {
   }
 
   public async queryCustomObject(customObjectName, filterType, searchFields: any[], requestFields: string[] = [], email: string = '') {
-    const cachekey = `${this.cachePrefix}Query${email}${customObjectName}`;
+    const cachekey = `Marketo|Query|${email}${customObjectName}|${this.cachePrefix}`;
     // check cache
     const stored = await this.getCache(cachekey);
     // if not there, call queryCustomObject in custom-object-aware.ts
@@ -121,18 +104,12 @@ class CachingClientWrapper {
   }
 
   public async createOrUpdateCustomObject(customObjectName, customObject: Record<string, any>) {
-    // making request as normal
-    const newObject = await this.client.createOrUpdateCustomObject(customObjectName, customObject);
-    // deleting cache
-    await this.deleteCustomObjectCache(this.cachePrefix, customObject.linkField, customObjectName);
-    await this.deleteDescriptionCache(this.cachePrefix, customObject.linkField);
-    return newObject;
+    await this.clearCache();
+    return await this.client.createOrUpdateCustomObject(customObjectName, customObject);
   }
 
   public async deleteCustomObjectById(customObjectName, customObjectGUID, email: string = '') {
-    await this.deleteCustomObjectCache(this.cachePrefix, email, customObjectName);
-    await this.deleteDescriptionCache(this.cachePrefix, email);
-    await this.deleteQueryCache(this.cachePrefix, email, customObjectName);
+    await this.clearCache();
     return await this.client.deleteCustomObjectById(customObjectName, customObjectGUID);
   }
 
@@ -141,7 +118,7 @@ class CachingClientWrapper {
   // Campaigns will be cached with cacheKey = cachePrefix + 'Campaigns'
 
   public async getCampaigns() {
-    const cachekey = `${this.cachePrefix}Campaigns`;
+    const cachekey = `Marketo|Campaigns|${this.cachePrefix}`;
     // check cache
     const stored = await this.getCache(cachekey);
     // if not there, call getCampaigns in smart-campaign-aware.ts
@@ -156,12 +133,13 @@ class CachingClientWrapper {
     }
   }
 
-  // all non-cached functions, just referencing the original function
-  // -------------------------------------------------------------------
-
   public async addLeadToSmartCampaign(campaignId: string, lead: Record<string, any>) {
+    await this.clearCache();
     return await this.client.addLeadToSmartCampaign(campaignId, lead);
   }
+
+  // all non-cached functions, just referencing the original function
+  // -------------------------------------------------------------------
 
   public async getActivityTypes() {
     return await this.client.getActivityTypes();
@@ -205,45 +183,29 @@ class CachingClientWrapper {
 
   public async setCache(key: string, value: any) {
     try {
+      // arrOfKeys will store an array of all cache keys used in this scenario run, so it can be cleared easily
+      const arrOfKeys = await this.getCache(`cachekeys|${this.cachePrefix}`) || [];
+      arrOfKeys.push(key);
       await this.setAsync(key, 600, JSON.stringify(value));
-    } catch (err) {
-      console.log(err);
-    }
-  }
-  ​
-  public async deleteLeadCache(prefix: string, email: string, id: number) {
-    // delete all stored leads that match the prefix
-    try {
-      await this.delAsync(`${prefix}Lead${email}`);
-      await this.delAsync(`${prefix}Lead${id}`);
+      await this.setAsync(`cachekeys|${this.cachePrefix}`, 600, JSON.stringify(arrOfKeys));
     } catch (err) {
       console.log(err);
     }
   }
 
-  public async deleteDescriptionCache(prefix: string, email: string) {
+  public async clearCache() {
     try {
-      await this.delAsync(`${prefix}Description${email}`);
-    } catch (err) {
-      console.log(err);
-    }
-  }
-  ​
-  public async deleteCustomObjectCache(prefix: string, email: string, customObjectName: string) {
-    try {
-      await this.delAsync(`${prefix}Object${email}${customObjectName}`);
+      // clears all the cachekeys used in this scenario run
+      const keysToDelete = await this.getCache(`cachekeys|${this.cachePrefix}`) || [];
+      if (keysToDelete.length) {
+        keysToDelete.forEach(async (key: string) => await this.delAsync(key));
+      }
+      await this.setAsync(`cachekeys|${this.cachePrefix}`, 600, '[]');
     } catch (err) {
       console.log(err);
     }
   }
 
-  public async deleteQueryCache(prefix: string, email: string, customObjectName: string) {
-    try {
-      await this.delAsync(`${prefix}Query${email}${customObjectName}`);
-    } catch (err) {
-      console.log(err);
-    }
-  }
 }
 ​
 export { CachingClientWrapper as CachingClientWrapper };

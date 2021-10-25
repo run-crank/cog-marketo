@@ -110,14 +110,12 @@ describe('CachingClientWrapper', () => {
   it('createOrUpdateLead', (done) => {
     const expectedLead = { email: 'test@example.com' };
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
-    cachingClientWrapperUnderTest.deleteLeadCache = sinon.spy();
-    cachingClientWrapperUnderTest.deleteDescriptionCache = sinon.spy();
+    cachingClientWrapperUnderTest.clearCache = sinon.spy();
     cachingClientWrapperUnderTest.createOrUpdateLead(expectedLead);
 
     setTimeout(() => {
       expect(clientWrapperStub.createOrUpdateLead).to.have.been.calledWith(expectedLead);
-      expect(cachingClientWrapperUnderTest.deleteLeadCache).to.have.been.called;
-      expect(cachingClientWrapperUnderTest.deleteDescriptionCache).to.have.been.called;
+      expect(cachingClientWrapperUnderTest.clearCache).to.have.been.called;
       done();
     });
   });
@@ -125,13 +123,11 @@ describe('CachingClientWrapper', () => {
   it('deleteLeadById', (done) => {
     const expectedId = 123;
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
-    cachingClientWrapperUnderTest.deleteDescriptionCache = sinon.spy();
-    cachingClientWrapperUnderTest.deleteLeadCache = sinon.spy();
+    cachingClientWrapperUnderTest.clearCache = sinon.spy();
     cachingClientWrapperUnderTest.deleteLeadById(expectedId);
 
     setTimeout(() => {
-      expect(cachingClientWrapperUnderTest.deleteDescriptionCache).to.have.been.called;
-      expect(cachingClientWrapperUnderTest.deleteLeadCache).to.have.been.called;
+      expect(cachingClientWrapperUnderTest.clearCache).to.have.been.called;
       expect(clientWrapperStub.deleteLeadById).to.have.been.calledWith(expectedId);
       done();
     });
@@ -234,14 +230,12 @@ describe('CachingClientWrapper', () => {
     const customObjectName = 'any';
     const customObject = { anyField: 'anyValue' };
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
-    cachingClientWrapperUnderTest.deleteCustomObjectCache = sinon.spy();
-    cachingClientWrapperUnderTest.deleteDescriptionCache = sinon.spy();
+    cachingClientWrapperUnderTest.clearCache = sinon.spy();
     cachingClientWrapperUnderTest.createOrUpdateCustomObject(customObjectName, customObject);
 
     setTimeout(() => {
       expect(clientWrapperStub.createOrUpdateCustomObject).to.have.been.calledWith(customObjectName, customObject);
-      expect(cachingClientWrapperUnderTest.deleteCustomObjectCache).to.have.been.called;
-      expect(cachingClientWrapperUnderTest.deleteDescriptionCache).to.have.been.called;
+      expect(cachingClientWrapperUnderTest.clearCache).to.have.been.called;
       done();
     });
   });
@@ -250,15 +244,11 @@ describe('CachingClientWrapper', () => {
     const customObjectName = 'any';
     const customObjectGUID = 'anyGUID';
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
-    cachingClientWrapperUnderTest.deleteDescriptionCache = sinon.spy();
-    cachingClientWrapperUnderTest.deleteCustomObjectCache = sinon.spy();
-    cachingClientWrapperUnderTest.deleteQueryCache = sinon.spy();
+    cachingClientWrapperUnderTest.clearCache = sinon.spy();
     cachingClientWrapperUnderTest.deleteCustomObjectById(customObjectName, customObjectGUID);
 
     setTimeout(() => {
-      expect(cachingClientWrapperUnderTest.deleteDescriptionCache).to.have.been.called;
-      expect(cachingClientWrapperUnderTest.deleteCustomObjectCache).to.have.been.called;
-      expect(cachingClientWrapperUnderTest.deleteQueryCache).to.have.been.called;
+      expect(cachingClientWrapperUnderTest.clearCache).to.have.been.called;
       expect(clientWrapperStub.deleteCustomObjectById).to.have.been.calledWith(customObjectName, customObjectGUID);
       done();
     });
@@ -290,13 +280,18 @@ describe('CachingClientWrapper', () => {
     });
   });
 
-  it('addLeadToSmartCampaign using original function', () => {
+  it('addLeadToSmartCampaign', (done) => {
     const campaignIdInput = 'someId';
     const leadInput = { name: 'someLead' };
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest.clearCache = sinon.spy();
     cachingClientWrapperUnderTest.addLeadToSmartCampaign(campaignIdInput, leadInput);
 
-    expect(clientWrapperStub.addLeadToSmartCampaign).to.have.been.calledWith(campaignIdInput, leadInput);
+    setTimeout(() => {
+      expect(cachingClientWrapperUnderTest.clearCache).to.have.been.called;
+      expect(clientWrapperStub.addLeadToSmartCampaign).to.have.been.calledWith(campaignIdInput, leadInput);
+      done();
+    });
   });
 
   it('getActivityTypes using original function', (done) => {
@@ -355,62 +350,30 @@ describe('CachingClientWrapper', () => {
   });
 
   it('setCache', (done) => {
-    redisClientStub.setex = sinon.stub().yields();
+    redisClientStub.setex = sinon.stub().yields(); 
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest.getCache = sinon.stub().returns(null);
+    cachingClientWrapperUnderTest.cachePrefix = 'testPrefix';
     cachingClientWrapperUnderTest.setCache('expectedKey', 'expectedValue');
 
     setTimeout(() => {
       expect(redisClientStub.setex).to.have.been.calledWith('expectedKey', 600, '"expectedValue"');
+      expect(redisClientStub.setex).to.have.been.calledWith('cachekeys|testPrefix', 600, '["expectedKey"]');
       done();
     });
   });
 
-  it('deleteLeadCache', (done) => {
-    const expectedCacheKey1 = 'prefix' + 'Lead' + 'test@example.com';
-    const expectedCacheKey2 = 'prefix' + 'Lead' + '1';
+  it('clearCache', (done) => {
     redisClientStub.del = sinon.stub().yields();
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
-    cachingClientWrapperUnderTest.deleteLeadCache('prefix', 'test@example.com', 1);
+    cachingClientWrapperUnderTest.cachePrefix = 'testPrefix';
+    cachingClientWrapperUnderTest.getCache = sinon.stub().returns(['testKey1', 'testKey2'])
+    cachingClientWrapperUnderTest.clearCache();
 
     setTimeout(() => {
-      expect(redisClientStub.del).to.have.been.calledWith(expectedCacheKey1);
-      expect(redisClientStub.del).to.have.been.calledWith(expectedCacheKey2);
-      done();
-    });
-  });
-
-  it('deleteDescriptionCache', (done) => {
-    const expectedCacheKey1 = 'prefix' + 'Description' + 'test@example.com';
-    redisClientStub.del = sinon.stub().yields();
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
-    cachingClientWrapperUnderTest.deleteDescriptionCache('prefix', 'test@example.com');
-
-    setTimeout(() => {
-      expect(redisClientStub.del).to.have.been.calledWith(expectedCacheKey1);
-      done();
-    });
-  });
-
-  it('deleteCustomObjectCache', (done) => {
-    const expectedCacheKey1 = 'prefix' + 'Object' + 'test@example.com' + 'objectName';
-    redisClientStub.del = sinon.stub().yields();
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
-    cachingClientWrapperUnderTest.deleteCustomObjectCache('prefix', 'test@example.com', 'objectName');
-
-    setTimeout(() => {
-      expect(redisClientStub.del).to.have.been.calledWith(expectedCacheKey1);
-      done();
-    });
-  });
-
-  it('deleteQueryCache', (done) => {
-    const expectedCacheKey1 = 'prefix' + 'Query' + 'test@example.com' + 'objectName';
-    redisClientStub.del = sinon.stub().yields();
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
-    cachingClientWrapperUnderTest.deleteQueryCache('prefix', 'test@example.com', 'objectName');
-
-    setTimeout(() => {
-      expect(redisClientStub.del).to.have.been.calledWith(expectedCacheKey1);
+      expect(redisClientStub.del).to.have.been.calledWith('testKey1');
+      expect(redisClientStub.del).to.have.been.calledWith('testKey2');
+      expect(redisClientStub.setex).to.have.been.calledWith('cachekeys|testPrefix');
       done();
     });
   });
