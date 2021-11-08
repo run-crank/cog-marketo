@@ -3,6 +3,8 @@ import * as Marketo from 'node-marketo-rest';
 import { Field } from '../core/base-step';
 import { FieldDefinition } from '../proto/cog_pb';
 import { LeadAwareMixin, SmartCampaignAwareMixin, ActivityAwareMixin, CustomObjectAwareMixin, StatsAwareMixin } from './mixins';
+import { FolderAwareMixin } from './mixins/folder-aware';
+import { ProgramAwareMixin } from './mixins/program-aware';
 
 class ClientWrapper {
 
@@ -21,8 +23,9 @@ class ClientWrapper {
   }];
 
   client: Marketo;
+  delayInSeconds: number;
 
-  constructor (auth: grpc.Metadata, clientConstructor = Marketo) {
+  constructor (auth: grpc.Metadata, clientConstructor = Marketo, delayInSeconds = 3) {
     this.client = new clientConstructor({
       endpoint: `${auth.get('endpoint')[0]}/rest`,
       identity: `${auth.get('endpoint')[0]}/identity`,
@@ -30,13 +33,14 @@ class ClientWrapper {
       clientSecret: auth.get('clientSecret')[0],
       ...(!!auth.get('partnerId')[0] && { partnerId: auth.get('partnerId')[0] }),
     });
+    this.delayInSeconds = delayInSeconds;
   }
 }
 
-interface ClientWrapper extends LeadAwareMixin, SmartCampaignAwareMixin, ActivityAwareMixin, CustomObjectAwareMixin, StatsAwareMixin {
+interface ClientWrapper extends LeadAwareMixin, SmartCampaignAwareMixin, ActivityAwareMixin, CustomObjectAwareMixin, StatsAwareMixin, ProgramAwareMixin, FolderAwareMixin {
   _connection: any;
 }
-applyMixins(ClientWrapper, [LeadAwareMixin, SmartCampaignAwareMixin, ActivityAwareMixin, CustomObjectAwareMixin, StatsAwareMixin]);
+applyMixins(ClientWrapper, [LeadAwareMixin, SmartCampaignAwareMixin, ActivityAwareMixin, CustomObjectAwareMixin, StatsAwareMixin, ProgramAwareMixin, FolderAwareMixin]);
 
 function applyMixins(derivedCtor: any, baseCtors: any[]) {
   baseCtors.forEach((baseCtor) => {

@@ -2,20 +2,20 @@ import * as Marketo from 'node-marketo-rest';
 
 export class ActivityAwareMixin {
   client: Marketo;
-  delayInSeconds = 3;
+  delayInSeconds;
 
   public async getActivityTypes() {
-    await this.delay(this.delayInSeconds);
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     return await this.client.activities.getActivityTypes();
   }
 
   public async getActivityPagingToken(sinceDate) {
-    await this.delay(this.delayInSeconds);
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     return await this.client._connection.get(`/v1/activities/pagingtoken.json?sinceDatetime=${sinceDate}`);
   }
 
   public async getActivities(nextPageToken, leadId, activityId) {
-    await this.delay(this.delayInSeconds);
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     return await this.client._connection.get('/v1/activities.json', {
       query: {
         nextPageToken,
