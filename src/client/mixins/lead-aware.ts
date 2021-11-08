@@ -2,7 +2,7 @@ import * as Marketo from 'node-marketo-rest';
 export class LeadAwareMixin {
   client: Marketo;
   leadDescription: any;
-  delayInSeconds = 3;
+  delayInSeconds;
   mustHaveFields = [
     'email',
     'updatedAt',
@@ -14,7 +14,7 @@ export class LeadAwareMixin {
   ].filter(f => !!f);
 
   public async createOrUpdateLead(lead: Record<string, any>, partitionId: number = 1) {
-    await this.delay(this.delayInSeconds);
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const partitions = await this.client.lead.partitions();
     const partition = partitions.result.find(option => option.id === partitionId);
 
@@ -26,7 +26,7 @@ export class LeadAwareMixin {
   }
 
   public async findLeadByField(field: string, value: string, justInCaseField: string = null, partitionId: number = null) {
-    await this.delay(this.delayInSeconds);
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const fields = await this.describeLeadFields();
     const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
     let response:any = {};
@@ -57,7 +57,7 @@ export class LeadAwareMixin {
   }
 
   public async findLeadByEmail(email: string, justInCaseField: string = null, partitionId: number = null) {
-    await this.delay(this.delayInSeconds);
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const fields = await this.describeLeadFields();
     const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
     let response:any = {};
@@ -99,7 +99,7 @@ export class LeadAwareMixin {
   }
 
   public async deleteLeadById(leadId: number, email: string = null) {
-    await this.delay(this.delayInSeconds);
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     // @todo Contribute this back up to the package.
     return this.client._connection.postJson(
       '/v1/leads.json',
@@ -109,7 +109,7 @@ export class LeadAwareMixin {
   }
 
   public async describeLeadFields() {
-    await this.delay(this.delayInSeconds);
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     // This safely reduces the number of API calls that might have to be made
     // in lead field check steps, but is an imcomplete solution.
     // @todo Incorporate true caching based on https://github.com/run-crank/cli/pull/40

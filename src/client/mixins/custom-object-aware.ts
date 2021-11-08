@@ -3,10 +3,10 @@ import { isObject } from 'util';
 export class CustomObjectAwareMixin {
   client: Marketo;
   customObjectDescriptions: any = {};
-  delayInSeconds = 3;
+  delayInSeconds;
 
   public async createOrUpdateCustomObject(customObjectName, customObject: Record<string, any>) {
-    await this.delay(this.delayInSeconds);
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     return this.client._connection.postJson(
       `/v1/customobjects/${customObjectName}.json`,
       {
@@ -23,7 +23,7 @@ export class CustomObjectAwareMixin {
   }
 
   public async getCustomObject(customObjectName) {
-    await this.delay(this.delayInSeconds);
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     // This safely reduces the number of API calls that might have to be made
     // in custom object field check steps, but is an imcomplete solution.
     // @todo Incorporate true caching based on https://github.com/run-crank/cli/pull/40
@@ -39,7 +39,7 @@ export class CustomObjectAwareMixin {
 
   // @todo Update this method and callees to remove the requestFields argument.
   public async queryCustomObject(customObjectName, filterType, searchFields: any[], requestFields: string[] = []) {
-    await this.delay(this.delayInSeconds);
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const fields = await this.getCustomObject(customObjectName);
     if (isObject(searchFields[0])) {
       return this.client._connection.postJson(
@@ -63,7 +63,7 @@ export class CustomObjectAwareMixin {
   }
 
   public async deleteCustomObjectById(customObjectName, customObjectGUID) {
-    await this.delay(this.delayInSeconds);
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     // @todo Contribute this back up to the package.
     return this.client._connection.postJson(
       `/v1/customobjects/${customObjectName}/delete.json`,

@@ -2,15 +2,15 @@ import * as Marketo from 'node-marketo-rest';
 
 export class StatsAwareMixin {
   client: Marketo;
-  delayInSeconds = 3;
+  delayInSeconds;
 
   public async getDailyApiUsage() {
-    await this.delay(this.delayInSeconds);
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     return await this.client._connection.get('/v1/stats/usage.json');
   }
 
   public async getWeeklyApiUsage() {
-    await this.delay(this.delayInSeconds);
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     return await this.client._connection.get('/v1/stats/usage/last7days.json');
   }
 
