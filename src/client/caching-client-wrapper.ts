@@ -161,6 +161,30 @@ class CachingClientWrapper {
     return await this.client.getWeeklyApiUsage();
   }
 
+  public async createProgram(program) {
+    return await this.client.createProgram(program);
+  }
+
+  public async updateProgram(id: string, program: Record<string, any>) {
+    return await this.client.updateProgram(id, program);
+  }
+
+  public async getPrograms() {
+    return await this.client.getPrograms();
+  }
+
+  public async findProgramsByName(name: string) {
+    return await this.client.findProgramsByName(name);
+  }
+
+  public async deleteProgramById(id: string) {
+    return await this.client.deleteProgramById(id);
+  }
+
+  public async getFoldersById(id: string) {
+    return await this.client.getFoldersById(id);
+  }
+
   // Redis methods for get, set, and delete
   // -------------------------------------------------------------------
 

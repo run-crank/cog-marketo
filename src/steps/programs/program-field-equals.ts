@@ -14,7 +14,7 @@ export class ProgramFieldEqualsStep extends BaseStep implements StepInterface {
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
     field: 'name',
-    type: FieldDefinition.Type.EMAIL,
+    type: FieldDefinition.Type.STRING,
     description: "Program's name",
   }, {
     field: 'field',
