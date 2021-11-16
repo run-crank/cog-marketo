@@ -177,6 +177,10 @@ class CachingClientWrapper {
     return await this.client.findProgramsByName(name);
   }
 
+  public async findProgramsById(id: string) {
+    return await this.client.findProgramsById(id);
+  }
+
   public async deleteProgramById(id: string) {
     return await this.client.deleteProgramById(id);
   }

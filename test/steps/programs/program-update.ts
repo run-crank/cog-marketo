@@ -18,7 +18,7 @@ describe('UpdateProgramStep', () => {
   beforeEach(() => {
     protoStep = new ProtoStep();
     clientWrapperStub = sinon.stub();
-    clientWrapperStub.findProgramsByName = sinon.stub();
+    clientWrapperStub.findProgramsById = sinon.stub();
     clientWrapperStub.updateProgram = sinon.stub();
     stepUnderTest = new Step(clientWrapperStub);
   });
@@ -33,11 +33,12 @@ describe('UpdateProgramStep', () => {
 
   it('should call the client wrapper with the expected args', async () => {
     protoStep.setData(Struct.fromJavaScript({
+      id: '123',
       name: 'sampleName',
       description: 'sampleDesc',
     }));
 
-    clientWrapperStub.findProgramsByName.returns(Promise.resolve({
+    clientWrapperStub.findProgramsById.returns(Promise.resolve({
       success: true,
       result: [
         {
@@ -48,8 +49,8 @@ describe('UpdateProgramStep', () => {
     }));
 
     await stepUnderTest.executeStep(protoStep);
-    expect(clientWrapperStub.findProgramsByName).to.have.been.calledWith(
-      protoStep.getData().toJavaScript().name,
+    expect(clientWrapperStub.findProgramsById).to.have.been.calledWith(
+      protoStep.getData().toJavaScript().id,
     );
     expect(clientWrapperStub.updateProgram).to.have.been.calledWith(
       123321,
@@ -61,7 +62,7 @@ describe('UpdateProgramStep', () => {
     const expectedName: string = 'expected@example.com';
     const expectedReason: string = 'reason it failed';
 
-    clientWrapperStub.findProgramsByName.returns(Promise.resolve({
+    clientWrapperStub.findProgramsById.returns(Promise.resolve({
       success: true,
       result: [
         {
@@ -81,6 +82,7 @@ describe('UpdateProgramStep', () => {
       ],
     }));
     protoStep.setData(Struct.fromJavaScript({
+      id: '123',
       name: 'sampleName',
       description: 'sampleDesc',
     }));
@@ -91,7 +93,7 @@ describe('UpdateProgramStep', () => {
   it('should respond with fail if the marketo skips creation of program', async () => {
     const expectedMessage: string  = 'status was skipped';
     
-    clientWrapperStub.findProgramsByName.returns(Promise.resolve({
+    clientWrapperStub.findProgramsById.returns(Promise.resolve({
       success: true,
       result: [
         {
@@ -110,6 +112,7 @@ describe('UpdateProgramStep', () => {
       ],
     }));
     protoStep.setData(Struct.fromJavaScript({
+      id: '123',
       name: 'sampleName',
       description: 'sampleDesc',
     }));
@@ -119,7 +122,7 @@ describe('UpdateProgramStep', () => {
   });
 
   it('should respond with an error if the marketo throws an error', async () => {
-    clientWrapperStub.findProgramsByName.returns(Promise.resolve({
+    clientWrapperStub.findProgramsById.returns(Promise.resolve({
       success: true,
       result: [
         {
@@ -131,6 +134,7 @@ describe('UpdateProgramStep', () => {
 
     clientWrapperStub.updateProgram.throws('any error');
     protoStep.setData(Struct.fromJavaScript({
+      id: '123',
       name: 'sampleName',
       description: 'sampleDesc',
     }));

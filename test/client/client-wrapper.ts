@@ -375,6 +375,14 @@ describe('ClientWrapper', () => {
     expect(marketoClientStub._connection.get).to.have.been.calledWith(`/asset/v1/program/byName.json?name=${sampleName}&includeTags=true`);
   });
 
+  it('findProgramsById', () => {
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub, 0);
+    const sampleId = 'asd';
+    clientWrapperUnderTest.findProgramsById(sampleId);
+
+    expect(marketoClientStub._connection.get).to.have.been.calledWith(`/asset/v1/program/${sampleId}.json`);
+  });
+
   it('deleteProgramById', () => {
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub, 0);
     const expectedId = '123';
