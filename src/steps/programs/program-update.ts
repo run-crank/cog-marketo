@@ -12,17 +12,17 @@ export class UpdateProgramStep extends BaseStep implements StepInterface {
     {
       field: 'id',
       type: FieldDefinition.Type.STRING,
-      description: `Program's Marketo ID`,
+      description: "Program's Marketo ID",
     },
     {
       field: 'name',
       type: FieldDefinition.Type.STRING,
-      description: `Program's Name`,
+      description: "Program's Name",
     },
     {
       field: 'description',
       type: FieldDefinition.Type.STRING,
-      description: `Program's Description`,
+      description: "Program's Description",
     },
   ];
   protected expectedRecords: ExpectedRecord[] = [{
