@@ -10,14 +10,19 @@ export class UpdateProgramStep extends BaseStep implements StepInterface {
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
   protected expectedFields: Field[] = [
     {
+      field: 'id',
+      type: FieldDefinition.Type.STRING,
+      description: "Program's Marketo ID",
+    },
+    {
       field: 'name',
       type: FieldDefinition.Type.STRING,
-      description: 'Name',
+      description: "Program's Name",
     },
     {
       field: 'description',
       type: FieldDefinition.Type.STRING,
-      description: 'Description',
+      description: "Program's Description",
     },
   ];
   protected expectedRecords: ExpectedRecord[] = [{
@@ -33,6 +38,7 @@ export class UpdateProgramStep extends BaseStep implements StepInterface {
 
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
+    const id = stepData.id;
     const name = stepData.name;
     const description = stepData.description;
 
@@ -40,7 +46,7 @@ export class UpdateProgramStep extends BaseStep implements StepInterface {
       let data;
       const program = `name=${name}&description=${description}`;
 
-      const filteredProgram: any = await this.client.findProgramsByName(name);
+      const filteredProgram: any = await this.client.findProgramsById(id);
       if (filteredProgram.success && filteredProgram.result && filteredProgram.result[0] && filteredProgram.result[0].id) {
         data = await this.client.updateProgram(filteredProgram.result[0].id, program);
       }
