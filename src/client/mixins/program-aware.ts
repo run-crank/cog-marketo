@@ -24,6 +24,11 @@ export class ProgramAwareMixin {
     return await this.client._connection.get(`/asset/v1/program/byName.json?name=${name}&includeTags=true`);
   }
 
+  public async findProgramsByid(id: string) {
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    return await this.client._connection.get(`/asset/v1/program/${id}.json`);
+  }
+
   public async deleteProgramById(id: string) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     return await this.client._connection.post(`/asset/v1/program/${id}/delete.json`);

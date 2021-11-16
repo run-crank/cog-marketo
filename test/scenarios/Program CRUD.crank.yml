@@ -12,11 +12,6 @@ steps:
     type: Default
     channel: Partner Program
 - step: Then the description field on Marketo program Test Program 01 should be Testing Create Program
-- step: When I update a marketo program
-  data:
-    name: Test Program 01
-    description: Testing Updated Create Program
 - step: Then the name field on Marketo program Test Program 01 should be Test Program 01
-- step: Then the description field on Marketo program Test Program 01 should be Testing Updated Create Program
 - step: Then the folder field on Marketo program Test Program 01 should be Testing Folder
 - step: Finally, delete the Test Program 01 Marketo program
