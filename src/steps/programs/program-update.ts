@@ -54,7 +54,7 @@ export class UpdateProgramStep extends BaseStep implements StepInterface {
       if (data.success && data.result && data.result[0] && data.result[0].status !== 'skipped') {
         return this.pass(
           'Successfully updated program %s',
-          [name],
+          [id],
           [this.keyValue('program', 'Updated Program', { id: data.result[0].id })],
         );
       } else {
