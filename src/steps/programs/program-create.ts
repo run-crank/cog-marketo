@@ -10,6 +10,12 @@ export class CreateProgramStep extends BaseStep implements StepInterface {
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
   protected expectedFields: Field[] = [
     {
+      field: 'partitionId',
+      type: FieldDefinition.Type.NUMERIC,
+      optionality: FieldDefinition.Optionality.OPTIONAL,
+      description: 'ID of partition the program will be created',
+    },
+    {
       field: 'name',
       type: FieldDefinition.Type.STRING,
       description: 'Name',
