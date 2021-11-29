@@ -80,6 +80,9 @@ export class ProgramFieldEqualsStep extends BaseStep implements StepInterface {
         let result;
         if (field === 'folder') {
           result = this.assert(operator, data.result[0]['folder']['folderName'], expectedValue, field);
+        } else if (field === 'cost') {
+          const totalCost = this.getTotalProjectCost(data.result[0]);
+          result = this.assert(operator, totalCost.toString(), expectedValue, field);
         } else {
           result = this.assert(operator, data.result[0][field], expectedValue, field);
         }
@@ -114,6 +117,15 @@ export class ProgramFieldEqualsStep extends BaseStep implements StepInterface {
 
   createRecord(program: Record<string, any>) {
     return this.keyValue('program', 'Checked Program', program);
+  }
+
+  getTotalProjectCost(program: Record<string, any>) {
+    let result = 0;
+    program.costs.forEach(c => {
+      result += c.cost;
+    })
+
+    return result;
   }
 }
 
