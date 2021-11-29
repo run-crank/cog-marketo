@@ -121,9 +121,9 @@ export class ProgramFieldEqualsStep extends BaseStep implements StepInterface {
 
   getTotalProjectCost(program: Record<string, any>) {
     let result = 0;
-    program.costs.forEach(c => {
+    program.costs.forEach((c: any) => {
       result += c.cost;
-    })
+    });
 
     return result;
   }
