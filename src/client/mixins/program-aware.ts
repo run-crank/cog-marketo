@@ -21,7 +21,7 @@ export class ProgramAwareMixin {
 
   public async findProgramsByName(name: string) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
-    return await this.client._connection.get(`/asset/v1/program/byName.json?name=${name}&includeTags=true`);
+    return await this.client._connection.get(`/asset/v1/program/byName.json?name=${name}&includeCosts=true`);
   }
 
   public async findProgramsById(id: string) {

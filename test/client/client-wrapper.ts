@@ -372,7 +372,7 @@ describe('ClientWrapper', () => {
     const sampleName = 'asd';
     clientWrapperUnderTest.findProgramsByName(sampleName);
 
-    expect(marketoClientStub._connection.get).to.have.been.calledWith(`/asset/v1/program/byName.json?name=${sampleName}&includeTags=true`);
+    expect(marketoClientStub._connection.get).to.have.been.calledWith(`/asset/v1/program/byName.json?name=${sampleName}&includeCosts=true`);
   });
 
   it('findProgramsById', () => {

@@ -80,11 +80,12 @@ export class ProgramFieldEqualsStep extends BaseStep implements StepInterface {
         let result;
         if (field === 'folder') {
           result = this.assert(operator, data.result[0]['folder']['folderName'], expectedValue, field);
-        } else if (field === 'cost') {
+        } else if (field === 'costs') {
           const totalCost = this.getTotalProjectCost(data.result[0]);
+          data.result[0].costs = totalCost;
           result = this.assert(operator, totalCost.toString(), expectedValue, field);
         } else {
-          result = this.assert(operator, data.result[0][field], expectedValue, field);
+          result = this.assert(operator, data.result[0][field].trim(), expectedValue.trim(), field);
         }
 
         return result.valid ? this.pass(result.message, [], [this.createRecord(data.result[0])])
