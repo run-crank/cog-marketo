@@ -1,28 +1,40 @@
 /*tslint:disable:no-else-after-return*/
 
+import moment = require('moment');
 import { BaseStep, Field, StepInterface, ExpectedRecord } from '../../core/base-step';
 import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../../proto/cog_pb';
 
-export class UpdateProgramStep extends BaseStep implements StepInterface {
+export class CreateProgramCostStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Update a Marketo Program';
-  protected stepExpression: string = 'update a marketo program';
+  protected stepName: string = 'Create Cost for Marketo Program Cost';
+  protected stepExpression: string = 'create cost for marketo program';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
   protected expectedFields: Field[] = [
-    {
-      field: 'id',
-      type: FieldDefinition.Type.STRING,
-      description: "Program's Marketo ID",
-    },
     {
       field: 'name',
       type: FieldDefinition.Type.STRING,
       description: "Program's Name",
     },
     {
-      field: 'description',
+      field: 'startDate',
+      type: FieldDefinition.Type.DATE,
+      description: "Program's Cost Start Date",
+    },
+    {
+      field: 'cost',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Program's Cost Amount",
+    },
+    {
+      field: 'note',
       type: FieldDefinition.Type.STRING,
-      description: "Program's Description",
+      description: "Program's Cost Amount",
+    },
+    {
+      field: 'costsDestructiveUpdate ',
+      type: FieldDefinition.Type.STRING,
+      optionality: FieldDefinition.Optionality.OPTIONAL,
+      description: 'Clear costs before creating?',
     },
   ];
   protected expectedRecords: ExpectedRecord[] = [{
@@ -38,23 +50,28 @@ export class UpdateProgramStep extends BaseStep implements StepInterface {
 
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
-    const id = stepData.id;
     const name = stepData.name;
-    const description = stepData.description;
-
+    const startDate = stepData.startDate;
+    const cost = stepData.cost;
+    const note = stepData.note;
+    const costsDestructiveUpdate = stepData.costsDestructiveUpdate;
     try {
       let data;
-      const program = `name=${name}&description=${description}`;
+      let program = `costs=[{"startDate":"${moment(startDate).format('YYYY-MM-DD')}","cost":${cost},"note":"${note}"}]`;
+      if (costsDestructiveUpdate) {
+        program += '&costsDestructiveUpdate=true';
+      }
 
-      const filteredProgram: any = await this.client.findProgramsById(id);
+      const filteredProgram: any = await this.client.findProgramsByName(name);
       if (filteredProgram.success && filteredProgram.result && filteredProgram.result[0] && filteredProgram.result[0].id) {
+        console.log(filteredProgram.result[0].id, program);
         data = await this.client.updateProgram(filteredProgram.result[0].id, program);
       }
 
       if (data.success && data.result && data.result[0] && data.result[0].status !== 'skipped') {
         return this.pass(
           'Successfully updated program %s',
-          [id],
+          [name],
           [this.keyValue('program', 'Updated Program', { id: data.result[0].id })],
         );
       } else {
@@ -69,7 +86,7 @@ export class UpdateProgramStep extends BaseStep implements StepInterface {
         }
       }
     } catch (e) {
-      return this.error('There was an error updating programs in Marketo: %s', [
+      return this.error('There was an error updating program cost in Marketo: %s', [
         e.toString(),
       ]);
     }
@@ -77,4 +94,4 @@ export class UpdateProgramStep extends BaseStep implements StepInterface {
 
 }
 
-export { UpdateProgramStep as Step };
+export { CreateProgramCostStep as Step };
