@@ -28,7 +28,7 @@ export class CreateProgramCostStep extends BaseStep implements StepInterface {
     {
       field: 'note',
       type: FieldDefinition.Type.STRING,
-      description: "Program's Cost Amount",
+      description: "Program's Cost Note",
     },
     {
       field: 'costsDestructiveUpdate ',
