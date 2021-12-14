@@ -21,5 +21,14 @@ steps:
 - step: Then the description field on Marketo program Test Program 01 should be Testing Create Program
 - step: Then the name field on Marketo program Test Program 01 should be Test Program 01
 - step: Then the costs field on Marketo program Test Program 01 should be 5000
+- step: When I create cost for marketo program
+  data:
+    name: Test Program 01
+    startDate: 2021/01/13
+    cost: 5000
+    note: Test Note
+    costsDestructiveUpdate: false
+- step: Then the costs field on Marketo program Test Program 01 should be 10000
+- step: Then the costs field on Marketo program Test Program 01 should not be 5000
 - step: Then the folder field on Marketo program Test Program 01 should be Testing Folder
 - step: Finally, delete the Test Program 01 Marketo program
