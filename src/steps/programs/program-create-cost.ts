@@ -32,7 +32,7 @@ export class CreateProgramCostStep extends BaseStep implements StepInterface {
     },
     {
       field: 'costsDestructiveUpdate ',
-      type: FieldDefinition.Type.STRING,
+      type: FieldDefinition.Type.BOOLEAN,
       optionality: FieldDefinition.Optionality.OPTIONAL,
       description: 'Clear costs before creating?',
     },
@@ -64,7 +64,6 @@ export class CreateProgramCostStep extends BaseStep implements StepInterface {
 
       const filteredProgram: any = await this.client.findProgramsByName(name);
       if (filteredProgram.success && filteredProgram.result && filteredProgram.result[0] && filteredProgram.result[0].id) {
-        console.log(filteredProgram.result[0].id, program);
         data = await this.client.updateProgram(filteredProgram.result[0].id, program);
       }
 
