@@ -18,23 +18,23 @@ export class CreateProgramCostStep extends BaseStep implements StepInterface {
     {
       field: 'startDate',
       type: FieldDefinition.Type.DATE,
-      description: "Program's Cost Start Date",
+      description: "Period Month",
     },
     {
       field: 'cost',
       type: FieldDefinition.Type.NUMERIC,
-      description: "Program's Cost Amount",
+      description: "Period Cost(USD)",
     },
     {
       field: 'note',
       type: FieldDefinition.Type.STRING,
-      description: "Program's Cost Note",
+      description: "Note",
     },
     {
       field: 'costsDestructiveUpdate ',
       type: FieldDefinition.Type.BOOLEAN,
       optionality: FieldDefinition.Optionality.OPTIONAL,
-      description: 'Clear costs before creating?',
+      description: 'Clear existing costs before creating?',
     },
   ];
   protected expectedRecords: ExpectedRecord[] = [{
