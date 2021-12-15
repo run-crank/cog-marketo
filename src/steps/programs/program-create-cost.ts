@@ -18,17 +18,17 @@ export class CreateProgramCostStep extends BaseStep implements StepInterface {
     {
       field: 'startDate',
       type: FieldDefinition.Type.DATE,
-      description: "Period Month",
+      description: 'Period Month',
     },
     {
       field: 'cost',
       type: FieldDefinition.Type.NUMERIC,
-      description: "Period Cost(USD)",
+      description: 'Period Cost(USD)',
     },
     {
       field: 'note',
       type: FieldDefinition.Type.STRING,
-      description: "Note",
+      description: 'Note',
     },
     {
       field: 'costsDestructiveUpdate ',
