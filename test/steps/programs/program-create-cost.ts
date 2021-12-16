@@ -56,7 +56,7 @@ describe('CreateProgramCostStep', () => {
       protoStep.getData().toJavaScript().name,
     );
     expect(clientWrapperStub.updateProgram).to.have.been.calledWith(
-      123321, `costs=[{"startDate":"2001-12-01","cost":${sampleInputs.cost},"note":"${sampleInputs.note}"}]`
+      123321, `costs=[{"startDate":"2001-12-01","cost":${sampleInputs.cost},"note":"${sampleInputs.note}"}]&costsDestructiveUpdate=false`
     );
   });
 
