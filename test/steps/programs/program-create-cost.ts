@@ -26,7 +26,7 @@ describe('CreateProgramCostStep', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('CreateProgramCostStep');
-    expect(stepDef.getName()).to.equal('Create Cost for Marketo Program Cost');
+    expect(stepDef.getName()).to.equal('Create Cost for Marketo Program');
     expect(stepDef.getExpression()).to.equal('create cost for marketo program');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);
   });
