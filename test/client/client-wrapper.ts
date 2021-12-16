@@ -353,7 +353,7 @@ describe('ClientWrapper', () => {
   it('updateProgram', () => {
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub, 0);
     const sampleId = '123';
-    const sampleProgram = { name: '123' };
+    const sampleProgram = 'sampleString';
     clientWrapperUnderTest.updateProgram(sampleId, sampleProgram);
 
     expect(marketoClientStub._connection.post).to.have.been.calledWith(`/asset/v1/program/${sampleId}.json?` + sampleProgram);
