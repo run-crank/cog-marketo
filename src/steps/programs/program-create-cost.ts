@@ -58,7 +58,7 @@ export class CreateProgramCostStep extends BaseStep implements StepInterface {
     try {
       let data;
       let program = `costs=[{"startDate":"${moment(startDate).format('YYYY-MM-DD')}","cost":${cost},"note":"${note}"}]`;
-      if (costsDestructiveUpdate) {
+      if (costsDestructiveUpdate === true) {
         program += '&costsDestructiveUpdate=true';
       }
 
