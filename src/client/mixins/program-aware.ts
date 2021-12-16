@@ -9,9 +9,9 @@ export class ProgramAwareMixin {
     return await this.client._connection.post(`/asset/v1/programs.json?${program}`);
   }
 
-  public async updateProgram(id: string, program: Record<string, any>) {
+  public async updateProgram(id: string, programUpdateString: string) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
-    return await this.client._connection.post(`/asset/v1/program/${id}.json?${program}`);
+    return await this.client._connection.post(`/asset/v1/program/${id}.json?${programUpdateString}`);
   }
 
   public async getPrograms() {

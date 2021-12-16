@@ -165,8 +165,8 @@ class CachingClientWrapper {
     return await this.client.createProgram(program);
   }
 
-  public async updateProgram(id: string, program: Record<string, any>) {
-    return await this.client.updateProgram(id, program);
+  public async updateProgram(id: string, programUpdateString: string) {
+    return await this.client.updateProgram(id, programUpdateString);
   }
 
   public async getPrograms() {
