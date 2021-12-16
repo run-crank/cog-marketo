@@ -54,13 +54,10 @@ export class CreateProgramCostStep extends BaseStep implements StepInterface {
     const startDate = stepData.startDate;
     const cost = stepData.cost;
     const note = stepData.note;
-    const costsDestructiveUpdate = stepData.costsDestructiveUpdate;
+    const costsDestructiveUpdate = stepData.costsDestructiveUpdate || false;
     try {
       let data;
-      let program = `costs=[{"startDate":"${moment(startDate).format('YYYY-MM-DD')}","cost":${cost},"note":"${note}"}]`;
-      if (costsDestructiveUpdate === true) {
-        program += '&costsDestructiveUpdate=true';
-      }
+      const program = `costs=[{"startDate":"${moment(startDate).format('YYYY-MM-DD')}","cost":${cost},"note":"${note}"}]&costsDestructiveUpdate=${costsDestructiveUpdate}`;
 
       const filteredProgram: any = await this.client.findProgramsByName(name);
       if (filteredProgram.success && filteredProgram.result && filteredProgram.result[0] && filteredProgram.result[0].id) {
