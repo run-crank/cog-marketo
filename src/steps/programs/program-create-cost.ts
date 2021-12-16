@@ -31,7 +31,7 @@ export class CreateProgramCostStep extends BaseStep implements StepInterface {
       description: 'Note',
     },
     {
-      field: 'costsDestructiveUpdate ',
+      field: 'costsDestructiveUpdate',
       type: FieldDefinition.Type.BOOLEAN,
       optionality: FieldDefinition.Optionality.OPTIONAL,
       description: 'Clear existing costs before creating?',
