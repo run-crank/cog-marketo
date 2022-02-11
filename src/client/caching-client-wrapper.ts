@@ -1,5 +1,5 @@
 import { ClientWrapper } from '../client/client-wrapper';
-import { promisify } from 'util';​​
+import { promisify } from 'util';
 class CachingClientWrapper {
   // cachePrefix is scoped to the specific scenario, request, and requestor
   public cachePrefix = `${this.idMap.scenarioId}${this.idMap.requestorId}`;
@@ -8,10 +8,10 @@ class CachingClientWrapper {
     this.redisClient = redisClient;
     this.idMap = idMap;
   }
-​
+
   // lead-aware methods
   // -------------------------------------------------------------------
-​
+
   public async findLeadByEmail(email: string, justInCaseField: string = null, partitionId: number = null) {
     const cachekey = `Marketo|Lead|${email}|${this.cachePrefix}`;
     // check cache
@@ -27,7 +27,7 @@ class CachingClientWrapper {
       return newLead;
     }
   }
-​
+
   public async findLeadByField(field: string, value: string, justInCaseField: string = null, partitionId: number = null) {
     const cachekey = `Marketo|Lead|${value}|${this.cachePrefix}`;
     // check cache
@@ -48,7 +48,12 @@ class CachingClientWrapper {
     await this.clearCache();
     return await this.client.createOrUpdateLead(lead, partitionId);
   }
-​
+
+  public async bulkCreateOrUpdateLead(leads: [], partitionId: number = 1) {
+    await this.clearCache();
+    return await this.client.bulkCreateOrUpdateLead(leads, partitionId);
+  }
+
   public async deleteLeadById(leadId: number, email: string = null) {
     await this.clearCache();
     return await this.client.deleteLeadById(leadId);
@@ -235,5 +240,5 @@ class CachingClientWrapper {
   }
 
 }
-​
+
 export { CachingClientWrapper as CachingClientWrapper };

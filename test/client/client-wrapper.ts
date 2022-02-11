@@ -103,6 +103,24 @@ describe('ClientWrapper', () => {
     });
   });
 
+  it('bulkCreateOrUpdateLead', (done) => {
+    const expectedLeads = [
+      { email: 'test1@example.com' },
+      { email: 'test2@example.com' },
+      { email: 'test3@example.com' },
+    ];
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub, 0);
+    clientWrapperUnderTest.bulkCreateOrUpdateLead(expectedLeads);
+
+    setTimeout(() => {
+      expect(marketoClientStub.lead.createOrUpdate).to.have.been.calledWith(
+        expectedLeads,
+        { lookupField: 'email', partitionName: 'Default' },
+      );
+      done();
+    });
+  });
+
   it('findLeadByEmail (no options)', (done) => {
     const expectedEmail = 'test@example.com';
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub, 0);

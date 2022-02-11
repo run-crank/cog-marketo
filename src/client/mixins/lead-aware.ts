@@ -25,6 +25,32 @@ export class LeadAwareMixin {
     return this.client.lead.createOrUpdate([lead], { lookupField: 'email', partitionName: partition ? partition.name : 'Default' });
   }
 
+  public async bulkCreateOrUpdateLead(leads: {}[], partitionId: number = 1) {
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    const partitions = await this.client.lead.partitions();
+    const partition = partitions.result.find(option => option.id === partitionId);
+    if (!partition) {
+      return Promise.resolve({ error: { partition: false } });
+    }
+
+    // Chunk the leads array into subarrays with length 300 or less
+    const chunkedLeads = [];
+    const leadArrayCopy = [...leads];
+    let chunkIndex = 0;
+    while (leadArrayCopy.length) {
+      chunkedLeads[chunkIndex] = leadArrayCopy.splice(0, 300);
+      chunkIndex += 1;
+    }
+
+    // Make a separate API call for each chunk of 300 and return an array of the responses.
+    const responseArray = [];
+    for (let i = 0; i < chunkedLeads.length; i += 1) {
+      const response = await this.client.lead.createOrUpdate(chunkedLeads[i], { lookupField: 'email', partitionName: partition ? partition.name : 'Default' });
+      responseArray.push(response);
+    }
+    return responseArray;
+  }
+
   public async findLeadByField(field: string, value: string, justInCaseField: string = null, partitionId: number = null) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const fields = await this.describeLeadFields();
