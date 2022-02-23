@@ -1,0 +1,63 @@
+scenario: Demonstrate the Marketo bulk api
+description: A scenario that creates multiple leads
+
+steps:
+- step: The createdAt field on marketo leads should be greater than 2019-02-22T01:30:00
+  data:
+    leads:
+      1:
+        email: atoma.tommy1@example.com
+        firstName: Tommy
+        lastName: Tommy
+        company: Stack Moxie
+        country: Spain
+        utmpagepath: null
+      2:
+        email: atoma.tommy2@example.com
+        firstName: Tommy
+        lastName: Tommy
+        company: Stack Moxie
+        country: Spain
+        utmpagepath: null
+      3:
+        email: atoma.tommy3@example.com
+        firstName: Tommy
+        lastName: Tommy
+        company: Stack Moxie
+        country: Spain
+        utmpagepath: null
+      4: 
+        email: atoma.tommy4@example.com
+        firstName: Tommy
+        lastName: Tommy
+        company: Stack Moxie
+        country: Spain
+        utmpagepath: null
+      5: 
+        email: atoma.tommy5@example.com
+        firstName: Tommy
+        lastName: Tommy
+        company: Stack Moxie
+        country: Spain
+        utmpagepath: null
+      6: 
+        email: atoma.tommy6@example.com
+        firstName: Tommy
+        lastName: Tommy
+        company: Stack Moxie
+        country: Spain
+        utmpagepath: null
+      7: 
+        email: atoma.tommy7@example.com
+        firstName: Tommy
+        lastName: Tommy
+        company: Stack Moxie
+        country: Spain
+        utmpagepath: null
+      8:
+        email: atoma.tommy8@example.com
+        firstName: Tommy
+        lastName: Tommy
+        company: Stack Moxie
+        country: Spain
+        utmpagepath: null
