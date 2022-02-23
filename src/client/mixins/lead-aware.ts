@@ -33,14 +33,7 @@ export class LeadAwareMixin {
       return Promise.resolve({ error: { partition: false } });
     }
 
-    // Chunk the leads array into subarrays with length 300 or less
-    const chunkedLeads = [];
-    const leadArrayCopy = [...leads];
-    let chunkIndex = 0;
-    while (leadArrayCopy.length) {
-      chunkedLeads[chunkIndex] = leadArrayCopy.splice(0, 300);
-      chunkIndex += 1;
-    }
+    const chunkedLeads = this.chunkArrayHelper(leads);
 
     // Make a separate API call for each chunk of 300 and return an array of the responses.
     const responseArray = [];
@@ -48,6 +41,33 @@ export class LeadAwareMixin {
       const response = await this.client.lead.createOrUpdate(chunkedLeads[i], { lookupField: 'email', partitionName: partition ? partition.name : 'Default' });
       responseArray.push(response);
     }
+    return responseArray;
+  }
+
+  public async bulkFindLeadsByEmail(emails: [], justInCaseField: string = null, partitionId: number = null) {
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    const fields = await this.describeLeadFields();
+    const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
+    let response;
+
+    const chunkedEmails = this.chunkArrayHelper(emails);
+
+    // Make a separate API call for each chunk of 300 and return an array of the responses.
+    const responseArray = [];
+    for (let i = 0; i < chunkedEmails.length; i += 1) {
+      response = await this.client.lead.find('email', emails, { fields: [justInCaseField, ...this.mustHaveFields] });
+      responseArray.push(response);
+    }
+
+    // If a partition ID was provided, filter the returned leads accordingly.
+    responseArray.forEach((response) => {
+      if (partitionId && response && response.result && response.result.length) {
+        response.result = response.result.filter((lead: Record<string, any>) => {
+          return lead.leadPartitionId && lead.leadPartitionId === partitionId;
+        });
+      }
+    });
+
     return responseArray;
   }
 
@@ -144,6 +164,18 @@ export class LeadAwareMixin {
     }
 
     return this.leadDescription;
+  }
+
+  public chunkArrayHelper(leadArray) {
+    // Chunk the leads array into subarrays with length 300 or less
+    const chunkedLeads = [];
+    const leadArrayCopy = [...leadArray];
+    let chunkIndex = 0;
+    while (leadArrayCopy.length) {
+      chunkedLeads[chunkIndex] = leadArrayCopy.splice(0, 300);
+      chunkIndex += 1;
+    }
+    return chunkedLeads;
   }
 
   public async delay(seconds: number) {
