@@ -55,7 +55,7 @@ export class LeadAwareMixin {
     // Make a separate API call for each chunk of 300 and return an array of the responses.
     const responseArray = [];
     for (let i = 0; i < chunkedEmails.length; i += 1) {
-      response = await this.client.lead.find('email', emails, { fields: [justInCaseField, ...this.mustHaveFields] });
+      response = await this.client.lead.find('email', chunkedEmails[i], { fields: [justInCaseField, ...this.mustHaveFields] });
       responseArray.push(response);
     }
 
