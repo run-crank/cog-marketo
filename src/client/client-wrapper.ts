@@ -3,6 +3,7 @@ import * as Marketo from 'node-marketo-rest';
 import { Field } from '../core/base-step';
 import { FieldDefinition } from '../proto/cog_pb';
 import { LeadAwareMixin, SmartCampaignAwareMixin, ActivityAwareMixin, CustomObjectAwareMixin, StatsAwareMixin } from './mixins';
+import { EmailAwareMixin } from './mixins/email-aware';
 import { FolderAwareMixin } from './mixins/folder-aware';
 import { ProgramAwareMixin } from './mixins/program-aware';
 
@@ -37,10 +38,10 @@ class ClientWrapper {
   }
 }
 
-interface ClientWrapper extends LeadAwareMixin, SmartCampaignAwareMixin, ActivityAwareMixin, CustomObjectAwareMixin, StatsAwareMixin, ProgramAwareMixin, FolderAwareMixin {
+interface ClientWrapper extends LeadAwareMixin, SmartCampaignAwareMixin, ActivityAwareMixin, CustomObjectAwareMixin, StatsAwareMixin, ProgramAwareMixin, FolderAwareMixin, EmailAwareMixin {
   _connection: any;
 }
-applyMixins(ClientWrapper, [LeadAwareMixin, SmartCampaignAwareMixin, ActivityAwareMixin, CustomObjectAwareMixin, StatsAwareMixin, ProgramAwareMixin, FolderAwareMixin]);
+applyMixins(ClientWrapper, [LeadAwareMixin, SmartCampaignAwareMixin, ActivityAwareMixin, CustomObjectAwareMixin, StatsAwareMixin, ProgramAwareMixin, FolderAwareMixin, EmailAwareMixin]);
 
 function applyMixins(derivedCtor: any, baseCtors: any[]) {
   baseCtors.forEach((baseCtor) => {
