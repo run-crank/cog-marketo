@@ -148,6 +148,26 @@ class CachingClientWrapper {
     return await this.client.addLeadToSmartCampaign(campaignId, lead);
   }
 
+  // email-aware methods
+  // -------------------------------------------------------------------
+  // Campaigns will be cached with cacheKey = Marketo|Emails|cachePrefix
+
+  public async getEmails() {
+    const cachekey = `Marketo|Emails|${this.cachePrefix}`;
+    // check cache
+    const stored = await this.getCache(cachekey);
+    // if not there, call getCampaigns in smart-campaign-aware.ts
+    if (stored) {
+      return stored;
+    } else {
+      const emails = await this.client.getEmails();
+      if (emails && emails.length) {
+        await this.setCache(cachekey, emails);
+      }
+      return emails;
+    }
+  }
+
   // all non-cached functions, just referencing the original function
   // -------------------------------------------------------------------
 
@@ -197,6 +217,10 @@ class CachingClientWrapper {
 
   public async getFoldersById(id: string) {
     return await this.client.getFoldersById(id);
+  }
+
+  public async sendSampleEmail(emailId, email) {
+    return await this.client.sendSampleEmail(emailId, email);
   }
 
   // Redis methods for get, set, and delete
