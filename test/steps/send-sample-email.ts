@@ -120,7 +120,7 @@ describe('SendSampleEmailStep', () => {
   });
 
   it('should respond with success if the marketo executes succesfully with non numeric emailAsset', async () => {
-    const expectedResponseMessage: string = 'Successfully sent Marketo email with id %d to %s';
+    const expectedResponseMessage: string = 'Successfully sent Marketo email with name %s to %s';
     clientWrapperStub.getEmails.returns(Promise.resolve([
       {
         name: 'someEmail',
@@ -204,7 +204,7 @@ describe('SendSampleEmailStep', () => {
   });
 
   it('should respond with error if there are zero matching emails in Marketo', async () => {
-    const expectedResponseMessage: string = 'No Marketo emails match your criteria: found %d matching emails';
+    const expectedResponseMessage: string = 'No Marketo emails match your criteria: found 0 matching emails';
     clientWrapperStub.getEmails.returns(Promise.resolve([
       {
         name: 'someEmail',
