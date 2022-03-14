@@ -82,12 +82,12 @@ export class SendSampleEmailStep extends BaseStep implements StepInterface {
           const emailSent: any = await this.client.sendSampleEmail(matchingEmails[0].id, emailAddress);
           const emailRecord = this.keyValue('email', 'Email Record', matchingEmails[0]);
           if (emailSent && emailSent.success && emailSent.result && emailSent.result[0]) {
-            return this.pass('Successfully sent Marketo email with id %d to %s', [emailAsset, emailAddress], [emailRecord]);
+            return this.pass('Successfully sent Marketo email with name %s to %s', [emailAsset, emailAddress], [emailRecord]);
           } else {
             return this.error('There was an error sending the Marketo email', [], [emailRecord]);
           }
         } else if (matchingEmails.length === 0) {
-          return this.error('No Marketo emails match your criteria: found %d matching emails', [matchingEmails.length]);
+          return this.error('No Marketo emails match your criteria: found 0 matching emails', []);
         } else {
           matchingEmails.forEach((email, index) => {
             const emailRecord = this.keyValue(`email ${index}`, 'Email Record', email);
