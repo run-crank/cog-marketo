@@ -126,6 +126,11 @@ export class LeadAwareMixin {
     return response;
   }
 
+  public async associateLeadById(leadId: string, cookie: string) {
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    return await this.client.lead.associateLead(leadId, cookie);
+  }
+
   private async marketoRequestHelperFuntion(fieldList, field, value) {
     const response:any = {};
     let allFields:{ [key: string]: string; } = {};
