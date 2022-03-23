@@ -340,11 +340,17 @@ describe('CachingClientWrapper', () => {
   });
 
   it('mergeLeadsById using original function', (done) => {
+    const winningId = '1';
+    const losingIds = ['2'];
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
-    cachingClientWrapperUnderTest.mergeLeadsById('1', ['2']);
+    cachingClientWrapperUnderTest.clearCache = sinon.spy();
+    cachingClientWrapperUnderTest.mergeLeadsById(winningId, losingIds);
 
-    expect(clientWrapperStub.getDailyApiUsage).to.have.been.calledWith('1', ['2']);
-    done();
+    setTimeout(() => {
+      expect(cachingClientWrapperUnderTest.clearCache).to.have.been.called;
+      expect(clientWrapperStub.mergeLeadsById).to.have.been.calledWith(winningId, losingIds);
+      done();
+    });
   });
 
   it('getCache', (done) => {

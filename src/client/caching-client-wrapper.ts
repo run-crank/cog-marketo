@@ -83,7 +83,7 @@ class CachingClientWrapper {
     return await this.client.associateLeadById(leadId, cookie);
   }
 
-  public async mergeLeadsById(winningLead: string, losingLeads: []) {
+  public async mergeLeadsById(winningLead: string, losingLeads: string[]) {
     await this.clearCache();
     return await this.client.mergeLeadsById(winningLead, losingLeads);
   }
