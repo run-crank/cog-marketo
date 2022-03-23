@@ -32,6 +32,7 @@ describe('CachingClientWrapper', () => {
       getCustomObject: sinon.spy(),
       queryCustomObject: sinon.spy(),
       createOrUpdateCustomObject: sinon.spy(),
+      mergeLeadsById: sinon.spy(),
     };
 
     redisClientStub = {
@@ -336,6 +337,20 @@ describe('CachingClientWrapper', () => {
 
     expect(clientWrapperStub.getWeeklyApiUsage).to.have.been.called;
     done();
+  });
+
+  it('mergeLeadsById using original function', (done) => {
+    const winningId = '1';
+    const losingIds = ['2'];
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest.clearCache = sinon.spy();
+    cachingClientWrapperUnderTest.mergeLeadsById(winningId, losingIds);
+
+    setTimeout(() => {
+      expect(cachingClientWrapperUnderTest.clearCache).to.have.been.called;
+      expect(clientWrapperStub.mergeLeadsById).to.have.been.calledWith(winningId, losingIds);
+      done();
+    });
   });
 
   it('getCache', (done) => {

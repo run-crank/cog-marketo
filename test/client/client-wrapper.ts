@@ -49,6 +49,7 @@ describe('ClientWrapper', () => {
       { id: 1, name: 'Default' },
     ]});
     marketoConstructorStub.returns(marketoClientStub);
+    marketoClientStub.lead.mergeLead = sinon.stub();
   });
 
   it('authentication', () => {
@@ -212,6 +213,22 @@ describe('ClientWrapper', () => {
 
   //   expect(marketoClientStub.campaign.getCampaigns).to.have.been.calledWith();
   // });
+
+  it('mergeLeadsById', (done) => {
+    const winningId = '1';
+    const losingIds = ['2'];
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub, 0);
+    clientWrapperUnderTest.mergeLeadsById(winningId, losingIds);
+
+    setTimeout(() => {
+      expect(marketoClientStub.lead.mergeLead).to.have.been.calledWith(
+        winningId,
+        losingIds,
+        { mergeInCrm: null },
+      );
+      done();
+    });
+  });
 
   it('createOrUpdateCustomObject', () => {
     const customObjectName = 'any';
