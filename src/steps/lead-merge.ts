@@ -60,19 +60,19 @@ export class MergeLeadsStep extends BaseStep implements StepInterface {
                              [this.keyValue('mergedLead', 'Merged Lead', { id: winningLead.result[0].id, email: winningEmail })],
                              );
           } else {
-            return this.error('Failed to merge Marketo lead %s into Marketo lead %s',
+            return this.fail('Failed to merge Marketo lead %s into Marketo lead %s',
                               [losingEmail, winningEmail],
                               [this.keyValue('mergedLead', 'Merged Lead', { id: winningLead.result[0].id, email: winningEmail })],
                               );
           }
         } else {
-          return this.error("Couldn't find a lead associated with %s%s", [
+          return this.fail("Couldn't find a lead associated with %s%s", [
             winningEmail,
             partitionId ? ` in partition ${partitionId}` : '',
           ]);
         }
       } else {
-        return this.error("Couldn't find a lead associated with %s%s", [
+        return this.fail("Couldn't find a lead associated with %s%s", [
           losingEmail,
           partitionId ? ` in partition ${partitionId}` : '',
         ]);
