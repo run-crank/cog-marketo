@@ -2,7 +2,7 @@ import { isNullOrUndefined } from 'util';
 /*tslint:disable:no-else-after-return*/
 
 import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition, StepRecord } from '../proto/cog_pb';
 
 export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInterface {
 
@@ -112,10 +112,9 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
       object[customObject.result[0].relationships[0].field] = lead.result[0][linkField];
       const data = await this.client.createOrUpdateCustomObject(name, object);
       if (data.success && data.result.length > 0 && data.result[0].status != 'skipped') {
-        const custObjRecord = this.keyValue('customObject', `Created ${customObject.result[0].displayName}`, {
-          marketoGUID: data.result[0].marketoGUID,
-        });
-        return this.pass(`Successfully ${data.result[0].status} %s`, [name], [custObjRecord]);
+        const custObjRecord = this.createRecord(data);
+        const orderedCustObjRecord = this.createOrderedRecord(data, stepData['__stepOrder']);
+        return this.pass(`Successfully ${data.result[0].status} %s`, [name], [custObjRecord, orderedCustObjRecord]);
       } else {
         return this.fail('Failed to create %s.: %s', [
           name,
@@ -128,6 +127,18 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
         e.toString(),
       ]);
     }
+  }
+
+  public createRecord(customObject): StepRecord {
+    return this.keyValue('customObject', `Created ${customObject.result[0].displayName}`, {
+      marketoGUID: customObject.result[0].marketoGUID,
+    });
+  }
+
+  public createOrderedRecord(customObject, stepOrder = 1): StepRecord {
+    return this.keyValue(`customObject.${stepOrder}`, `Created ${customObject.result[0].displayName} from Step ${stepOrder}`, {
+      marketoGUID: customObject.result[0].marketoGUID,
+    });
   }
 
 }

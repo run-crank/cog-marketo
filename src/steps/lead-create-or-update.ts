@@ -1,7 +1,7 @@
 /*tslint:disable:no-else-after-return*/
 
 import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition, StepRecord } from '../proto/cog_pb';
 
 export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInterface {
 
@@ -40,10 +40,12 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
     try {
       const data: any = await this.client.createOrUpdateLead(lead, partitionId);
       if (data.success && data.result && data.result[0] && data.result[0].status !== 'skipped') {
+        const record = this.createRecord(data);
+        const orderedRecord = this.createOrderedRecord(data, stepData['__stepOrder']);
         return this.pass(
           'Successfully created or updated lead %s with status %s',
           [lead.email, data.result[0].status],
-          [this.keyValue('lead', 'Created Lead', { id: data.result[0].id })],
+          [record, orderedRecord],
         );
       } else if (data && data.error && !data.error.partition) {
         return this.fail('There is no Partition with id %s', [
@@ -65,6 +67,14 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
         e.toString(),
       ]);
     }
+  }
+
+  public createRecord(lead): StepRecord {
+    return this.keyValue('lead', 'Created Lead', { id: lead.result[0].id });
+  }
+
+  public createOrderedRecord(lead, stepOrder = 1): StepRecord {
+    return this.keyValue(`lead.${stepOrder}`, `Created Lead from Step ${stepOrder}`, { id: lead.result[0].id });
   }
 
 }
