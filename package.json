@@ -59,7 +59,7 @@
     "google-protobuf": "^3.8.0",
     "grpc": "^1.24.3",
     "mailgun-js": "^0.22.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "node-marketo-rest": "^0.7.8",
     "redis": "^3.1.2",
     "title-case": "^3.0.2",
