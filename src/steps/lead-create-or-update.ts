@@ -28,6 +28,10 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
       field: 'id',
       type: FieldDefinition.Type.NUMERIC,
       description: "Lead's Marketo ID",
+    }, {
+      field: 'email',
+      type: FieldDefinition.Type.NUMERIC,
+      description: "Lead's Email",
     }],
     dynamicFields: false,
   }];
@@ -40,8 +44,9 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
     try {
       const data: any = await this.client.createOrUpdateLead(lead, partitionId);
       if (data.success && data.result && data.result[0] && data.result[0].status !== 'skipped') {
-        const record = this.createRecord(data);
-        const orderedRecord = this.createOrderedRecord(data, stepData['__stepOrder']);
+        const createdLead: any = await this.client.findLeadByEmail(lead.email, null, partitionId);
+        const record = this.createRecord(createdLead.result[0]);
+        const orderedRecord = this.createOrderedRecord(createdLead.result[0], stepData['__stepOrder']);
         return this.pass(
           'Successfully created or updated lead %s with status %s',
           [lead.email, data.result[0].status],
@@ -70,11 +75,11 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
   }
 
   public createRecord(lead): StepRecord {
-    return this.keyValue('lead', 'Created Lead', { id: lead.result[0].id });
+    return this.keyValue('lead', 'Created Lead', lead);
   }
 
   public createOrderedRecord(lead, stepOrder = 1): StepRecord {
-    return this.keyValue(`lead.${stepOrder}`, `Created Lead from Step ${stepOrder}`, { id: lead.result[0].id });
+    return this.keyValue(`lead.${stepOrder}`, `Created Lead from Step ${stepOrder}`, lead);
   }
 
 }
