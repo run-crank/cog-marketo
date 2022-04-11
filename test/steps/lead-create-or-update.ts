@@ -19,6 +19,7 @@ describe('CreateOrUpdateLeadByFieldStep', () => {
     protoStep = new ProtoStep();
     clientWrapperStub = sinon.stub();
     clientWrapperStub.createOrUpdateLead = sinon.stub();
+    clientWrapperStub.findLeadByEmail = sinon.stub();
     stepUnderTest = new Step(clientWrapperStub);
   });
 
@@ -50,6 +51,15 @@ describe('CreateOrUpdateLeadByFieldStep', () => {
         {
           status: 'success',
           id: 123321,
+        },
+      ],
+    }));
+    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+      success: true,
+      result: [
+        {
+          id: 123321,
+          email: 'any@test.com',
         },
       ],
     }));
