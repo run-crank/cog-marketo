@@ -33,7 +33,7 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
       type: FieldDefinition.Type.NUMERIC,
       description: "Lead's Email",
     }],
-    dynamicFields: false,
+    dynamicFields: true,
   }];
 
   async executeStep(step: Step) {
