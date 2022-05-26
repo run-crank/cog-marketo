@@ -14,8 +14,9 @@ steps:
       firstName: Scenario
       lastName: Tester
       company: ST Corp
-- step: Then there should be a New Lead activity for marketo lead {{test.email}} in the last 15 minutes
-- step: And there should be a Change Data Value activity for marketo lead {{test.email}} in the last 15 minutes
+- step: Then there should be a New Lead activity for marketo lead {{test.email}} in the last 60 minutes
+- step: Then there should not be a Unsubscribe Email activity for marketo lead {{test.email}} in the last 60 minutes
+- step: And there should be a Change Data Value activity for marketo lead {{test.email}} in the last 60 minutes
   data:
     withAttributes:
       Source: Marketo Flow Action

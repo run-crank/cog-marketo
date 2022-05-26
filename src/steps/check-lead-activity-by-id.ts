@@ -9,7 +9,7 @@ import * as moment from 'moment';
 export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface {
 
   protected stepName: string = 'Check a Marketo Lead\'s Activity by Id';
-  protected stepExpression: string = 'there should be an? (?<activityTypeIdOrName>.+) activity for marketo lead with id (?<id>.+) in the last (?<minutes>\\d+) minutes?';
+  protected stepExpression: string = 'there should (?<includes>be|not be) an? (?<activityTypeIdOrName>.+) activity for marketo lead with id (?<id>.+) in the last (?<minutes>\\d+) minutes?';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
     field: 'id',
@@ -19,6 +19,11 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
     field: 'activityTypeIdOrName',
     type: FieldDefinition.Type.ANYSCALAR,
     description: 'The activity type ID (number) or name',
+  }, {
+    field: 'includes',
+    type: FieldDefinition.Type.STRING,
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+    description: 'Check Logic if there is the activity for Marketo Lead (be, not be)',
   }, {
     field: 'minutes',
     type: FieldDefinition.Type.NUMERIC,
@@ -62,6 +67,7 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
     const stepData: any = step.getData().toJavaScript();
     const id: string = stepData.id;
     let activityTypeIdOrName = stepData.activityTypeIdOrName;
+    const includes = stepData.includes ? stepData.includes === 'be' : true;
     const minutesAgo = stepData.minutes;
     const withAttributes = stepData.withAttributes || {};
     const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
@@ -98,12 +104,19 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
 
       /* Fail when when the activity supplied is not found in the lead's logs. */
       if (!activities) {
+        if (!includes) {
+          return this.pass(
+            '%s activity is not found for lead %s within the last %d minute(s), as expected',
+            [stepData.activityTypeIdOrName, id, minutesAgo],
+          );
+        }
         return this.fail('No %s activity found for lead %s within the last %d minute(s)', [
           stepData.activityTypeIdOrName,
           id,
           minutesAgo,
         ]);
       }
+
 
       /* Expected attributes passed to test step. Translate object/map as array for easier comparison with actual attributes */
       const expectedAttributes = Object.keys(withAttributes).map((key) => { return { name: key, value: withAttributes[key] }; });
@@ -137,6 +150,14 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
         }
 
         if (validated) {
+          if (!includes) {
+            return this.fail(
+              '%s activity found for lead %s within the last %d minute(s)',
+              [stepData.activityTypeIdOrName, id, minutesAgo],
+              [this.createRecord(activities[0])],
+            );
+          }
+
           return this.pass(
             'Found %s activity for lead %s within the last %d minute(s), including attributes: \n\n%s',
             [stepData.activityTypeIdOrName, id, minutesAgo, JSON.stringify(expectedAttributes, null, 2)],
@@ -146,6 +167,15 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
 
         const activityRecords = this.createRecords(activities);
         activityRecords.setName(`Matched "${activityType.name}" Activities`);
+
+        if (!includes) {
+          return this.fail(
+            'Found %s activity for lead %s within the last %d minute(s), including attributes: \n\n%s',
+            [stepData.activityTypeIdOrName, id, minutesAgo, JSON.stringify(expectedAttributes, null, 2)],
+            [this.createRecord(validatedActivity)],
+          );
+        }
+
         return this.fail(
           'Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s).',
           [
@@ -155,6 +185,14 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
             expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', '),
           ],
           [activityRecords],
+        );
+      }
+
+      if (!includes) {
+        return this.fail(
+          '%s activity found for lead %s within the last %d minute(s)',
+          [stepData.activityTypeIdOrName, id, minutesAgo],
+          [this.createRecord(activities[0])],
         );
       }
 
