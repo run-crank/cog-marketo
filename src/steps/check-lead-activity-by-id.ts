@@ -104,13 +104,7 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
 
       /* Fail when when the activity supplied is not found in the lead's logs. */
       if (!activities) {
-        if (!includes) {
-          return this.pass(
-            '%s activity is not found for lead %s within the last %d minute(s), as expected',
-            [stepData.activityTypeIdOrName, id, minutesAgo],
-          );
-        }
-        return this.fail('No %s activity found for lead %s within the last %d minute(s)', [
+        return this[includes ? 'fail' : 'pass']('No %s activity found for lead %s within the last %d minute(s)', [
           stepData.activityTypeIdOrName,
           id,
           minutesAgo,
@@ -149,15 +143,7 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
         }
 
         if (validated) {
-          if (!includes) {
-            return this.fail(
-              '%s activity found for lead %s within the last %d minute(s)',
-              [stepData.activityTypeIdOrName, id, minutesAgo],
-              [this.createRecord(activities[0])],
-            );
-          }
-
-          return this.pass(
+          return this[includes ? 'pass' : 'fail'](
             'Found %s activity for lead %s within the last %d minute(s), including attributes: \n\n%s',
             [stepData.activityTypeIdOrName, id, minutesAgo, JSON.stringify(expectedAttributes, null, 2)],
             [this.createRecord(validatedActivity)],
@@ -166,14 +152,6 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
 
         const activityRecords = this.createRecords(activities);
         activityRecords.setName(`Matched "${activityType.name}" Activities`);
-
-        if (!includes) {
-          return this.fail(
-            'Found %s activity for lead %s within the last %d minute(s), including attributes: \n\n%s',
-            [stepData.activityTypeIdOrName, id, minutesAgo, JSON.stringify(expectedAttributes, null, 2)],
-            [this.createRecord(validatedActivity)],
-          );
-        }
 
         return this.fail(
           'Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s).',
@@ -187,15 +165,7 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
         );
       }
 
-      if (!includes) {
-        return this.fail(
-          '%s activity found for lead %s within the last %d minute(s)',
-          [stepData.activityTypeIdOrName, id, minutesAgo],
-          [this.createRecord(activities[0])],
-        );
-      }
-
-      return this.pass(
+      return this[includes ? 'pass' : 'fail'](
         '%s activity found for lead %s within the last %d minute(s)',
         [stepData.activityTypeIdOrName, id, minutesAgo],
         [this.createRecord(activities[0])],
