@@ -117,7 +117,6 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
         ]);
       }
 
-
       /* Expected attributes passed to test step. Translate object/map as array for easier comparison with actual attributes */
       const expectedAttributes = Object.keys(withAttributes).map((key) => { return { name: key, value: withAttributes[key] }; });
       let validatedActivity;
