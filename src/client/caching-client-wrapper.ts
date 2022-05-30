@@ -225,6 +225,14 @@ class CachingClientWrapper {
     return await this.client.deleteProgramById(id);
   }
 
+  public async getProgramMembersByProgramId(programId: string, field: string, fieldValue: string, fields: string[] = []) {
+    return await this.client.getProgramMembersByProgramId(programId, field, fieldValue, fields);
+  }
+
+  public async getProgramMembersFields() {
+    return await this.client.getProgramMembersFields();
+  }
+
   public async getFoldersById(id: string) {
     return await this.client.getFoldersById(id);
   }
