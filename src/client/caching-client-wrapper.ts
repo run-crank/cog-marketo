@@ -178,6 +178,10 @@ class CachingClientWrapper {
     }
   }
 
+  public async getEmailByName(name) {
+    return await this.client.getEmailByName(name);
+  }
+
   // all non-cached functions, just referencing the original function
   // -------------------------------------------------------------------
 
@@ -189,8 +193,8 @@ class CachingClientWrapper {
     return await this.client.getActivityPagingToken(sinceDate);
   }
 
-  public async getActivities(nextPageToken, leadId, activityId) {
-    return await this.client.getActivities(nextPageToken, leadId, activityId);
+  public async getActivitiesByLeadId(nextPageToken, leadId, activityId) {
+    return await this.client.getActivitiesByLeadId(nextPageToken, leadId, activityId);
   }
 
   public async getDailyApiUsage() {

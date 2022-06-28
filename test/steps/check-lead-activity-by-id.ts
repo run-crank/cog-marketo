@@ -21,7 +21,7 @@ describe('CheckLeadActivityByIdStep', () => {
     clientWrapperStub.findLeadByField = sinon.stub();
     clientWrapperStub.getActivityPagingToken = sinon.stub();
     clientWrapperStub.getActivityTypes = sinon.stub();
-    clientWrapperStub.getActivities = sinon.stub();
+    clientWrapperStub.getActivitiesByLeadId = sinon.stub();
     stepUnderTest = new Step(clientWrapperStub);
   });
 
@@ -137,7 +137,7 @@ describe('CheckLeadActivityByIdStep', () => {
           result: [{ id: 2001, name: 'Lead created' }],
         }));
 
-        clientWrapperStub.getActivities.returns(Promise.resolve({}));
+        clientWrapperStub.getActivitiesByLeadId.returns(Promise.resolve({}));
       });
 
       it('should respond with fail', async () => {
@@ -170,7 +170,7 @@ describe('CheckLeadActivityByIdStep', () => {
           result: [{ id: 2001, name: 'Lead created' }],
         }));
 
-        clientWrapperStub.getActivities.returns(Promise.resolve({
+        clientWrapperStub.getActivitiesByLeadId.returns(Promise.resolve({
           result: [{ id: 3001, attributes: [] }],
         }));
       });
@@ -205,7 +205,7 @@ describe('CheckLeadActivityByIdStep', () => {
           result: [{ id: 2001, name: 'Lead created', primaryAttribute: { name: 'primaryAttribute' } }],
         }));
 
-        clientWrapperStub.getActivities.returns(Promise.resolve({
+        clientWrapperStub.getActivitiesByLeadId.returns(Promise.resolve({
           result: [{
             activityTypeId: 2001,
             primaryAttribute: { name: 'primaryAttribute' },

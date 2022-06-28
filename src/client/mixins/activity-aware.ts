@@ -14,12 +14,22 @@ export class ActivityAwareMixin {
     return await this.client._connection.get(`/v1/activities/pagingtoken.json?sinceDatetime=${sinceDate}`);
   }
 
-  public async getActivities(nextPageToken, leadId, activityId) {
+  public async getActivitiesByLeadId(nextPageToken, leadId, activityId) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     return await this.client._connection.get('/v1/activities.json', {
       query: {
         nextPageToken,
         leadIds: leadId,
+        activityTypeIds: activityId,
+      },
+    });
+  }
+
+  public async getActivities(nextPageToken, activityId) {
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    return await this.client._connection.get('/v1/activities.json', {
+      query: {
+        nextPageToken,
         activityTypeIds: activityId,
       },
     });

@@ -339,12 +339,12 @@ describe('ClientWrapper', () => {
     );
   });
 
-  it('getActivities', () => {
+  it('getActivitiesByLeadId', () => {
     const nextPageToken = 'anyToken';
     const leadId = 'anyId';
     const activityId = 'anyActivityId';
     clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub, 0);
-    clientWrapperUnderTest.getActivities(nextPageToken, leadId, activityId);
+    clientWrapperUnderTest.getActivitiesByLeadId(nextPageToken, leadId, activityId);
 
     expect(marketoClientStub._connection.get).to.have.been.calledWith('/v1/activities.json', {
       query: {
