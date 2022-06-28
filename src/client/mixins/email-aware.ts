@@ -9,6 +9,12 @@ export class EmailAwareMixin {
     return await this.client._connection.post(`/asset/v1/email/${emailId}/sendSample.json?emailAddress=${email}`);
   }
 
+  public async getEmailByName(name) {
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    return await this.client._connection.get(`/asset/v1/email/byName.json?name=${name}`);
+  }
+
+
   public async getEmails() {
     const result = [];
     await Promise.all([0, 1, 2, 3, 4].map((i) => {

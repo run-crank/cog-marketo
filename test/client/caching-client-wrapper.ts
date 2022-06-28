@@ -18,7 +18,7 @@ describe('CachingClientWrapper', () => {
     clientWrapperStub = {
       getDailyApiUsage: sinon.spy(),
       getWeeklyApiUsage: sinon.spy(),
-      getActivities: sinon.spy(),
+      getActivitiesByLeadId: sinon.spy(),
       getActivityPagingToken: sinon.spy(),
       getActivityTypes: sinon.spy(),
       deleteCustomObjectById: sinon.spy(),
@@ -312,14 +312,14 @@ describe('CachingClientWrapper', () => {
     done();
   });
 
-  it('getActivities using original function', (done) => {
+  it('getActivitiesByLeadId using original function', (done) => {
     const nextPageToken = 'anyToken';
     const leadId = 'anyId';
     const activityId = 'anyActivityId';
     cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
-    cachingClientWrapperUnderTest.getActivities(nextPageToken, leadId, activityId);
+    cachingClientWrapperUnderTest.getActivitiesByLeadId(nextPageToken, leadId, activityId);
 
-    expect(clientWrapperStub.getActivities).to.have.been.calledWith(nextPageToken, leadId, activityId);
+    expect(clientWrapperStub.getActivitiesByLeadId).to.have.been.calledWith(nextPageToken, leadId, activityId);
     done();
   });
 
