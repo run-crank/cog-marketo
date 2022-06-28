@@ -66,7 +66,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
     const email: string = stepData.email;
-    let activityTypeIdOrName = stepData.activityTypeIdOrName;
+    const activityTypeIdOrName = stepData.activityTypeIdOrName;
     const includes = stepData.includes ? stepData.includes === 'be' : true;
     const minutesAgo = stepData.minutes;
     const withAttributes = stepData.withAttributes || {};
@@ -97,9 +97,9 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
         ]);
       }
 
-      let activityTypeId = activityType.id;
+      const activityTypeId = activityType.id;
 
-      const activityResponse = await this.client.getActivitiesByLeadId(nextPageToken, lead.id, activityTypeId );
+      const activityResponse = await this.client.getActivitiesByLeadId(nextPageToken, lead.id, activityTypeId);
 
       const activities = activityResponse.result;
 
