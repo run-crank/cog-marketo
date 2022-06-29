@@ -9,7 +9,7 @@ import { Step } from '../../src/steps/check-lead-activity';
 
 chai.use(sinonChai);
 
-describe('CheckActivityStep', () => {
+describe('CheckLeadActivityStep', () => {
   const expect = chai.expect;
   let protoStep: ProtoStep;
   let stepUnderTest: Step;

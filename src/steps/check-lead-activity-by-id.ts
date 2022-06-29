@@ -112,35 +112,8 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
       }
 
       /* Expected attributes passed to test step. Translate object/map as array for easier comparison with actual attributes */
-      let expectedAttributes = Object.keys(withAttributes).map((key) => { return { name: key, value: withAttributes[key] }; });
+      const expectedAttributes = Object.keys(withAttributes).map((key) => { return { name: key, value: withAttributes[key] }; });
       let validatedActivity;
-
-      // For now this is only for Open Email to handle checking by email name
-      // TODO: Find a way to make this flexible to all other activity typesactivityObjectIds
-      let activityObjectIds = [];
-      let activityObjectName = null;
-      if (activityTypeIdOrName === 'Open Email' && Object.keys(withAttributes).includes('name')) {
-        const emailResponse = await this.client.getEmailByName(withAttributes['name']);
-        activityObjectIds = emailResponse.result ? emailResponse.result.map(e => +e.id) : [];
-        activityObjectName = withAttributes['name'];
-
-        if (activityObjectIds.length === 0) {
-          const activityRecords = this.createRecords(activities);
-          return this.fail(
-            'Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s).',
-            [
-              stepData.activityTypeIdOrName,
-              id,
-              minutesAgo,
-              expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', '),
-            ],
-            [activityRecords],
-          );
-        } else {
-          // Remove name from expected Attributes for it to be checked seperatley
-          expectedAttributes = expectedAttributes.filter(e => e.name !== 'name');
-        }
-      }
 
       /* Assert Actual vs Expected attributes and pass if at least one activity matches attributes. Otherwise fail */
       if (expectedAttributes.length > 0) {
@@ -163,20 +136,9 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
           }
 
           if (this.hasMatchingAttributes(actualAttributes, expectedAttributes)) {
-            // For now this is only for Open Email to handle checking by email name
-            // TODO: Find a way to make this flexible to all other activity typesactivityObjectIds
-            // Remove if statements if reverting
-            if (activityObjectIds.length > 0) {
-              if (activityObjectIds.includes(+activity['primaryAttributeValueId'])) {
-                validated = true;
-                validatedActivity = activity;
-                break;
-              }
-            } else {
-              validated = true;
-              validatedActivity = activity;
-              break;
-            }
+            validated = true;
+            validatedActivity = activity;
+            break;
           }
         }
 
