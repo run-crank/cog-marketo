@@ -75,6 +75,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
     try {
       const sinceDate = moment().subtract(minutesAgo, 'minutes').utc().format(moment.defaultFormatUtc);
       const tokenResponse = await this.client.getActivityPagingToken(sinceDate);
+      
       const nextPageToken = tokenResponse.nextPageToken;
 
       const lead = (await this.client.findLeadByEmail(email, null, partitionId)).result[0];
@@ -101,6 +102,12 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
       const activityResponse = await this.client.getActivitiesByLeadId(nextPageToken, lead.id, activityTypeId);
 
+      const testSinceDate = moment().subtract(1030800, 'minutes').utc().format(moment.defaultFormatUtc);
+      const testTokenResponse = await this.client.getActivityPagingToken(testSinceDate);
+      const testLead = (await this.client.findLeadByEmail('anw@stackmoxie.com', null, partitionId)).result[0];
+      const testActivityType = activityTypes.find(type => type[isNaN(activityTypeIdOrName) ? 'name' : 'id'] == 'Open Email');
+      const test = await this.client.getActivitiesByLeadId(testTokenResponse.nextPageToken, testLead.id, testActivityType.id);
+
       const activities = activityResponse.result;
 
       /* Fail when when the activity supplied is not found in the lead's logs. */
@@ -115,33 +122,6 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
       /* Expected attributes passed to test step. Translate object/map as array for easier comparison with actual attributes */
       let expectedAttributes = Object.keys(withAttributes).map((key) => { return { name: key, value: withAttributes[key] }; });
       let validatedActivity;
-
-      // For now this is only for Open Email to handle checking by email name
-      // TODO: Find a way to make this flexible to all other activity typesactivityObjectIds
-      let activityObjectIds = [];
-      let activityObjectName = null;
-      if (activityTypeIdOrName === 'Open Email' && Object.keys(withAttributes).includes('name')) {
-        const emailResponse = await this.client.getEmailByName(withAttributes['name']);
-        activityObjectIds = emailResponse.result ? emailResponse.result.map(e => +e.id) : [];
-        activityObjectName = withAttributes['name'];
-
-        if (activityObjectIds.length === 0) {
-          const activityRecords = this.createRecords(activities);
-          return this.fail(
-            'Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s).',
-            [
-              stepData.activityTypeIdOrName,
-              email,
-              minutesAgo,
-              expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', '),
-            ],
-            [activityRecords],
-          );
-        } else {
-          // Remove name from expected Attributes for it to be checked seperatley
-          expectedAttributes = expectedAttributes.filter(e => e.name !== 'name');
-        }
-      }
 
       /* Assert Actual vs Expected attributes and pass if at least one activity matches attributes. Otherwise fail */
       if (expectedAttributes.length > 0) {
@@ -164,20 +144,9 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
           }
 
           if (this.hasMatchingAttributes(actualAttributes, expectedAttributes)) {
-            // For now this is only for Open Email to handle checking by email name
-            // TODO: Find a way to make this flexible to all other activity typesactivityObjectIds
-            // Remove if statements if reverting
-            if (activityObjectIds.length > 0) {
-              if (activityObjectIds.includes(+activity['primaryAttributeValueId'])) {
-                validated = true;
-                validatedActivity = activity;
-                break;
-              }
-            } else {
-              validated = true;
-              validatedActivity = activity;
-              break;
-            }
+            validated = true;
+            validatedActivity = activity;
+            break;
           }
         }
 
@@ -198,8 +167,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
             stepData.activityTypeIdOrName,
             email,
             minutesAgo,
-            // Remove ternary if reverting activityObjectIds change
-            `${expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', ')}${activityObjectIds.length > 0 ? `name = ${activityObjectName}` : ''}`,
+            expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', '),
           ],
           [activityRecords],
         );
