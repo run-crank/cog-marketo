@@ -66,7 +66,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
     const email: string = stepData.email;
-    const activityTypeIdOrName = stepData.activityTypeIdOrName;
+    let activityTypeIdOrName = stepData.activityTypeIdOrName;
     const includes = stepData.includes ? stepData.includes === 'be' : true;
     const minutesAgo = stepData.minutes;
     const withAttributes = stepData.withAttributes || {};
@@ -98,16 +98,9 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
         ]);
       }
 
-      const activityTypeId = activityType.id;
+      activityTypeIdOrName = activityType.id;
 
-      const activityResponse = await this.client.getActivitiesByLeadId(nextPageToken, lead.id, activityTypeId);
-
-      const testSinceDate = moment().subtract(1030800, 'minutes').utc().format(moment.defaultFormatUtc);
-      const testTokenResponse = await this.client.getActivityPagingToken(testSinceDate);
-      const testLead = (await this.client.findLeadByEmail('anw@stackmoxie.com', null, partitionId)).result[0];
-      const testActivityType = activityTypes.find(type => type[isNaN(activityTypeIdOrName) ? 'name' : 'id'] == 'Open Email');
-      const test = await this.client.getActivitiesByLeadId(testTokenResponse.nextPageToken, testLead.id, testActivityType.id);
-
+      const activityResponse = await this.client.getActivitiesByLeadId(nextPageToken, lead.id, activityTypeIdOrName);
       const activities = activityResponse.result;
 
       /* Fail when when the activity supplied is not found in the lead's logs. */
