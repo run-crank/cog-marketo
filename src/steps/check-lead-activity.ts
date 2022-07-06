@@ -9,7 +9,7 @@ import * as moment from 'moment';
 export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
   protected stepName: string = 'Check a Marketo Lead\'s Activity';
-  protected stepExpression: string = 'there should (?<includes>be|not be) an? (?<activityTypeIdOrName>.+) activity for marketo lead (?<email>.+) in the last (?<minutes>\\d+) minutes?';
+  protected stepExpression: string = 'there should (?<includes>not include|be|not be) an? (?<activityTypeIdOrName>.+) activity for marketo lead (?<email>.+) in the last (?<minutes>\\d+) minutes?';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
     field: 'email',
@@ -154,7 +154,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
         const activityRecords = this.createRecords(activities);
         activityRecords.setName(`Matched "${activityType.name}" Activities`);
 
-        return this.fail(
+        return this[includes ? 'fail' : 'pass'](
           'Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s).',
           [
             stepData.activityTypeIdOrName,

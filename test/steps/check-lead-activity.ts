@@ -29,7 +29,7 @@ describe('CheckLeadActivityStep', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('CheckLeadActivityStep');
     expect(stepDef.getName()).to.equal('Check a Marketo Lead\'s Activity');
-    expect(stepDef.getExpression()).to.equal('there should (?<includes>be|not be) an? (?<activityTypeIdOrName>.+) activity for marketo lead (?<email>.+) in the last (?<minutes>\\d+) minutes?');
+    expect(stepDef.getExpression()).to.equal('there should (?<includes>not include|be|not be) an? (?<activityTypeIdOrName>.+) activity for marketo lead (?<email>.+) in the last (?<minutes>\\d+) minutes?');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.VALIDATION);
   });
 
