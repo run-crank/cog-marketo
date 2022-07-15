@@ -2,10 +2,17 @@ import * as grpc from 'grpc';
 import * as Marketo from 'node-marketo-rest';
 import { Field } from '../core/base-step';
 import { FieldDefinition } from '../proto/cog_pb';
-import { LeadAwareMixin, SmartCampaignAwareMixin, ActivityAwareMixin, CustomObjectAwareMixin, StatsAwareMixin } from './mixins';
-import { EmailAwareMixin } from './mixins/email-aware';
-import { FolderAwareMixin } from './mixins/folder-aware';
-import { ProgramAwareMixin } from './mixins/program-aware';
+import {
+  LeadAwareMixin,
+  SmartCampaignAwareMixin,
+  ActivityAwareMixin,
+  CustomObjectAwareMixin,
+  StatsAwareMixin,
+  FolderAwareMixin,
+  EmailAwareMixin,
+  ProgramAwareMixin,
+  StaticListAwareMixin,
+} from './mixins';
 
 class ClientWrapper {
 
@@ -26,7 +33,7 @@ class ClientWrapper {
   client: Marketo;
   delayInSeconds: number;
 
-  constructor (auth: grpc.Metadata, clientConstructor = Marketo, delayInSeconds = 3) {
+  constructor(auth: grpc.Metadata, clientConstructor = Marketo, delayInSeconds = 3) {
     this.client = new clientConstructor({
       endpoint: `${auth.get('endpoint')[0]}/rest`,
       identity: `${auth.get('endpoint')[0]}/identity`,
@@ -38,15 +45,24 @@ class ClientWrapper {
   }
 }
 
-interface ClientWrapper extends LeadAwareMixin, SmartCampaignAwareMixin, ActivityAwareMixin, CustomObjectAwareMixin, StatsAwareMixin, ProgramAwareMixin, FolderAwareMixin, EmailAwareMixin {
+interface ClientWrapper extends
+  LeadAwareMixin,
+  SmartCampaignAwareMixin,
+  ActivityAwareMixin,
+  CustomObjectAwareMixin,
+  StatsAwareMixin,
+  ProgramAwareMixin,
+  FolderAwareMixin,
+  EmailAwareMixin,
+  StaticListAwareMixin {
   _connection: any;
 }
-applyMixins(ClientWrapper, [LeadAwareMixin, SmartCampaignAwareMixin, ActivityAwareMixin, CustomObjectAwareMixin, StatsAwareMixin, ProgramAwareMixin, FolderAwareMixin, EmailAwareMixin]);
+applyMixins(ClientWrapper, [LeadAwareMixin, SmartCampaignAwareMixin, ActivityAwareMixin, CustomObjectAwareMixin, StatsAwareMixin, ProgramAwareMixin, FolderAwareMixin, EmailAwareMixin, StaticListAwareMixin]);
 
 function applyMixins(derivedCtor: any, baseCtors: any[]) {
   baseCtors.forEach((baseCtor) => {
     Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
-          // tslint:disable-next-line:max-line-length
+      // tslint:disable-next-line:max-line-length
       Object.defineProperty(derivedCtor.prototype, name, Object.getOwnPropertyDescriptor(baseCtor.prototype, name));
     });
   });

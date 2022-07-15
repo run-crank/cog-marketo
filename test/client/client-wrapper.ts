@@ -425,4 +425,36 @@ describe('ClientWrapper', () => {
 
     expect(marketoClientStub._connection.post).to.have.been.calledWith(`/asset/v1/program/${expectedId}/delete.json`);
   });
+
+  // Static List Aware
+  it('findStaticListsByName', () => {
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub, 0);
+    const expectedName = 'anyName';
+    clientWrapperUnderTest.findStaticListsByName(expectedName);
+
+    expect(marketoClientStub._connection.get).to.have.been.calledWith(`/asset/v1/staticList/byName.json?name=${expectedName}`);
+  });
+  
+  it('findStaticLists', () => {
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub, 0);
+    clientWrapperUnderTest.findStaticLists();
+
+    expect(marketoClientStub._connection.get).to.have.been.calledWith('/asset/v1/staticLists.json');
+  });
+
+  it('findStaticListsById', () => {
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub, 0);
+    const expectedId = '123';
+    clientWrapperUnderTest.findStaticListsById(expectedId);
+
+    expect(marketoClientStub._connection.get).to.have.been.calledWith(`/asset/v1/staticList/${expectedId}.json`);
+  });
+
+  it('findStaticListsMembershipByListId', () => {
+    clientWrapperUnderTest = new ClientWrapper(metadata, marketoConstructorStub, 0);
+    const expectedId = '123';
+    clientWrapperUnderTest.findStaticListsMembershipByListId(expectedId);
+
+    expect(marketoClientStub._connection.get).to.have.been.calledWith(`/v1/lists/${expectedId}/leads.json?batchSize=300`);
+  });
 });

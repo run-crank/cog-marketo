@@ -90,7 +90,7 @@ export class ProgramMemberFieldEqualsStep extends BaseStep implements StepInterf
       // Get all available fields to be included when getting program member
       const memberFields: any = (await this.client.getProgramMembersFields()).result[0]['fields'].map(f => f.name);
 
-      const data: any = await this.client.getProgramMembersByProgramId(program.result[0].id, 'leadId', lead.result[0].id, memberFields);
+      const data: any = await this.client.getProgramMembersByFilterValue(program.result[0].id, 'leadId', lead.result[0].id, memberFields);
 
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
         let result;

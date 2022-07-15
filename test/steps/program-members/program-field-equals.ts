@@ -21,7 +21,7 @@ describe('ProgramMemberFieldEqualsStep', () => {
     clientWrapperStub.findLeadByEmail = sinon.stub();
     clientWrapperStub.findProgramsByName = sinon.stub();
     clientWrapperStub.getProgramMembersFields = sinon.stub();
-    clientWrapperStub.getProgramMembersByProgramId = sinon.stub();
+    clientWrapperStub.getProgramMembersByFilterValue = sinon.stub();
     stepUnderTest = new Step(clientWrapperStub);
 
     clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
@@ -45,7 +45,7 @@ describe('ProgramMemberFieldEqualsStep', () => {
       ],
     }));
 
-    clientWrapperStub.getProgramMembersByProgramId.returns(Promise.resolve({
+    clientWrapperStub.getProgramMembersByFilterValue.returns(Promise.resolve({
       success: true,
       result: [
         {leadId: 123123, programId: 123123, anyField: 'anyValue'},
@@ -194,7 +194,7 @@ describe('ProgramMemberFieldEqualsStep', () => {
     }));
 
     // Have the client respond with an object not containing the field above.
-    clientWrapperStub.getProgramMembersByProgramId.returns(Promise.resolve({
+    clientWrapperStub.getProgramMembersByFilterValue.returns(Promise.resolve({
       success: true,
       result: [
         {leadId: 123123, programId: 123123, anyOtherField: 'anyOtherValue'},
