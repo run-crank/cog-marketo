@@ -158,6 +158,48 @@ class CachingClientWrapper {
     return await this.client.addLeadToSmartCampaign(campaignId, lead);
   }
 
+  // static-list-aware methods
+  // -------------------------------------------------------------------
+  // Static Lists will be cached with cacheKey = cachePrefix + 'Campaigns'
+
+  public async findStaticListsByName(name: string) {
+    const cachekey = `Marketo|StaticList|${name}|${this.cachePrefix}`;
+    // check cache
+    const stored = await this.getCache(cachekey);
+    // if not there, call getCampaigns in smart-campaign-aware.ts
+    if (stored) {
+      return stored;
+    } else {
+      const response = await this.client.findStaticListsByName(name);
+      const staticLists = response.result;
+      if (staticLists && staticLists.length) {
+        await this.setCache(cachekey, staticLists);
+      }
+      return staticLists;
+    }
+  }
+
+  public async findStaticListsById(id: string) {
+    const cachekey = `Marketo|StaticList|${id}|${this.cachePrefix}`;
+    // check cache
+    const stored = await this.getCache(cachekey);
+    // if not there, call getCampaigns in smart-campaign-aware.ts
+    if (stored) {
+      return stored;
+    } else {
+      const response = await this.client.findStaticListsById(id);
+      const staticLists = response.result;
+      if (staticLists && staticLists.length) {
+        await this.setCache(cachekey, staticLists);
+      }
+      return staticLists;
+    }
+  }
+
+  public async findStaticListsMembershipByListId(id: string) {
+    return await this.client.findStaticListsMembershipByListId(id);
+  }
+
   // email-aware methods
   // -------------------------------------------------------------------
   // Campaigns will be cached with cacheKey = Marketo|Emails|cachePrefix
@@ -229,8 +271,8 @@ class CachingClientWrapper {
     return await this.client.deleteProgramById(id);
   }
 
-  public async getProgramMembersByProgramId(programId: string, field: string, fieldValue: string, fields: string[] = []) {
-    return await this.client.getProgramMembersByProgramId(programId, field, fieldValue, fields);
+  public async getProgramMembersByFilterValue(programId: string, field: string, fieldValue: string, fields: string[] = []) {
+    return await this.client.getProgramMembersByFilterValue(programId, field, fieldValue, fields);
   }
 
   public async getProgramMembersFields() {
