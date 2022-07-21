@@ -31,7 +31,7 @@ export class StaticListAwareMixin {
 
   public async removeLeadToStaticList(listId: string, leadIds: string[]) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
-    return await this.client._connection.delete(`/rest/v1/lists/${listId}/leads.json?${leadIds.map(id => `id=${id}`).join('&')}`);
+    return await this.client._connection.del(`/v1/lists/${listId}/leads.json?${leadIds.map(id => `id=${id}`).join('&')}`);
   }
 
   public async delay(seconds: number) {

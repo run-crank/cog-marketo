@@ -59,8 +59,13 @@ export class RemoveLeadToStaticListStep extends BaseStep implements StepInterfac
     const headers = {
       id: 'Id',
       status: 'Status',
-      reason: 'Reason',
+      reasons: 'Reasons',
     };
+
+    staticListMember.forEach((slm, index) => {
+      staticListMember[index]['reasons'] = staticListMember[index]['reasons'] ? JSON.stringify(staticListMember[index]['reasons']) : '-';
+    });
+
     return this.table('staticListRemove', 'Static List Members Removed', headers, staticListMember);
   }
 }
