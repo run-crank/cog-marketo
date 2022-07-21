@@ -196,6 +196,14 @@ class CachingClientWrapper {
     }
   }
 
+  public async addLeadToStaticList(listId: string, leadIds: string[]) {
+    return await this.client.addLeadToStaticList(listId, leadIds);
+  }
+
+  public async removeLeadToStaticList(listId: string, leadIds: string[]) {
+    return await this.client.removeLeadToStaticList(listId, leadIds);
+  }
+
   public async findStaticListsMembershipByListId(id: string) {
     return await this.client.findStaticListsMembershipByListId(id);
   }
