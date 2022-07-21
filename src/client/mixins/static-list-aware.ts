@@ -24,6 +24,16 @@ export class StaticListAwareMixin {
     return await this.client._connection.get(`/v1/lists/${id}/leads.json?batchSize=300`);
   }
 
+  public async addLeadToStaticList(listId: string, leadIds: string[]) {
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    return await this.client._connection.post(`/v1/lists/${listId}/leads.json?${leadIds.map(id => `id=${id}`).join('&')}`);
+  }
+
+  public async removeLeadToStaticList(listId: string, leadIds: string[]) {
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    return await this.client._connection.del(`/v1/lists/${listId}/leads.json?${leadIds.map(id => `id=${id}`).join('&')}`);
+  }
+
   public async delay(seconds: number) {
     return new Promise(resolve => setTimeout(resolve, seconds * 1000));
   }
