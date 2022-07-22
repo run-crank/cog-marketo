@@ -163,37 +163,11 @@ class CachingClientWrapper {
   // Static Lists will be cached with cacheKey = cachePrefix + 'Campaigns'
 
   public async findStaticListsByName(name: string) {
-    const cachekey = `Marketo|StaticList|${name}|${this.cachePrefix}`;
-    // check cache
-    const stored = await this.getCache(cachekey);
-    // if not there, call getCampaigns in smart-campaign-aware.ts
-    if (stored) {
-      return stored;
-    } else {
-      const response = await this.client.findStaticListsByName(name);
-      const staticLists = response.result;
-      if (staticLists && staticLists.length) {
-        await this.setCache(cachekey, staticLists);
-      }
-      return staticLists;
-    }
+    return await this.client.findStaticListsByName(name);
   }
 
   public async findStaticListsById(id: string) {
-    const cachekey = `Marketo|StaticList|${id}|${this.cachePrefix}`;
-    // check cache
-    const stored = await this.getCache(cachekey);
-    // if not there, call getCampaigns in smart-campaign-aware.ts
-    if (stored) {
-      return stored;
-    } else {
-      const response = await this.client.findStaticListsById(id);
-      const staticLists = response.result;
-      if (staticLists && staticLists.length) {
-        await this.setCache(cachekey, staticLists);
-      }
-      return staticLists;
-    }
+    return await this.client.findStaticListsById(id);
   }
 
   public async addLeadToStaticList(listId: string, leadIds: string[]) {
