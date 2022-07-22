@@ -66,7 +66,6 @@ export class AddLeadToStaticListStep extends BaseStep implements StepInterface {
       staticListMember[index]['reasons'] = staticListMember[index]['reasons'] ? JSON.stringify(staticListMember[index]['reasons']) : '-';
     });
 
-    console.log(staticListMember);
     return this.table('staticListAdd', 'Static List Members Added', headers, staticListMember);
   }
 }
