@@ -48,7 +48,7 @@ export class StaticListMemberCountStep extends BaseStep implements StepInterface
       const data: any = await this.client.findStaticListsMembershipByListId(staticList.result[0].id);
 
       if (data.success && data.result) {
-        return this.pass('Static List %s has %s members', [staticListName, data.result.length], [this.createRecord(staticList.result[0].id, data.result.length), this.createTable(data.result)]);
+        return this.pass('Static List %s has %s members', [staticListName, data.result.length], [this.createRecord(staticList.result[0].id, data.result.length), this.createOrderedRecord(staticList.result[0].id, data.result.length, stepData['__stepOrder']), this.createTable(data.result)]);
       } else {
         return this.error('There was an error while checking program static list member count');
       }
@@ -72,6 +72,14 @@ export class StaticListMemberCountStep extends BaseStep implements StepInterface
       headers[key] = key;
     });
     return this.table('staticListMemberList', 'Checked Static List Member', headers, staticListMember);
+  }
+
+  createOrderedRecord(staticListId: string, count: number, stepOrder = 1) {
+    const record = {
+      staticListId,
+      staticListMemberCount: count,
+    };
+    return this.keyValue(`staticListMember.${stepOrder}`, `Checked Static List Member Count from Step ${stepOrder}`, record);
   }
 }
 

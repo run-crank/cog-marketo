@@ -51,7 +51,7 @@ export class ProgramMemberCountStep extends BaseStep implements StepInterface {
       const data: any = await this.client.getProgramMembersByFilterValue(program.result[0].id, 'reachedSuccess', true, memberFields);
 
       if (data.success && data.result) {
-        return this.pass('Program %s has %s members', [programName, data.result.length], [this.createRecord(program.result[0].id, data.result.length), this.createTable(data.result)]);
+        return this.pass('Program %s has %s members', [programName, data.result.length], [this.createRecord(program.result[0].id, data.result.length), this.createOrderedRecord(program.result[0].id, data.result.length, stepData['__stepOrder']), this.createTable(data.result)]);
       } else {
         return this.error('There was an error while checking program member count');
       }
@@ -75,6 +75,14 @@ export class ProgramMemberCountStep extends BaseStep implements StepInterface {
       headers[key] = key;
     });
     return this.table('programMemberList', 'Checked Program Member', headers, programMembers);
+  }
+
+  createOrderedRecord(programId: string, count: number, stepOrder = 1) {
+    const record = {
+      programId,
+      programMemberCount: count,
+    };
+    return this.keyValue(`programMember.${stepOrder}`, `Checked Program Member Count from Step ${stepOrder}`, record);
   }
 }
 
