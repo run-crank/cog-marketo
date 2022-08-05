@@ -8,24 +8,14 @@ import { isNullOrUndefined } from 'util';
 
 export class ProgramMemberCountStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Check the number of a Marketo Program Members';
+  protected stepName: string = 'Count a Marketo Program';
   // tslint:disable-next-line:max-line-length
-  protected stepExpression: string = 'the number of members from marketo program (?<programName>.+) should (?<operator>be set|not be set|be less than|be greater than|be one of|be|contain|not be one of|not be|not contain|match|not match) ?(?<expectation>.+)?';
+  protected stepExpression: string = 'check the number of members from marketo program (?<programName>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
     field: 'programName',
     type: FieldDefinition.Type.STRING,
     description: "Program's Name",
-  }, {
-    field: 'operator',
-    type: FieldDefinition.Type.STRING,
-    optionality: FieldDefinition.Optionality.OPTIONAL,
-    description: 'Check Logic (be, not be, contain, not contain, be greater than, be less than, be set, not be set, be one of, or not be one of)',
-  }, {
-    field: 'expectation',
-    type: FieldDefinition.Type.ANYSCALAR,
-    optionality: FieldDefinition.Optionality.OPTIONAL,
-    description: 'Expected field value',
   }];
   protected expectedRecords: ExpectedRecord[] = [{
     id: 'programMember',
@@ -44,13 +34,7 @@ export class ProgramMemberCountStep extends BaseStep implements StepInterface {
 
   async executeStep(step: Step) {
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
-    const expectedValue = stepData.expectation;
     const programName = stepData.programName;
-    const operator: string = stepData.operator || 'be set';
-
-    if ((expectedValue === null || expectedValue === undefined) && !(operator == 'be set' || operator == 'not be set')) {
-      return this.error("The operator '%s' requires an expected value. Please provide one.", [operator]);
-    }
 
     try {
       // Check if program exists and also get the id
@@ -67,21 +51,12 @@ export class ProgramMemberCountStep extends BaseStep implements StepInterface {
       const data: any = await this.client.getProgramMembersByFilterValue(program.result[0].id, 'reachedSuccess', true, memberFields);
 
       if (data.success && data.result) {
-        let result;
-        result = this.assert(operator, data.result.length, expectedValue, 'member count');
-
-        result.message = result.message.replace(' field', ''); // Just to remove the word 'field' in the result message
-        return result.valid ? this.pass(result.message, [], [this.createRecord(program.result[0].id, data.result.length), this.createTable(data.result)])
-          : this.fail(result.message, [], [this.createRecord(program.result[0].id, data.result.length), this.createTable(data.result)]);
+        return this.pass('Program %s has %s members', [programName, data.result.length], [this.createRecord(program.result[0].id, data.result.length), this.createTable(data.result)]);
+      } else {
+        return this.error('There was an error while checking program member count');
       }
     } catch (e) {
-      if (e instanceof util.UnknownOperatorError) {
-        return this.error('%s Please provide one of: %s', [e.message, baseOperators.join(', ')]);
-      }
-      if (e instanceof util.InvalidOperandError) {
-        return this.error(e.message);
-      }
-      return this.error('There was an error during validation of program field: %s', [e.message]);
+      return this.error('There was an error while checking program member count: %s', [e.message]);
     }
   }
 
