@@ -26,8 +26,8 @@ describe('StaticListMemberCountStep', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('StaticListMemberCountStep');
-    expect(stepDef.getName()).to.equal('Check the number of a Marketo Static List Members');
-    expect(stepDef.getExpression()).to.equal('the number of members from marketo static list (?<staticListName>.+) should (?<operator>be set|not be set|be less than|be greater than|be one of|be|contain|not be one of|not be|not contain|match|not match) ?(?<expectation>.+)?');
+    expect(stepDef.getName()).to.equal('Count a Marketo Static List');
+    expect(stepDef.getExpression()).to.equal('check the number of members from marketo static list (?<staticListName>.+)');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.VALIDATION);
   });
 
@@ -41,19 +41,14 @@ describe('StaticListMemberCountStep', () => {
     expect(fields[0].key).to.equal('staticListName');
     expect(fields[0].optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
     expect(fields[0].type).to.equal(FieldDefinition.Type.STRING);
-
-    // Operator field
-    expect(fields[1].key).to.equal('operator');
-    expect(fields[1].optionality).to.equal(FieldDefinition.Optionality.OPTIONAL);
-    expect(fields[1].type).to.equal(FieldDefinition.Type.STRING);
-
-    // Expectation field
-    expect(fields[2].key).to.equal('expectation');
-    expect(fields[2].optionality).to.equal(FieldDefinition.Optionality.OPTIONAL);
-    expect(fields[2].type).to.equal(FieldDefinition.Type.ANYSCALAR);
   });
 
   it('should respond with an error if the marketo client throws an error', async () => {
+    const expectedStaticListName: string = 'firstName';
+    protoStep.setData(Struct.fromJavaScript({
+      staticListName: expectedStaticListName,
+    }));
+
     // Cause the client to throw an error, and execute the step.
     clientWrapperStub.findStaticListsByName.throws('any error');
     const response: RunStepResponse = (await stepUnderTest.executeStep(protoStep)) as RunStepResponse;
@@ -61,6 +56,11 @@ describe('StaticListMemberCountStep', () => {
   });
 
   it('should respond with an error if the marketo client did not find a static list', async () => {
+    const expectedStaticListName: string = 'firstName';
+    protoStep.setData(Struct.fromJavaScript({
+      staticListName: expectedStaticListName,
+    }));
+
     // Have the client respond with no leads.
     clientWrapperStub.findStaticListsByName.returns(Promise.resolve({
       success: true,
@@ -71,13 +71,10 @@ describe('StaticListMemberCountStep', () => {
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
   });
 
-  it('should respond with a pass if the count of member does not match the expectation', async () => {
+  it('should respond with a pass if the staticList is found', async () => {
     const expectedStaticListName: string = 'firstName';
-    const expectedCount: number = 2;
     protoStep.setData(Struct.fromJavaScript({
       staticListName: expectedStaticListName,
-      operator: 'be',
-      expectation: expectedCount,
     }));
 
     // Have the client respond with a valid, but mismatched lead.
@@ -92,37 +89,10 @@ describe('StaticListMemberCountStep', () => {
     clientWrapperStub.findStaticListsMembershipByListId.returns(Promise.resolve({
       success: true,
       result: [{
-        firstName: 'anyName',
-      }],
-    }));
-
-    const response: RunStepResponse = (await stepUnderTest.executeStep(protoStep)) as RunStepResponse;
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
-  });
-
-  it('should respond with a pass if the count of member matches the expectation', async () => {
-    const expectedStaticListName: string = 'firstName';
-    const expectedCount: number = 1;
-    protoStep.setData(Struct.fromJavaScript({
-      staticListName: expectedStaticListName,
-      operator: 'be',
-      expectation: expectedCount,
-    }));
-
-    // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findStaticListsByName.returns(Promise.resolve({
-      success: true,
-      result: [{
-        id: 'anyId',
-        name: 'anyName',
-      }],
-    }));
-
-    clientWrapperStub.findStaticListsMembershipByListId.returns(Promise.resolve({
-      success: true,
-      result: [{
-        id: 'anyId',
-        firstName: 'anyName',
+        fields: [{
+          id: 'anyId',
+          name: 'anyFieldName',
+        }]
       }],
     }));
 
@@ -130,13 +100,10 @@ describe('StaticListMemberCountStep', () => {
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
   });
 
-  it("should respond with a pass if the count of member matches the expectation with 'be' operator", async () => {
+  it('should respond with a error if the staticList members get not success', async () => {
     const expectedStaticListName: string = 'firstName';
-    const expectedCount: number = 1;
     protoStep.setData(Struct.fromJavaScript({
       staticListName: expectedStaticListName,
-      operator: 'be',
-      expectation: expectedCount,
     }));
 
     // Have the client respond with a valid, but mismatched lead.
@@ -149,200 +116,13 @@ describe('StaticListMemberCountStep', () => {
     }));
 
     clientWrapperStub.findStaticListsMembershipByListId.returns(Promise.resolve({
-      success: true,
+      success: false,
       result: [{
-        id: 'anyId',
-        firstName: 'anyName',
+        fields: [{
+          id: 'anyId',
+          name: 'anyFieldName',
+        }]
       }],
-    }));
-
-    const response: RunStepResponse = (await stepUnderTest.executeStep(protoStep)) as RunStepResponse;
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
-  });
-
-  it("should respond with a pass if the count of member matches satisfies the expectation with number value and 'be greater than' operator", async () => {
-    const expectedStaticListName: string = 'firstName';
-    const expectedCount: number = 0;
-    protoStep.setData(Struct.fromJavaScript({
-      staticListName: expectedStaticListName,
-      operator: 'be greater than',
-      expectation: expectedCount,
-    }));
-
-    // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findStaticListsByName.returns(Promise.resolve({
-      success: true,
-      result: [{
-        id: 'anyId',
-        name: 'anyName',
-      }],
-    }));
-
-    clientWrapperStub.findStaticListsMembershipByListId.returns(Promise.resolve({
-      success: true,
-      result: [{
-        id: 'anyId',
-        firstName: 'anyName',
-      }],
-    }));
-
-    const response: RunStepResponse = (await stepUnderTest.executeStep(protoStep)) as RunStepResponse;
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
-  });
-
-  it("should respond with a pass if the count of member matches the expectation with 'not be' operator", async () => {
-    const expectedStaticListName: string = 'firstName';
-    const expectedCount: number = 0;
-    protoStep.setData(Struct.fromJavaScript({
-      staticListName: expectedStaticListName,
-      operator: 'not be',
-      expectation: expectedCount,
-    }));
-
-    // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findStaticListsByName.returns(Promise.resolve({
-      success: true,
-      result: [{
-        id: 'anyId',
-        name: 'anyName',
-      }],
-    }));
-
-    clientWrapperStub.findStaticListsMembershipByListId.returns(Promise.resolve({
-      success: true,
-      result: [{
-        id: 'anyId',
-        firstName: 'anyName',
-      }],
-    }));
-
-    const response: RunStepResponse = (await stepUnderTest.executeStep(protoStep)) as RunStepResponse;
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
-  });
-
-  it("should respond with a pass if the count of member satisfies the expectation with number value and 'be less than' operator", async () => {
-    const expectedStaticListName: string = 'firstName';
-    const expectedCount: number = 2;
-    protoStep.setData(Struct.fromJavaScript({
-      staticListName: expectedStaticListName,
-      operator: 'be less than',
-      expectation: expectedCount,
-    }));
-
-    // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findStaticListsByName.returns(Promise.resolve({
-      success: true,
-      result: [{
-        id: 'anyId',
-        name: 'anyName',
-      }],
-    }));
-
-    clientWrapperStub.findStaticListsMembershipByListId.returns(Promise.resolve({
-      success: true,
-      result: [{
-        id: 'anyId',
-        firstName: 'anyName',
-      }],
-    }));
-
-    const response: RunStepResponse = (await stepUnderTest.executeStep(protoStep)) as RunStepResponse;
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
-  });
-
-  it("should respond with an error if the count of member is not a date or number and 'be less than' operator", async () => {
-    const expectedStaticListName: string = 'firstName';
-    protoStep.setData(Struct.fromJavaScript({
-      staticListName: expectedStaticListName,
-      operator: 'be less than',
-      expectation: 'not a number',
-    }));
-
-    // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findStaticListsByName.returns(Promise.resolve({
-      success: true,
-      result: [{
-        id: 'anyId',
-        name: 'anyName',
-      }],
-    }));
-
-    clientWrapperStub.findStaticListsMembershipByListId.returns(Promise.resolve({
-      success: true,
-      result: [{
-        id: 'anyId',
-        firstName: 'anyName',
-      }],
-    }));
-
-    const response: RunStepResponse = (await stepUnderTest.executeStep(protoStep)) as RunStepResponse;
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
-  });
-
-  it("should respond with an error if the count of member is not a date or number and 'be greater than' operator", async () => {
-    const expectedStaticListName: string = 'firstName';
-    protoStep.setData(Struct.fromJavaScript({
-      staticListName: expectedStaticListName,
-      operator: 'be greater than',
-      expectation: 'not a number',
-    }));
-
-    // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findStaticListsByName.returns(Promise.resolve({
-      success: true,
-      result: [{
-        id: 'anyId',
-        name: 'anyName',
-      }],
-    }));
-
-    clientWrapperStub.findStaticListsMembershipByListId.returns(Promise.resolve({
-      success: true,
-      result: [{
-        id: 'anyId',
-        firstName: 'anyName',
-      }],
-    }));
-
-    const response: RunStepResponse = (await stepUnderTest.executeStep(protoStep)) as RunStepResponse;
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
-  });
-
-  it('should respond with an error if the operator is invalid', async () => {
-    const expectedStaticListName: string = 'firstName';
-    protoStep.setData(Struct.fromJavaScript({
-      staticListName: expectedStaticListName,
-      operator: 'not a valid operator',
-      expectation: 'not a number',
-    }));
-
-    // Have the client respond with a valid, but mismatched lead.
-    clientWrapperStub.findStaticListsByName.returns(Promise.resolve({
-      success: true,
-      result: [{
-        id: 'anyId',
-        name: 'anyName',
-      }],
-    }));
-
-    clientWrapperStub.findStaticListsMembershipByListId.returns(Promise.resolve({
-      success: true,
-      result: [{
-        id: 'anyId',
-        firstName: 'anyName',
-      }],
-    }));
-
-    const response: RunStepResponse = (await stepUnderTest.executeStep(protoStep)) as RunStepResponse;
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
-  });
-
-  it('should respond with error when expectedValue is not passed and operators are not either "be set" or "not be set"', async () => {
-    const expectedStaticListName: string = 'firstName';
-    const expectedCount: number = 2;
-    protoStep.setData(Struct.fromJavaScript({
-      staticListName: expectedStaticListName,
-      operator: 'be',
     }));
 
     const response: RunStepResponse = (await stepUnderTest.executeStep(protoStep)) as RunStepResponse;
