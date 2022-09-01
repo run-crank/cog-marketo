@@ -47,6 +47,13 @@ export class BulkCreateOrUpdateLeadByFieldStep extends BaseStep implements StepI
       const createdLeadArray = [];
       const updatedLeadArray = [];
       const failedLeadArray = [];
+
+      // we should parse out the original CSV array if provided, or handle it if missing
+      const csvArray = stepData.csvArray ? JSON.parse(stepData.csvArray) : [];
+      const csvColumns = csvArray[0];
+      const csvRows = csvArray.slice(1);
+      const failArrayOriginal = csvColumns ? [csvColumns] : [];
+
       const data: any = await this.client.bulkCreateOrUpdateLead(leadArray, partitionId);
 
       if (data[0] && data[0].error && !data[0].error.partition) {
@@ -70,14 +77,31 @@ export class BulkCreateOrUpdateLeadByFieldStep extends BaseStep implements StepI
               }
             } else if (result.reasons && result.reasons[0]) {
               failedLeadArray.push({ ...leadArray[leadArrayIndex], message: result.reasons[0].message });
+
+              // also preserve the original csv entry;
+              const match = csvRows[leadArrayIndex];
+              if (match) {
+                failArrayOriginal.push(match);
+              }
+
             } else {
               failedLeadArray.push({ ...leadArray[leadArrayIndex], message: result.status });
+
+              const match = csvRows[leadArrayIndex];
+              if (match) {
+                failArrayOriginal.push(match);
+              }
             }
           });
         } else {
+          // if the entire batch failed
           const failedLeads = leadArray.slice(startingIndex, startingIndex + 300);
-          failedLeads.forEach((lead) => {
+          failedLeads.forEach((lead, index) => {
             failedLeadArray.push({ ...lead, message: 'Marketo request failed' });
+            const match = csvRows[startingIndex + index];
+            if (match) {
+              failArrayOriginal.push(match);
+            }
           });
         }
       });
@@ -88,6 +112,7 @@ export class BulkCreateOrUpdateLeadByFieldStep extends BaseStep implements StepI
         return this.fail('No leads were created or updated in Marketo', [], []);
       } else if (leadArray.length !== returnedLeadsCount) {
         records.push(this.createTable('failedLeads', 'Leads Failed', failedLeadArray));
+        records.push(this.keyValue('failedOriginal', 'Objects Failed (Original format)', { array: JSON.stringify(failArrayOriginal) }));
         records.push(this.createTable('createdLeads', 'Leads Created', createdLeadArray));
         records.push(this.createTable('updatedLeads', 'Leads Updated', updatedLeadArray));
         return this.fail(
@@ -105,6 +130,7 @@ export class BulkCreateOrUpdateLeadByFieldStep extends BaseStep implements StepI
         );
       } else {
         records.push(this.createTable('failedLeads', 'Leads Failed', failedLeadArray));
+        records.push(this.keyValue('failedOriginal', 'Objects Failed (Original format)', { array: JSON.stringify(failArrayOriginal) }));
         records.push(this.createTable('createdLeads', 'Leads Created', createdLeadArray));
         records.push(this.createTable('updatedLeads', 'Leads Updated', updatedLeadArray));
         return this.fail(
