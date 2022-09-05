@@ -1,7 +1,7 @@
 /*tslint:disable:no-else-after-return*/
 
 import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition, StepRecord } from '../proto/cog_pb';
 
 export class DiscoverLead extends BaseStep implements StepInterface {
 
@@ -60,7 +60,9 @@ export class DiscoverLead extends BaseStep implements StepInterface {
       const data: any = await this.client.findLeadByEmail(email, [], partitionId);
       if (data.success && data.result && data.result[0]) {
         const result = data.result[0];
-        return this.pass('Successfully discovered fields on lead', [], [this.createRecord(result)]);
+        const record = this.createRecord(result);
+        const orderedRecord = this.createOrderedRecord(result, stepData['__stepOrder']);
+        return this.pass('Successfully discovered fields on lead', [], [record, orderedRecord]);
       } else if (data.success && data.result.length === 0) {
         return this.fail("Couldn't find a lead associated with %s%s", [
           email,
@@ -72,8 +74,12 @@ export class DiscoverLead extends BaseStep implements StepInterface {
     }
   }
 
-  createRecord(lead: Record<string, any>) {
+  createRecord(lead: Record<string, any>): StepRecord {
     return this.keyValue('discoverLead', 'Discovered Lead', lead);
+  }
+
+  createOrderedRecord(lead, stepOrder = 1): StepRecord {
+    return this.keyValue(`discoverLead.${stepOrder}`, `Discovered Lead from Step ${stepOrder}`, lead);
   }
 }
 
