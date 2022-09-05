@@ -2,7 +2,7 @@ import { isNullOrUndefined } from 'util';
 /*tslint:disable:no-else-after-return*/
 
 import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition, StepRecord } from '../proto/cog_pb';
 
 export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterface {
 
@@ -155,8 +155,9 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
         // Field validation
         const result = this.assert(operator, filteredQueryResult[0][field], expectedValue, field);
         const record = this.keyValue('customObject', `Checked ${customObject.result[0].displayName}`, filteredQueryResult[0]);
+        const orderedRecord = this.keyValue(`customObject.${stepData['__stepOrder']}`, `Checked ${customObject.result[0].displayName} from Step ${stepData['__stepOrder']}`, filteredQueryResult[0]);
 
-        return result.valid ? this.pass(result.message, [], [record]) : this.fail(result.message, [], [record]);
+        return result.valid ? this.pass(result.message, [], [record, orderedRecord]) : this.fail(result.message, [], [record, orderedRecord]);
       } else {
         return this.fail('Failed to query %s linked to %s.: %s', [
           name,
@@ -170,6 +171,14 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
         e.toString(),
       ]);
     }
+  }
+
+  createRecord(lead: Record<string, any>): StepRecord {
+    return this.keyValue('lead', 'Checked Lead', lead);
+  }
+
+  createOrderedRecord(lead, stepOrder = 1): StepRecord {
+    return this.keyValue(`lead.${stepOrder}`, `Created Lead from Step ${stepOrder}`, lead);
   }
 
 }
