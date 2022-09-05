@@ -1,7 +1,7 @@
 /*tslint:disable:no-else-after-return*/
 
 import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
-import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition, StepRecord } from '../proto/cog_pb';
 import * as util from '@run-crank/utilities';
 import { baseOperators } from '../client/constants/operators';
 import { isNullOrUndefined } from 'util';
@@ -85,16 +85,19 @@ export class LeadByIdFieldEqualsStep extends BaseStep implements StepInterface {
 
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
         const result = this.assert(operator, data.result[0][field], expectedValue, field);
-
-        return result.valid ? this.pass(result.message, [], [this.createRecord(data.result[0])])
-          : this.fail(result.message, [], [this.createRecord(data.result[0])]);
+        const record = this.createRecord(data.result[0]);
+        const orderedRecord = this.createOrderedRecord(data.result[0], stepData['__stepOrder']);
+        return result.valid ? this.pass(result.message, [], [record, orderedRecord])
+          : this.fail(result.message, [], [record, orderedRecord]);
 
       } else {
+        const record = this.createRecord(data.result[0]);
+        const orderedRecord = this.createOrderedRecord(data.result[0], stepData['__stepOrder']);
         if (data.result && data.result[0] && !data.result[0][field]) {
           return this.fail(
             'Found the %s lead, but there was no %s field.',
             [leadId, field],
-            [this.createRecord(data.result[0])],
+            [record, orderedRecord],
           );
         } else {
           return this.fail("Couldn't find a lead associated with %s%s", [
@@ -114,8 +117,12 @@ export class LeadByIdFieldEqualsStep extends BaseStep implements StepInterface {
     }
   }
 
-  createRecord(lead: Record<string, any>) {
+  createRecord(lead: Record<string, any>): StepRecord {
     return this.keyValue('lead', 'Checked Lead', lead);
+  }
+
+  createOrderedRecord(lead, stepOrder = 1): StepRecord {
+    return this.keyValue(`lead.${stepOrder}`, `Created Lead from Step ${stepOrder}`, lead);
   }
 }
 

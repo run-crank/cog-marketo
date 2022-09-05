@@ -1,7 +1,7 @@
 /*tslint:disable:no-else-after-return*/
 
 import { BaseStep, Field, StepInterface, ExpectedRecord } from '../../core/base-step';
-import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../../proto/cog_pb';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition, StepRecord } from '../../proto/cog_pb';
 import * as util from '@run-crank/utilities';
 import { baseOperators } from '../../client/constants/operators';
 import { isNullOrUndefined } from 'util';
@@ -88,15 +88,19 @@ export class ProgramFieldEqualsStep extends BaseStep implements StepInterface {
           result = this.assert(operator, data.result[0][field].trim(), expectedValue.trim(), field);
         }
 
-        return result.valid ? this.pass(result.message, [], [this.createRecord(data.result[0])])
-          : this.fail(result.message, [], [this.createRecord(data.result[0])]);
+        const record = this.createRecord(data.result[0]);
+        const orderedRecord = this.createOrderedRecord(data.result[0], stepData['__stepOrder']);
+        return result.valid ? this.pass(result.message, [], [record, orderedRecord])
+          : this.fail(result.message, [], [record, orderedRecord]);
 
       } else {
+        const record = this.createRecord(data.result[0]);
+        const orderedRecord = this.createOrderedRecord(data.result[0], stepData['__stepOrder']);
         if (data.result && data.result[0] && !data.result[0][field]) {
           return this.fail(
             'Found the %s program, but there was no %s field.',
             [name, field],
-            [this.createRecord(data.result[0])],
+            [record, orderedRecord],
           );
         } else {
           return this.fail("Couldn't find a program associated with %s%s", [
@@ -116,8 +120,12 @@ export class ProgramFieldEqualsStep extends BaseStep implements StepInterface {
     }
   }
 
-  createRecord(program: Record<string, any>) {
+  createRecord(program: Record<string, any>): StepRecord {
     return this.keyValue('program', 'Checked Program', program);
+  }
+
+  createOrderedRecord(program: Record<string, any>, stepOrder = 1): StepRecord {
+    return this.keyValue(`program.${stepOrder}`, `Checked Program from Step ${stepOrder}`, program);
   }
 
   getTotalProjectCost(program: Record<string, any>) {
