@@ -44,6 +44,40 @@ export class LeadAwareMixin {
     return responseArray;
   }
 
+  public async bulkAddOrRemoveLeadFromProgram(leads: {}[], programId: string, partitionId: number = 1) {
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    const partitions = await this.client.lead.partitions();
+    const partition = partitions.result.find(option => option.id === partitionId);
+    if (!partition) {
+      return Promise.resolve({ error: { partition: false } });
+    }
+
+    const responseArray = [];
+    const memberStatusList = leads.map((l: any) => l['status']).filter((v, i, a) => a.indexOf(v) === i);
+    await Promise.all(memberStatusList.map(status => new Promise(async (outerResolve) => {
+      const filteredLeads = leads.filter(lead => lead['status'] === status);
+      const chunkedLeads = this.chunkArrayHelper(filteredLeads);
+      await Promise.all(chunkedLeads.map(leads => new Promise(async (innerResolve) => {
+        const leadsWithIds = await this.client.lead.find('email', leads.map(lead => lead['email']), { fields: [...this.mustHaveFields] });
+        const requestBody = {
+          statusName: status,
+          input: leadsWithIds.map((lead) => {
+            return {
+              leadId: lead['id'],
+            };
+          }),
+        };
+        const response = await this.client._connection.post(`/v1/programs/${programId}/members/status.json`, requestBody);
+        responseArray.push(response);
+        innerResolve(null);
+      })));
+      outerResolve(null);
+    }),
+    ));
+
+    return responseArray;
+  }
+
   public async bulkFindLeadsByEmail(emails: [], justInCaseField: string = null, partitionId: number = null) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const fields = await this.describeLeadFields();
@@ -75,7 +109,7 @@ export class LeadAwareMixin {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const fields = await this.describeLeadFields();
     const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
-    let response:any = {};
+    let response: any = {};
 
     if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
       // If the length of the get request would be over 7KB, then the request
@@ -106,7 +140,7 @@ export class LeadAwareMixin {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const fields = await this.describeLeadFields();
     const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
-    let response:any = {};
+    let response: any = {};
 
     if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
       response = await this.client.lead.find('email', [email], { fields: [justInCaseField, ...this.mustHaveFields] });
@@ -137,8 +171,8 @@ export class LeadAwareMixin {
   }
 
   private async marketoRequestHelperFuntion(fieldList, field, value) {
-    const response:any = {};
-    let allFields:{ [key: string]: string; } = {};
+    const response: any = {};
+    let allFields: { [key: string]: string; } = {};
 
     for (let i = 0; i < fieldList.length && i <= 800; i += 200) {
       const currFields = fieldList.slice(i, i + 200);
