@@ -44,6 +44,41 @@ export class LeadAwareMixin {
     return responseArray;
   }
 
+  public async bulkAddOrRemoveLeadFromProgram(leads: {}[], programId: string, partitionId: number = 1) {
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    const partitions = await this.client.lead.partitions();
+    const partition = partitions.result.find(option => option.id === partitionId);
+    if (!partition) {
+      return Promise.resolve({ error: { partition: false } });
+    }
+
+    const responseArray = [];
+    let memberStatusList = leads.map((l: any) => l['status']).filter((v, i, a) => a.indexOf(v) === i);
+    await Promise.all(memberStatusList.map(status => new Promise(async (outerResolve) => {
+        const filteredLeads = leads.filter(lead => lead['status'] === status);
+        const chunkedLeads = this.chunkArrayHelper(filteredLeads);
+        await Promise.all(chunkedLeads.map(leads => new Promise(async (innerResolve) => {
+          let action = 'status'
+          const leadsWithIds = await this.client.lead.find('email', leads.map(lead => lead['email']), { fields: [...this.mustHaveFields] });
+          const requestBody = {
+            statusName: status,
+            input: leadsWithIds.map(lead => {
+              return {
+                leadId: lead['id'],
+              }
+            })
+          }
+          const response = await this.client._connection.post(`/v1/programs/${programId}/members/status.json`, requestBody);
+          responseArray.push(response);
+          innerResolve(null);
+        })));
+        outerResolve(null);
+      })
+    ));
+
+    return responseArray;
+  }
+
   public async bulkFindLeadsByEmail(emails: [], justInCaseField: string = null, partitionId: number = null) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const fields = await this.describeLeadFields();
