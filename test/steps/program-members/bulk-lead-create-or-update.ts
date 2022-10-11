@@ -18,7 +18,7 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
   beforeEach(() => {
     protoStep = new ProtoStep();
     clientWrapperStub = sinon.stub();
-    clientWrapperStub.bulkAddOrRemoveLeadFromProgram = sinon.stub();
+    clientWrapperStub.bulkSetStatusToLeadFromProgram = sinon.stub();
     stepUnderTest = new Step(clientWrapperStub);
   });
 
@@ -49,7 +49,7 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
     }));
 
     await stepUnderTest.executeStep(protoStep);
-    expect(clientWrapperStub.bulkAddOrRemoveLeadFromProgram).to.have.been.calledWith(
+    expect(clientWrapperStub.bulkSetStatusToLeadFromProgram).to.have.been.calledWith(
       Object.values(protoStep.getData().toJavaScript().leads),
     );
   });
@@ -57,7 +57,7 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
   it('should respond with success if the marketo executes succesfully', async () => {
     const expectedEmail: string = 'expected@example.com';
     const expectedReason: string = 'reason it failed';
-    clientWrapperStub.bulkAddOrRemoveLeadFromProgram.returns(Promise.resolve([
+    clientWrapperStub.bulkSetStatusToLeadFromProgram.returns(Promise.resolve([
       {
         success: true,
         result: [
@@ -100,7 +100,7 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
   it('should respond with fail if the partition does not exist', async () => {
     const expectedEmail: string = 'expected@example.com';
     const expectedReason: string = 'reason it failed';
-    clientWrapperStub.bulkAddOrRemoveLeadFromProgram.returns(Promise.resolve([{ error: { partition: false } }]));
+    clientWrapperStub.bulkSetStatusToLeadFromProgram.returns(Promise.resolve([{ error: { partition: false } }]));
     protoStep.setData(Struct.fromJavaScript({
       partitionId: 23,
       programId: 'anyId',
@@ -125,7 +125,7 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
 
   it('should respond with fail if marketo skips adding or removing of member with reason', async () => {
     const expectedReason: string = 'reason it failed';
-    clientWrapperStub.bulkAddOrRemoveLeadFromProgram.returns(Promise.resolve([{
+    clientWrapperStub.bulkSetStatusToLeadFromProgram.returns(Promise.resolve([{
       success: true,
       result: [
         {
@@ -174,7 +174,7 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
 
   it('should respond with fail if marketo skips adding or removing of member', async () => {
     const expectedMessage: string  = 'Failed to create or update 1 leads';
-    clientWrapperStub.bulkAddOrRemoveLeadFromProgram.returns(Promise.resolve([{
+    clientWrapperStub.bulkSetStatusToLeadFromProgram.returns(Promise.resolve([{
       success: true,
       result: [
         {
@@ -213,7 +213,7 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
   });
 
   it('should respond with an error if the marketo throws an error', async () => {
-    clientWrapperStub.bulkAddOrRemoveLeadFromProgram.throws('any error');
+    clientWrapperStub.bulkSetStatusToLeadFromProgram.throws('any error');
     protoStep.setData(Struct.fromJavaScript({
       programId: 'anyId',
       leads: {

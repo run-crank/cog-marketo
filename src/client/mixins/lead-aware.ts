@@ -72,8 +72,35 @@ export class LeadAwareMixin {
         innerResolve(null);
       })));
       outerResolve(null);
-    }),
-    ));
+    })));
+
+    return responseArray;
+  }
+
+  public async bulkSetStatusToLeadFromProgram(leads: {}[], programId: string, status: string, partitionId: number = 1) {
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    const partitions = await this.client.lead.partitions();
+    const partition = partitions.result.find(option => option.id === partitionId);
+    if (!partition) {
+      return Promise.resolve({ error: { partition: false } });
+    }
+
+    const responseArray = [];
+    const chunkedLeads = this.chunkArrayHelper(leads);
+    await Promise.all(chunkedLeads.map(leadChunk => new Promise(async (resolve) => {
+      const leadsWithIds = await this.client.lead.find('email', leadChunk.map(lead => lead['email']), { fields: [...this.mustHaveFields] });
+      const requestBody = {
+        statusName: status,
+        input: leadsWithIds.map((lead) => {
+          return {
+            leadId: lead['id'],
+          };
+        }),
+      };
+      const response = await this.client._connection.post(`/v1/programs/${programId}/members/status.json`, requestBody);
+      responseArray.push(response);
+      resolve(null);
+    })));
 
     return responseArray;
   }

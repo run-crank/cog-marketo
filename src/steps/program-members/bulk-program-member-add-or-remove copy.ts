@@ -21,6 +21,11 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
       description: 'ID of the program',
     },
     {
+      field: 'memberStatus',
+      type: FieldDefinition.Type.STRING,
+      description: 'Status to set on the members',
+    },
+    {
       field: 'leads',
       type: FieldDefinition.Type.MAP,
       description: 'A map of field names to field values',
@@ -41,6 +46,7 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
     const stepData: any = step.getData().toJavaScript();
     const partitionId = stepData.partitionId || 1;
     const programId = stepData.programId;
+    const status = stepData.memberStatus;
     const leads = stepData.leads;
     const leadArray = [];
 
@@ -60,7 +66,7 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
       const csvRows = csvArray.slice(1);
       const failArrayOriginal = csvColumns ? [csvColumns] : [];
 
-      const data: any = await this.client.bulkAddOrRemoveLeadFromProgram(leadArray, programId, partitionId);
+      const data: any = await this.client.bulkSetStatusToLeadFromProgram(leadArray, programId, status, partitionId);
 
       if (data[0] && data[0].error && !data[0].error.partition) {
         return this.fail('There is no Partition with id %s', [
