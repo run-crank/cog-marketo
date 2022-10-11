@@ -47,17 +47,18 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
     const partitionId = stepData.partitionId || 1;
     const programId = stepData.programId;
     const status = stepData.memberStatus;
-    const leads = stepData.leads;
+    const leads: {[index: string]: {email: string}} = stepData.leads;
     const leadArray = [];
 
     Object.values(leads).forEach((lead) => {
-      leadArray.push(lead);
+      leadArray.push(lead.email);
     });
 
     const records = [];
     try {
       const createdLeadArray = [];
       const updatedLeadArray = [];
+      const deletedLeadArray = [];
       const failedLeadArray = [];
 
       // we should parse out the original CSV array if provided, or handle it if missing
@@ -66,7 +67,12 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
       const csvRows = csvArray.slice(1);
       const failArrayOriginal = csvColumns ? [csvColumns] : [];
 
-      const data: any = await this.client.bulkSetStatusToLeadFromProgram(leadArray, programId, status, partitionId);
+      let data: any = [];
+      if (status === 'Not in Program') {
+        data = await this.client.bulkRemoveLeadsFromProgram(leadArray, programId, partitionId);
+      } else {
+        data = await this.client.bulkSetStatusToLeadsFromProgram(leadArray, programId, status, partitionId);
+      }
 
       if (data[0] && data[0].error && !data[0].error.partition) {
         return this.fail('There is no Partition with id %s', [
@@ -82,10 +88,14 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
             const leadArrayIndex = startingIndex + index;
             if (result.status !== 'skipped') {
               if (result.status === 'updated') {
-                updatedLeadArray.push({ ...leadArray[leadArrayIndex], id: result.id });
+                updatedLeadArray.push({ email: leadArray[leadArrayIndex], id: result.leadId });
               }
               if (result.status === 'created') {
-                createdLeadArray.push({ ...leadArray[leadArrayIndex], id: result.id });
+                createdLeadArray.push({ email: leadArray[leadArrayIndex], id: result.leadId });
+              }
+
+              if (result.status === 'deleted') {
+                deletedLeadArray.push({ email: leadArray[leadArrayIndex], id: result.leadId });
               }
             } else if (result.reasons && result.reasons[0]) {
               failedLeadArray.push({ ...leadArray[leadArrayIndex], message: result.reasons[0].message });
@@ -97,7 +107,7 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
               }
 
             } else {
-              failedLeadArray.push({ ...leadArray[leadArrayIndex], message: result.status });
+              failedLeadArray.push({ email: leadArray[leadArrayIndex], message: result.status });
 
               const match = csvRows[leadArrayIndex];
               if (match) {
@@ -108,8 +118,8 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
         } else {
           // if the entire batch failed
           const failedMembers = leadArray.slice(startingIndex, startingIndex + 300);
-          failedMembers.forEach((lead, index) => {
-            failedLeadArray.push({ ...lead, message: 'Marketo request failed' });
+          failedMembers.forEach((leadEmail, index) => {
+            failedLeadArray.push({ email: leadEmail, message: 'Marketo request failed' });
             const match = csvRows[startingIndex + index];
             if (match) {
               failArrayOriginal.push(match);
@@ -118,13 +128,13 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
         }
       });
 
-      const returnedLeadsCount = updatedLeadArray.length + createdLeadArray.length + failedLeadArray.length;
-
+      const returnedLeadsCount = updatedLeadArray.length + createdLeadArray.length + failedLeadArray.length + deletedLeadArray.length;
       if (returnedLeadsCount === 0) {
         return this.fail('No program members were add or removed in Marketo', [], []);
       } else if (leadArray.length !== returnedLeadsCount) {
         records.push(this.createTable('createdMembers', 'Members Created', createdLeadArray));
         records.push(this.createTable('updatedMembers', 'Members Updated', updatedLeadArray));
+        records.push(this.createTable('deletedMembers', 'Members Deleted', deletedLeadArray));
         records.push(this.createTable('failedMembers', 'Members Failed', failedLeadArray));
         records.push(this.keyValue('failedOriginal', 'Objects Failed (Original format)', { array: JSON.stringify(failArrayOriginal) }));
         return this.fail(
@@ -135,6 +145,7 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
       } else if (!failedLeadArray.length) {
         records.push(this.createTable('createdMembers', 'Members Created', createdLeadArray));
         records.push(this.createTable('updatedMembers', 'Members Updated', updatedLeadArray));
+        records.push(this.createTable('deletedMembers', 'Members Deleted', deletedLeadArray));
         return this.pass(
           'Successfully created %d leads and updated %d leads',
           [createdLeadArray.length, updatedLeadArray.length],
@@ -143,6 +154,7 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
       } else {
         records.push(this.createTable('createdMembers', 'Members Created', createdLeadArray));
         records.push(this.createTable('updatedMembers', 'Members Updated', updatedLeadArray));
+        records.push(this.createTable('deletedMembers', 'Members Deleted', deletedLeadArray));
         records.push(this.createTable('failedMembers', 'Members Failed', failedLeadArray));
         records.push(this.keyValue('failedOriginal', 'Objects Failed (Original format)', { array: JSON.stringify(failArrayOriginal) }));
         return this.fail(

@@ -44,62 +44,65 @@ export class LeadAwareMixin {
     return responseArray;
   }
 
-  public async bulkAddOrRemoveLeadFromProgram(leads: {}[], programId: string, partitionId: number = 1) {
+  public async bulkRemoveLeadsFromProgram(leads: {}[], programId: string, partitionId: number = 1) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const partitions = await this.client.lead.partitions();
     const partition = partitions.result.find(option => option.id === partitionId);
     if (!partition) {
-      return Promise.resolve({ error: { partition: false } });
+      return Promise.resolve([{ error: { partition: false } }]);
     }
 
     const responseArray = [];
-    const memberStatusList = leads.map((l: any) => l['status']).filter((v, i, a) => a.indexOf(v) === i);
-    await Promise.all(memberStatusList.map(status => new Promise(async (outerResolve) => {
-      const filteredLeads = leads.filter(lead => lead['status'] === status);
-      const chunkedLeads = this.chunkArrayHelper(filteredLeads);
-      await Promise.all(chunkedLeads.map(leads => new Promise(async (innerResolve) => {
-        const leadsWithIds = await this.client.lead.find('email', leads.map(lead => lead['email']), { fields: [...this.mustHaveFields] });
+    const chunkedLeads = this.chunkArrayHelper(leads);
+    await Promise.all(chunkedLeads.map(leadChunk => new Promise(async (resolve, reject) => {
+      try {
+        const leadsWithIds = await this.client.lead.find('email', leadChunk, { fields: this.mustHaveFields });
         const requestBody = {
-          statusName: status,
-          input: leadsWithIds.map((lead) => {
+          input: leadsWithIds.result.map((lead) => {
             return {
               leadId: lead['id'],
             };
           }),
         };
-        const response = await this.client._connection.post(`/v1/programs/${programId}/members/status.json`, requestBody);
+        const response = await this.client._connection.postJson(`/v1/programs/${programId}/members/delete.json`, requestBody);
         responseArray.push(response);
-        innerResolve(null);
-      })));
-      outerResolve(null);
+        resolve(null);
+      } catch (e) {
+        reject(e.message);
+      }
     })));
 
+    console.log(responseArray);
     return responseArray;
   }
 
-  public async bulkSetStatusToLeadFromProgram(leads: {}[], programId: string, status: string, partitionId: number = 1) {
+  public async bulkSetStatusToLeadsFromProgram(leads: {}[], programId: string, status: string, partitionId: number = 1) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const partitions = await this.client.lead.partitions();
     const partition = partitions.result.find(option => option.id === partitionId);
     if (!partition) {
-      return Promise.resolve({ error: { partition: false } });
+      return Promise.resolve([{ error: { partition: false } }]);
     }
 
     const responseArray = [];
     const chunkedLeads = this.chunkArrayHelper(leads);
-    await Promise.all(chunkedLeads.map(leadChunk => new Promise(async (resolve) => {
-      const leadsWithIds = await this.client.lead.find('email', leadChunk.map(lead => lead['email']), { fields: [...this.mustHaveFields] });
-      const requestBody = {
-        statusName: status,
-        input: leadsWithIds.map((lead) => {
-          return {
-            leadId: lead['id'],
-          };
-        }),
-      };
-      const response = await this.client._connection.post(`/v1/programs/${programId}/members/status.json`, requestBody);
-      responseArray.push(response);
-      resolve(null);
+    await Promise.all(chunkedLeads.map(leadChunk => new Promise(async (resolve, reject) => {
+      try {
+        const leadsWithIds = await this.client.lead.find('email', leadChunk, { fields: this.mustHaveFields });
+        const requestBody = {
+          statusName: status,
+          input: leadsWithIds.result.map((lead) => {
+            return {
+              leadId: lead['id'],
+            };
+          }),
+        };
+        const response = await this.client._connection.postJson(`/v1/programs/${programId}/members/status.json`, requestBody);
+        responseArray.push(response);
+        resolve(null);
+      } catch (e) {
+        reject(e.message);
+      }
     })));
 
     return responseArray;
