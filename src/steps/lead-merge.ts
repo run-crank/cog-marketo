@@ -14,12 +14,12 @@ export class MergeLeadsStep extends BaseStep implements StepInterface {
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
   protected expectedFields: Field[] = [{
     field: 'losingEmail',
-    type: FieldDefinition.Type.EMAIL,
-    description: 'Email of the losing lead',
+    type: FieldDefinition.Type.STRING,
+    description: 'Email or id of the losing lead',
   }, {
     field: 'winningEmail',
-    type: FieldDefinition.Type.EMAIL,
-    description: 'Email of the winning lead',
+    type: FieldDefinition.Type.STRING,
+    description: 'Email or id of the winning lead',
   }, {
     field: 'partitionId',
     type: FieldDefinition.Type.NUMERIC,
@@ -44,36 +44,48 @@ export class MergeLeadsStep extends BaseStep implements StepInterface {
 
   async executeStep(step: Step) {
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
-    const losingEmail = stepData.losingEmail;
-    const winningEmail = stepData.winningEmail;
+    const losingReference = stepData.losingEmail;
+    const winningReference = stepData.winningEmail;
     const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
 
     try {
-      const losingLead: any = await this.client.findLeadByEmail(losingEmail, null, partitionId);
+      const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
+      let lookupField = 'id';
+      if (emailRegex.test(losingReference)) {
+        lookupField = 'email';
+      }
+
+      const losingLead: any = await this.client.findLeadByField(lookupField, losingReference, null, partitionId);
       if (losingLead.success && losingLead.result && losingLead.result[0] && losingLead.result[0].id) {
-        const winningLead: any = await this.client.findLeadByEmail(winningEmail, null, partitionId);
+        const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
+        let lookupField = 'id';
+        if (emailRegex.test(losingReference)) {
+          lookupField = 'email';
+        }
+
+        const winningLead: any = await this.client.findLeadByField(lookupField, winningReference, null, partitionId);
         if (winningLead.success && winningLead.result && winningLead.result[0] && winningLead.result[0].id) {
           const mergedLead: any = await this.client.mergeLeadsById(winningLead.result[0].id, [losingLead.result[0].id]);
           if (mergedLead.success && mergedLead.requestId) {
             return this.pass('Successfully merged Marketo lead %s into Marketo lead %s',
-                             [losingEmail, winningEmail],
-                             [this.keyValue('mergedLead', 'Merged Lead', { id: winningLead.result[0].id, email: winningEmail })],
-                            );
+                             [losingReference, winningReference],
+                             [this.keyValue('mergedLead', 'Merged Lead', { id: winningLead.result[0].id, email: winningLead.result[0].email })],
+            );
           } else {
             return this.fail('Failed to merge Marketo lead %s into Marketo lead %s',
-                             [losingEmail, winningEmail],
-                             [this.keyValue('mergedLead', 'Merged Lead', { id: winningLead.result[0].id, email: winningEmail })],
-                            );
+                             [losingReference, winningReference],
+                             [this.keyValue('mergedLead', 'Merged Lead', { id: winningLead.result[0].id, email: winningLead.result[0].email })],
+            );
           }
         } else {
           return this.fail("Couldn't find a lead associated with %s%s", [
-            winningEmail,
+            winningReference,
             partitionId ? ` in partition ${partitionId}` : '',
           ]);
         }
       } else {
         return this.fail("Couldn't find a lead associated with %s%s", [
-          losingEmail,
+          losingReference,
           partitionId ? ` in partition ${partitionId}` : '',
         ]);
       }

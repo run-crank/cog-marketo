@@ -10,8 +10,8 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
   protected expectedFields: Field[] = [{
     field: 'email',
-    type: FieldDefinition.Type.EMAIL,
-    description: "Lead's email address",
+    type: FieldDefinition.Type.STRING,
+    description: "Lead's email address or id",
   }, {
     field: 'campaign',
     type: FieldDefinition.Type.ANYSCALAR,
@@ -85,7 +85,7 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
 
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
-    const email: string = stepData.email;
+    const reference: string = stepData.email;
     const campaignIdOrName = stepData.campaign;
     const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
     const isCampaignNameProvided = isNaN(campaignIdOrName);
@@ -100,18 +100,24 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
         const matchingCampaigns = allCampaigns.filter(c => c.name ? c.name.toLowerCase() == campaignIdOrName.toLowerCase() : false);
 
         if (matchingCampaigns.length != 1) {
-          return this.error("Can't add %s to %s: found %d matching campaigns", [email, campaignIdOrName, matchingCampaigns.length]);
+          return this.error("Can't add %s to %s: found %d matching campaigns", [reference, campaignIdOrName, matchingCampaigns.length]);
         }
 
         campaignObj = matchingCampaigns[0];
       }
 
-      const findLeadResponse: any = await this.client.findLeadByEmail(email, null, partitionId);
+      const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
+      let lookupField = 'id';
+      if (emailRegex.test(reference)) {
+        lookupField = 'email';
+      }
+
+      const findLeadResponse: any = await this.client.findLeadByField(lookupField, reference, null, partitionId);
 
       if (!findLeadResponse.result[0]) {
         return this.fail(
           'Couldn\'t find a lead associated with %s%s', [
-            email,
+            findLeadResponse,
             partitionId ? ` in partition ${partitionId}` : '',
           ],
         );
@@ -123,9 +129,9 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
 
       const result = await this.client.addLeadToSmartCampaign(campaignObj.id.toString(), leadToBeAdded);
       if (result.success) {
-        return this.pass('Successfully added lead %s to smart campaign %s', [email, campaignIdOrName], [campaignRecord, leadRecord]);
+        return this.pass('Successfully added lead %s to smart campaign %s', [reference, campaignIdOrName], [campaignRecord, leadRecord]);
       } else {
-        return this.fail('Unable to add lead %s to smart campaign %s: %s', [email, campaignIdOrName, result.message], [campaignRecord, leadRecord]);
+        return this.fail('Unable to add lead %s to smart campaign %s: %s', [reference, campaignIdOrName, result.message], [campaignRecord, leadRecord]);
       }
     } catch (e) {
       if (e.message.includes("Trigger campaign needs to have a 'Campaign Requested' trigger")) {

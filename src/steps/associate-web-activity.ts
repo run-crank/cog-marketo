@@ -16,8 +16,8 @@ export class AssociateWebActivityStep extends BaseStep implements StepInterface 
     },
     {
       field: 'email',
-      type: FieldDefinition.Type.EMAIL,
-      description: 'Lead\'s email address',
+      type: FieldDefinition.Type.STRING,
+      description: 'Lead\'s email address or id',
     },
     {
       field: 'partitionId',
@@ -32,23 +32,29 @@ export class AssociateWebActivityStep extends BaseStep implements StepInterface 
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
     const munchkinCookie = stepData.munchkinCookie;
-    const email = stepData.email;
+    const reference = stepData.email;
     const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
 
     try {
-      const data: any = await this.client.findLeadByEmail(email, 'id', partitionId);
+      const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
+      let lookupField = 'id';
+      if (emailRegex.test(reference)) {
+        lookupField = 'email';
+      }
+
+      const data: any = await this.client.findLeadByField(lookupField, reference, 'id', partitionId);
 
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty('id')) {
         const associate: any = await this.client.associateLeadById(data.result[0].id, munchkinCookie);
 
         if (associate.success && associate.requestId) {
-          return this.pass('Successfully associated munchkin cookie %s with Marketo lead %s', [munchkinCookie, email]);
+          return this.pass('Successfully associated munchkin cookie %s with Marketo lead %s', [munchkinCookie, reference]);
         } else {
-          return this.error('Unable to assocated munchkin cookie %s with Marketo lead %s', [munchkinCookie, email]);
+          return this.error('Unable to assocated munchkin cookie %s with Marketo lead %s', [munchkinCookie, reference]);
         }
       } else {
         return this.error("Couldn't find a lead associated with %s%s", [
-          email,
+          reference,
           partitionId ? ` in partition ${partitionId}` : '',
         ]);
       }
