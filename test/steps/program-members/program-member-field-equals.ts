@@ -18,13 +18,13 @@ describe('ProgramMemberFieldEqualsStep', () => {
   beforeEach(() => {
     protoStep = new ProtoStep();
     clientWrapperStub = sinon.stub();
-    clientWrapperStub.findLeadByEmail = sinon.stub();
+    clientWrapperStub.findLeadByField = sinon.stub();
     clientWrapperStub.findProgramsByName = sinon.stub();
     clientWrapperStub.getProgramMembersFields = sinon.stub();
     clientWrapperStub.getProgramMembersByFilterValue = sinon.stub();
     stepUnderTest = new Step(clientWrapperStub);
 
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [
         {id: 123123},
@@ -75,7 +75,7 @@ describe('ProgramMemberFieldEqualsStep', () => {
     // lead field
     expect(fields[1].key).to.equal('email');
     expect(fields[1].optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
-    expect(fields[1].type).to.equal(FieldDefinition.Type.EMAIL);
+    expect(fields[1].type).to.equal(FieldDefinition.Type.STRING);
 
     // Field Name field
     expect(fields[2].key).to.equal('field');
@@ -129,7 +129,7 @@ describe('ProgramMemberFieldEqualsStep', () => {
     }));
 
     // Cause the client to throw an error, and execute the step.
-    clientWrapperStub.findLeadByEmail.throws('any error');
+    clientWrapperStub.findLeadByField.throws('any error');
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
   });
@@ -148,7 +148,7 @@ describe('ProgramMemberFieldEqualsStep', () => {
     }));
 
     // Have the client respond with no programs.
-    clientWrapperStub.findLeadByEmail.resolves({
+    clientWrapperStub.findLeadByField.resolves({
       success: true,
       result: [],
     });

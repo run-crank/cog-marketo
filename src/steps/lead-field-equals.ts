@@ -13,9 +13,9 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
   protected stepExpression: string = 'the (?<field>[a-zA-Z0-9_-]+) field on marketo lead (?<email>.+\@.+\..+) should (?<operator>be set|not be set|be less than|be greater than|be one of|be|contain|not be one of|not be|not contain|match|not match) ?(?<expectation>.+)?';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
-    field: 'email',
-    type: FieldDefinition.Type.EMAIL,
-    description: "Lead's email address",
+    field: 'email', // to prevent breaking previous scenarios, this is will stay as email
+    type: FieldDefinition.Type.STRING,
+    description: "Lead's email address or id",
   }, {
     field: 'field',
     type: FieldDefinition.Type.STRING,
@@ -71,7 +71,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
   async executeStep(step: Step) {
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
     const expectedValue = stepData.expectation;
-    const email = stepData.email;
+    const reference = stepData.email;
     const operator: string = stepData.operator || 'be';
     const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
     const field = stepData.field;
@@ -81,8 +81,14 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     }
 
     try {
-      const data: any = await this.client.findLeadByEmail(email, field, partitionId);
+      const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
+      let lookupField = 'id';
+      if (emailRegex.test(reference)) {
+        lookupField = 'email';
+      }
 
+      const data: any = await this.client.findLeadByField(lookupField, reference, field, partitionId);
+      console.log(data);
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
         const result = this.assert(operator, data.result[0][field], expectedValue, field);
 
@@ -97,12 +103,12 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
         if (data.result && data.result[0] && !data.result[0][field]) {
           return this.fail(
             'Found the %s lead, but there was no %s field.',
-            [email, field],
+            [reference, field],
             [record, orderedRecord],
           );
         } else {
           return this.fail("Couldn't find a lead associated with %s%s", [
-            email,
+            reference,
             partitionId ? ` in partition ${partitionId}` : '',
           ]);
         }

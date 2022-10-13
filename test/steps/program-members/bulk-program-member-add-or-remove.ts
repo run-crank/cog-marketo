@@ -5,7 +5,7 @@ import * as sinonChai from 'sinon-chai';
 import 'mocha';
 
 import { Step as ProtoStep, StepDefinition, RunStepResponse } from '../../../src/proto/cog_pb';
-import { Step } from '../../../src/steps/program-members/bulk-program-member-add-or-remove copy';
+import { Step } from '../../../src/steps/program-members/bulk-program-member-add-or-remove';
 
 chai.use(sinonChai);
 

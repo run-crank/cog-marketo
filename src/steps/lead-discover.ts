@@ -10,9 +10,9 @@ export class DiscoverLead extends BaseStep implements StepInterface {
   protected stepExpression: string = 'discover fields on marketo lead (?<email>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
   protected expectedFields: Field[] = [{
-    field: 'email',
-    type: FieldDefinition.Type.EMAIL,
-    description: "Lead's email address",
+    field: 'email', // to prevent breaking previous scenarios, this is will stay as email
+    type: FieldDefinition.Type.STRING,
+    description: "Lead's email address or id",
   }, {
     field: 'partitionId',
     type: FieldDefinition.Type.NUMERIC,
@@ -53,11 +53,17 @@ export class DiscoverLead extends BaseStep implements StepInterface {
 
   async executeStep(step: Step) {
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
-    const email = stepData.email;
+    const reference = stepData.email;
     const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
 
     try {
-      const data: any = await this.client.findLeadByEmail(email, [], partitionId);
+      const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
+      let lookupField = 'id';
+      if (emailRegex.test(reference)) {
+        lookupField = 'email';
+      }
+
+      const data: any = await this.client.findLeadByField(lookupField, reference, [], partitionId);
       if (data.success && data.result && data.result[0]) {
         const result = data.result[0];
         const record = this.createRecord(result);
@@ -65,7 +71,7 @@ export class DiscoverLead extends BaseStep implements StepInterface {
         return this.pass('Successfully discovered fields on lead', [], [record, orderedRecord]);
       } else if (data.success && data.result.length === 0) {
         return this.fail("Couldn't find a lead associated with %s%s", [
-          email,
+          reference,
           partitionId ? ` in partition ${partitionId}` : '',
         ]);
       }

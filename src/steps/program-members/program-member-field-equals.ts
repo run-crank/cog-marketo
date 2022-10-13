@@ -17,9 +17,9 @@ export class ProgramMemberFieldEqualsStep extends BaseStep implements StepInterf
     type: FieldDefinition.Type.STRING,
     description: "Program's Name",
   }, {
-    field: 'email',
-    type: FieldDefinition.Type.EMAIL,
-    description: "Lead's email",
+    field: 'email', // to prevent breaking previous scenarios, this is will stay as email
+    type: FieldDefinition.Type.STRING,
+    description: "Lead's email or id",
   }, {
     field: 'field',
     type: FieldDefinition.Type.STRING,
@@ -60,7 +60,7 @@ export class ProgramMemberFieldEqualsStep extends BaseStep implements StepInterf
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
     const expectedValue = stepData.expectation;
     const programName = stepData.programName;
-    const email = stepData.email;
+    const reference = stepData.email;
     const operator: string = stepData.operator || 'be';
     const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
     const field = stepData.field;
@@ -70,11 +70,17 @@ export class ProgramMemberFieldEqualsStep extends BaseStep implements StepInterf
     }
 
     try {
+      const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
+      let lookupField = 'id';
+      if (emailRegex.test(reference)) {
+        lookupField = 'email';
+      }
+
       // Check if lead exists and also get the id
-      const lead: any = await this.client.findLeadByEmail(email, null, partitionId);
+      const lead: any = await this.client.findLeadByField(lookupField, reference, null, partitionId);
       if (lead.result.length === 0) {
         return this.error('Lead with email %s does not exist%s', [
-          email,
+          reference,
           partitionId ? ` in partition ${partitionId}` : '',
         ]);
       }
@@ -106,12 +112,12 @@ export class ProgramMemberFieldEqualsStep extends BaseStep implements StepInterf
         if (data.result && data.result[0] && !data.result[0][field]) {
           return this.fail(
             'Found the %s program member, but there was no %s field.',
-            [email, field],
+            [reference, field],
             [record, orderedRecord],
           );
         } else {
           return this.fail("Couldn't find a program member associated with %s%s", [
-            email,
+            reference,
             partitionId ? ` in partition ${partitionId}` : '',
           ]);
         }

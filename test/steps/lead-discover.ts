@@ -18,7 +18,7 @@ describe('DiscoverLeadStep', () => {
   beforeEach(() => {
     protoStep = new ProtoStep();
     clientWrapperStub = sinon.stub();
-    clientWrapperStub.findLeadByEmail = sinon.stub();
+    clientWrapperStub.findLeadByField = sinon.stub();
     stepUnderTest = new Step(clientWrapperStub);
   });
 
@@ -39,7 +39,7 @@ describe('DiscoverLeadStep', () => {
     // Email field
     expect(fields[0].key).to.equal('email');
     expect(fields[0].optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
-    expect(fields[0].type).to.equal(FieldDefinition.Type.EMAIL);
+    expect(fields[0].type).to.equal(FieldDefinition.Type.STRING);
 
     // Partition ID field
     expect(fields[1].key).to.equal('partitionId');
@@ -56,7 +56,8 @@ describe('DiscoverLeadStep', () => {
     }));
 
     await stepUnderTest.executeStep(protoStep);
-    expect(clientWrapperStub.findLeadByEmail).to.have.been.calledWith(
+    expect(clientWrapperStub.findLeadByField).to.have.been.calledWith(
+      'email',
       expectedEmail,
       sinon.match.any,
       expectedPartitionId,
@@ -65,7 +66,7 @@ describe('DiscoverLeadStep', () => {
 
   it('should respond with an error if the marketo client throws an error', async () => {
     // Cause the client to throw an error, and execute the step.
-    clientWrapperStub.findLeadByEmail.throws('any error');
+    clientWrapperStub.findLeadByField.throws('any error');
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
   });
@@ -76,7 +77,7 @@ describe('DiscoverLeadStep', () => {
       partitionId: 3
     }));
     // Have the client respond with no leads.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [],
     }));
@@ -91,7 +92,7 @@ describe('DiscoverLeadStep', () => {
     }));
 
     // Have the client respond with a valid lead
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         firstName: 'example',
