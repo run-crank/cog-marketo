@@ -18,7 +18,7 @@ describe('CheckLeadActivityStep', () => {
   beforeEach(() => {
     protoStep = new ProtoStep();
     clientWrapperStub = sinon.stub();
-    clientWrapperStub.findLeadByEmail = sinon.stub();
+    clientWrapperStub.findLeadByField = sinon.stub();
     clientWrapperStub.getActivityPagingToken = sinon.stub();
     clientWrapperStub.getActivityTypes = sinon.stub();
     clientWrapperStub.getActivitiesByLeadId = sinon.stub();
@@ -49,7 +49,7 @@ describe('CheckLeadActivityStep', () => {
           nextPageToken: 'abc123',
         }));
 
-        clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+        clientWrapperStub.findLeadByField.returns(Promise.resolve({
           result: [],
         }));
       });
@@ -95,7 +95,7 @@ describe('CheckLeadActivityStep', () => {
           nextPageToken: 'abc123',
         }));
 
-        clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+        clientWrapperStub.findLeadByField.returns(Promise.resolve({
           result: [{}],
         }));
 
@@ -125,7 +125,7 @@ describe('CheckLeadActivityStep', () => {
           nextPageToken: 'abc123',
         }));
 
-        clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+        clientWrapperStub.findLeadByField.returns(Promise.resolve({
           result: [{ id: 10001 }],
         }));
 
@@ -157,7 +157,7 @@ describe('CheckLeadActivityStep', () => {
           nextPageToken: 'abc123',
         }));
 
-        clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+        clientWrapperStub.findLeadByField.returns(Promise.resolve({
           result: [{ id: 10001 }],
         }));
 
@@ -191,7 +191,7 @@ describe('CheckLeadActivityStep', () => {
           nextPageToken: 'abc123',
         }));
 
-        clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+        clientWrapperStub.findLeadByField.returns(Promise.resolve({
           result: [{ id: 10001 }],
         }));
 

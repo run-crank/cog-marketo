@@ -9,9 +9,9 @@ export class DeleteLeadStep extends BaseStep implements StepInterface {
   protected stepExpression: string = 'delete the (?<email>.+) marketo lead';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
   protected expectedFields: Field[] = [{
-    field: 'email',
-    type: FieldDefinition.Type.EMAIL,
-    description: "Lead's email address",
+    field: 'email', // to prevent breaking previous scenarios, this is will stay as email
+    type: FieldDefinition.Type.STRING,
+    description: "Lead's email address or id",
   }, {
     field: 'partitionId',
     type: FieldDefinition.Type.NUMERIC,
@@ -32,15 +32,20 @@ export class DeleteLeadStep extends BaseStep implements StepInterface {
 
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
-    const email = stepData.email;
+    const reference = stepData.email;
     const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
 
     try {
-      // @todo Consider refactoring this logic into the ClientWrapper.
-      const data: any = await this.client.findLeadByEmail(email, null, partitionId);
+      const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
+      let lookupField = 'id';
+      if (emailRegex.test(reference)) {
+        lookupField = 'email';
+      }
+
+      const data: any = await this.client.findLeadByField(lookupField, reference, null, partitionId);
 
       if (data.success && data.result && data.result[0] && data.result[0].id) {
-        const deleteRes: any = await this.client.deleteLeadById(data.result[0].id, email);
+        const deleteRes: any = await this.client.deleteLeadById(data.result[0].id, reference);
 
         if (
           deleteRes.success &&
@@ -50,22 +55,22 @@ export class DeleteLeadStep extends BaseStep implements StepInterface {
         ) {
           return this.pass(
             'Successfully deleted lead %s',
-            [email],
+            [reference],
             [this.keyValue('lead', 'Deleted Lead', { id: data.result[0].id })],
           );
         } else {
-          return this.error('Unable to delete lead %s: %s', [email, data]);
+          return this.error('Unable to delete lead %s: %s', [reference, data]);
         }
       } else {
         return this.error('Unable to delete lead %s: %s%s', [
-          email,
+          reference,
           'a lead with that email address does not exist',
           partitionId ? ` in partition ${partitionId}` : '',
         ]);
       }
     } catch (e) {
       return this.error('There was an error deleting %s from Marketo: %s', [
-        email,
+        reference,
         e.toString(),
       ]);
     }

@@ -12,9 +12,9 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
   protected stepExpression: string = 'there should (?<includes>not include|be|not be) an? (?<activityTypeIdOrName>.+) activity for marketo lead (?<email>.+) in the last (?<minutes>\\d+) minutes?';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
   protected expectedFields: Field[] = [{
-    field: 'email',
-    type: FieldDefinition.Type.EMAIL,
-    description: 'The email address of the Marketo Lead',
+    field: 'email', // to prevent breaking previous scenarios, this is will stay as email
+    type: FieldDefinition.Type.STRING,
+    description: 'The email address or id of the Marketo Lead',
   }, {
     field: 'activityTypeIdOrName',
     type: FieldDefinition.Type.ANYSCALAR,
@@ -65,7 +65,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
-    const email: string = stepData.email;
+    const reference: string = stepData.email;
     let activityTypeIdOrName = stepData.activityTypeIdOrName;
     const includes = stepData.includes ? stepData.includes === 'be' : true;
     const minutesAgo = stepData.minutes;
@@ -78,12 +78,18 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
       const nextPageToken = tokenResponse.nextPageToken;
 
-      const lead = (await this.client.findLeadByEmail(email, null, partitionId)).result[0];
+      const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
+      let lookupField = 'id';
+      if (emailRegex.test(reference)) {
+        lookupField = 'email';
+      }
+
+      const lead = (await this.client.findLeadByField(lookupField, reference, null, partitionId)).result[0];
 
       /* Error when lead is not found */
       if (!lead) {
         return this.fail('Lead %s was not found%s', [
-          email,
+          reference,
           partitionId ? ` in partition ${partitionId}` : '',
         ]);
       }
@@ -107,7 +113,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
       if (!activities) {
         return this[includes ? 'fail' : 'pass']('No %s activity found for lead %s within the last %d minute(s)', [
           stepData.activityTypeIdOrName,
-          email,
+          reference,
           minutesAgo,
         ]);
       }
@@ -146,7 +152,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
         if (validated) {
           return this[includes ? 'pass' : 'fail'](
             'Found %s activity for lead %s within the last %d minute(s), including attributes: \n\n%s',
-            [stepData.activityTypeIdOrName, email, minutesAgo, JSON.stringify(expectedAttributes, null, 2)],
+            [stepData.activityTypeIdOrName, reference, minutesAgo, JSON.stringify(expectedAttributes, null, 2)],
             [this.createRecord(validatedActivity)],
           );
         }
@@ -158,7 +164,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
           'Found %s activity for lead %s within the last %d minute(s), but none matched the expected attributes (%s).',
           [
             stepData.activityTypeIdOrName,
-            email,
+            reference,
             minutesAgo,
             expectedAttributes.map(attr => `${attr.name} = ${attr.value}`).join(', '),
           ],
@@ -168,7 +174,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
       return this[includes ? 'pass' : 'fail'](
         '%s activity found for lead %s within the last %d minute(s)',
-        [stepData.activityTypeIdOrName, email, minutesAgo],
+        [stepData.activityTypeIdOrName, reference, minutesAgo],
         [this.createRecord(activities[0])],
       );
 
