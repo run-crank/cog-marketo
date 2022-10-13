@@ -18,7 +18,7 @@ describe('AssociateWebActivityStep', () => {
   beforeEach(() => {
     protoStep = new ProtoStep();
     clientWrapperStub = sinon.stub();
-    clientWrapperStub.findLeadByEmail = sinon.stub();
+    clientWrapperStub.findLeadByField = sinon.stub();
     clientWrapperStub.associateLeadById = sinon.stub();
     stepUnderTest = new Step(clientWrapperStub);
   });
@@ -38,7 +38,7 @@ describe('AssociateWebActivityStep', () => {
       munchkinCookie: expectedCookie,
       email: expectedEmail,
     }));
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [
         {
@@ -64,7 +64,7 @@ describe('AssociateWebActivityStep', () => {
       munchkinCookie: expectedCookie,
       email: expectedEmail,
     }));
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [
         {
@@ -90,7 +90,7 @@ describe('AssociateWebActivityStep', () => {
       munchkinCookie: expectedCookie,
       email: expectedEmail,
     }));
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: false,
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
@@ -108,7 +108,7 @@ describe('AssociateWebActivityStep', () => {
       munchkinCookie: expectedCookie,
       email: expectedEmail,
     }));
-    clientWrapperStub.findLeadByEmail.throws(expectedError);
+    clientWrapperStub.findLeadByField.throws(expectedError);
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
     expect(response.getMessageFormat()).to.equal(expectedMessage);

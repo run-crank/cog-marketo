@@ -19,7 +19,7 @@ describe('AddLeadToSmartCampaignStep', () => {
     protoStep = new ProtoStep();
     clientWrapperStub = sinon.stub();
     clientWrapperStub.getCampaigns = sinon.stub();
-    clientWrapperStub.findLeadByEmail = sinon.stub();
+    clientWrapperStub.findLeadByField = sinon.stub();
     clientWrapperStub.addLeadToSmartCampaign = sinon.stub();
     stepUnderTest = new Step(clientWrapperStub);
   });
@@ -41,7 +41,7 @@ describe('AddLeadToSmartCampaignStep', () => {
     // Email field
     expect(fields[0].key).to.equal('email');
     expect(fields[0].optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
-    expect(fields[0].type).to.equal(FieldDefinition.Type.EMAIL);
+    expect(fields[0].type).to.equal(FieldDefinition.Type.STRING);
 
     // Campaign field
     expect(fields[1].key).to.equal('campaign');
@@ -63,7 +63,7 @@ describe('AddLeadToSmartCampaignStep', () => {
         isRequestable: true,
       },
     ]));
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [
         {
@@ -94,7 +94,7 @@ describe('AddLeadToSmartCampaignStep', () => {
         isRequestable: true,
       },
     ]));
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [
         {
@@ -147,7 +147,7 @@ describe('AddLeadToSmartCampaignStep', () => {
         id: '11111',
       },
     ]));
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [
         {
@@ -175,7 +175,7 @@ describe('AddLeadToSmartCampaignStep', () => {
         isRequestable: true,
       },
     ]));
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [
         {

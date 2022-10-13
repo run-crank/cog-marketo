@@ -18,7 +18,7 @@ describe('MergeLeadsStep', () => {
   beforeEach(() => {
     protoStep = new ProtoStep();
     clientWrapperStub = sinon.stub();
-    clientWrapperStub.findLeadByEmail = sinon.stub();
+    clientWrapperStub.findLeadByField = sinon.stub();
     clientWrapperStub.mergeLeadsById = sinon.stub();
     stepUnderTest = new Step(clientWrapperStub);
   });
@@ -40,12 +40,12 @@ describe('MergeLeadsStep', () => {
     // losingEmail field
     expect(fields[0].key).to.equal('losingEmail');
     expect(fields[0].optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
-    expect(fields[0].type).to.equal(FieldDefinition.Type.EMAIL);
+    expect(fields[0].type).to.equal(FieldDefinition.Type.STRING);
 
     // winningEmail field
     expect(fields[1].key).to.equal('winningEmail');
     expect(fields[1].optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
-    expect(fields[1].type).to.equal(FieldDefinition.Type.EMAIL);
+    expect(fields[1].type).to.equal(FieldDefinition.Type.STRING);
 
     // Partition ID field
     expect(fields[2].key).to.equal('partitionId');
@@ -59,7 +59,7 @@ describe('MergeLeadsStep', () => {
     const expectedId1: string = '1';
     const expectedId2: string = '1';
     const expectedPartitionId: number = 3;
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [
         { id: '1' },
@@ -72,12 +72,14 @@ describe('MergeLeadsStep', () => {
     }));
 
     await stepUnderTest.executeStep(protoStep);
-    expect(clientWrapperStub.findLeadByEmail).to.have.been.calledWith(
+    expect(clientWrapperStub.findLeadByField).to.have.been.calledWith(
+      'email',
       expectedEmail1,
       null,
       expectedPartitionId,
     );
-    expect(clientWrapperStub.findLeadByEmail).to.have.been.calledWith(
+    expect(clientWrapperStub.findLeadByField).to.have.been.calledWith(
+      'email',
       expectedEmail2,
       null,
       expectedPartitionId,
@@ -90,14 +92,14 @@ describe('MergeLeadsStep', () => {
 
   it('should respond with an error if the marketo client throws an error', async () => {
     // Cause the client to throw an error, and execute the step.
-    clientWrapperStub.findLeadByEmail.throws('any error');
+    clientWrapperStub.findLeadByField.throws('any error');
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
   });
 
   it('should respond with an error if the marketo client did not find a lead', async () => {
     // Have the client respond with no leads.
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [],
     }));
@@ -107,7 +109,7 @@ describe('MergeLeadsStep', () => {
   });
 
   it('should respond with an error if Marketo fails to merge the leads', async () => {
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [{
         id: '1',
@@ -127,10 +129,13 @@ describe('MergeLeadsStep', () => {
     const expectedEmail1: string = 'expected1@example.com';
     const expectedEmail2: string = 'expected2@example.com';
     const expectedPartitionId: number = 3;
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [
-        { id: '1' },
+        { 
+          id: '1', 
+          email: expectedEmail1,
+        },
       ],
     }));
     clientWrapperStub.mergeLeadsById.returns(Promise.resolve({
