@@ -25,6 +25,43 @@ export class LeadAwareMixin {
     return this.client.lead.createOrUpdate([lead], { lookupField: 'email', partitionName: partition ? partition.name : 'Default' });
   }
 
+  public async createLead(lead: Record<string, any>, partitionId: number = 1) {
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    const partitions = await this.client.lead.partitions();
+    const partition = partitions.result.find(option => option.id === partitionId);
+
+    if (!partition) {
+      return Promise.resolve({ error: { partition: false } });
+    }
+
+    const requestBody = {
+      action: 'createOnly',
+      input: [lead],
+      partitionName: partition ? partition.name : 'Default',
+    };
+
+    return await this.client._connection.postJson('/v1/leads.json', requestBody);
+  }
+
+  public async updateLead(lead: Record<string, any>, lookupField: string, value: string, partitionId: number = 1) {
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    const partitions = await this.client.lead.partitions();
+    const partition = partitions.result.find(option => option.id === partitionId);
+
+    if (!partition) {
+      return Promise.resolve({ error: { partition: false } });
+    }
+
+    const requestBody = {
+      lookupField,
+      action: 'updateOnly',
+      input: [lead],
+      partitionName: partition ? partition.name : 'Default',
+    };
+
+    return await this.client._connection.postJson('/v1/leads.json', requestBody);
+  }
+
   public async bulkCreateOrUpdateLead(leads: {}[], partitionId: number = 1) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const partitions = await this.client.lead.partitions();
