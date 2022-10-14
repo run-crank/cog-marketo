@@ -54,6 +54,16 @@ class CachingClientWrapper {
     return await this.client.createOrUpdateLead(lead, partitionId);
   }
 
+  public async createLead(lead: Record<string, any>, partitionId: number = 1) {
+    await this.clearCache();
+    return await this.client.createLead(lead, partitionId);
+  }
+
+  public async updateLead(lead: Record<string, any>, lookupField: string, value: string, partitionId: number = 1) {
+    await this.clearCache();
+    return await this.client.updateLead(lead, lookupField, value, partitionId);
+  }
+
   public async bulkCreateOrUpdateLead(leads: [], partitionId: number = 1) {
     await this.clearCache();
     return await this.client.bulkCreateOrUpdateLead(leads, partitionId);
