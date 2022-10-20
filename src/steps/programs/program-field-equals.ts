@@ -81,11 +81,11 @@ export class ProgramFieldEqualsStep extends BaseStep implements StepInterface {
         const totalCost = this.getTotalProjectCost(data.result[0]);
         data.result[0].costs = totalCost;
         if (field === 'folder') {
-          result = this.assert(operator, data.result[0]['folder']['folderName'], expectedValue, field);
+          result = this.assert(operator, data.result[0]['folder']['folderName'], expectedValue, field, stepData['__piiSuppressionLevel']);
         } else if (field === 'costs') {
-          result = this.assert(operator, totalCost.toString(), expectedValue, field);
+          result = this.assert(operator, totalCost.toString(), expectedValue, field, stepData['__piiSuppressionLevel']);
         } else {
-          result = this.assert(operator, data.result[0][field].trim(), expectedValue.trim(), field);
+          result = this.assert(operator, data.result[0][field].trim(), expectedValue.trim(), field, stepData['__piiSuppressionLevel']);
         }
 
         const record = this.createRecord(data.result[0]);

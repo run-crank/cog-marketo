@@ -107,7 +107,7 @@ export class BulkLeadFieldEqualsStep extends BaseStep implements StepInterface {
           });
           batch.result.forEach((result) => {
             if (result.hasOwnProperty(field)) {
-              const assertResult = this.assert(operator, result[field], expectedValue, field);
+              const assertResult = this.assert(operator, result[field], expectedValue, field, stepData['__piiSuppressionLevel']);
               if (assertResult.valid) {
                 successArray.push({ email: result.email, id: result.id, message: assertResult.message });
               } else {

@@ -84,7 +84,7 @@ export class LeadByIdFieldEqualsStep extends BaseStep implements StepInterface {
       const data: any = await this.client.findLeadByField('id', leadId, field, partitionId);
 
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
-        const result = this.assert(operator, data.result[0][field], expectedValue, field);
+        const result = this.assert(operator, data.result[0][field], expectedValue, field, stepData['__piiSuppressionLevel']);
         const record = this.createRecord(data.result[0]);
         const orderedRecord = this.createOrderedRecord(data.result[0], stepData['__stepOrder']);
         return result.valid ? this.pass(result.message, [], [record, orderedRecord])
