@@ -100,7 +100,7 @@ export class ProgramMemberFieldEqualsStep extends BaseStep implements StepInterf
 
       if (data.success && data.result && data.result[0] && data.result[0].hasOwnProperty(field)) {
         let result;
-        result = this.assert(operator, data.result[0][field], expectedValue, field);
+        result = this.assert(operator, data.result[0][field], expectedValue, field, stepData['__piiSuppressionLevel']);
         const record = this.createRecord(data.result[0]);
         const orderedRecord = this.createOrderedRecord(data.result[0], stepData['__stepOrder']);
         return result.valid ? this.pass(result.message, [], [record, orderedRecord])

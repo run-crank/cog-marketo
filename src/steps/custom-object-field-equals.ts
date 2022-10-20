@@ -153,7 +153,7 @@ export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterfa
         }
 
         // Field validation
-        const result = this.assert(operator, filteredQueryResult[0][field], expectedValue, field);
+        const result = this.assert(operator, filteredQueryResult[0][field], expectedValue, field, stepData['__piiSuppressionLevel']);
         const record = this.keyValue('customObject', `Checked ${customObject.result[0].displayName}`, filteredQueryResult[0]);
         const orderedRecord = this.keyValue(`customObject.${stepData['__stepOrder']}`, `Checked ${customObject.result[0].displayName} from Step ${stepData['__stepOrder']}`, filteredQueryResult[0]);
 
