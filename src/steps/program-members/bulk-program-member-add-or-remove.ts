@@ -98,7 +98,7 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
                 deletedLeadArray.push({ email: leadArray[leadArrayIndex], id: result.leadId });
               }
             } else if (result.reasons && result.reasons[0]) {
-              failedLeadArray.push({ ...leadArray[leadArrayIndex], message: result.reasons[0].message });
+              failedLeadArray.push({ email: leadArray[leadArrayIndex], message: result.reasons[0].message });
 
               // also preserve the original csv entry;
               const match = csvRows[leadArrayIndex];
@@ -147,8 +147,8 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
         records.push(this.createTable('updatedMembers', 'Members Updated', updatedLeadArray));
         records.push(this.createTable('deletedMembers', 'Members Deleted', deletedLeadArray));
         return this.pass(
-          'Successfully created %d leads and updated %d leads',
-          [createdLeadArray.length, updatedLeadArray.length],
+          'Successfully created %d leads updated %d leads and removed %d leads',
+          [createdLeadArray.length, updatedLeadArray.length, deletedLeadArray.length],
           records,
         );
       } else {
