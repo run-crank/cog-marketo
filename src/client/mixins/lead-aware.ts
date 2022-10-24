@@ -125,7 +125,7 @@ export class LeadAwareMixin {
     const chunkedLeads = this.chunkArrayHelper(leads);
     await Promise.all(chunkedLeads.map(leadChunk => new Promise(async (resolve, reject) => {
       try {
-        const leadsWithIds = await this.client.lead.find('email', leadChunk, { fields: this.mustHaveFields });
+        const leadsWithIds = await this.client.lead.find('email', leadChunk, { fields: this.mustHaveFields, partitionName: partition ? partition.name : 'Default' });
         const requestBody = {
           statusName: status,
           input: leadsWithIds.result.map((lead) => {
