@@ -9,7 +9,7 @@ import { Step } from '../../src/steps/lead-update';
 
 chai.use(sinonChai);
 
-describe('UpdateLeadByFieldStep', () => {
+describe('UpdateLeadStep', () => {
   const expect = chai.expect;
   let protoStep: ProtoStep;
   let stepUnderTest: Step;
@@ -25,7 +25,7 @@ describe('UpdateLeadByFieldStep', () => {
 
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
-    expect(stepDef.getStepId()).to.equal('UpdateLeadByFieldStep');
+    expect(stepDef.getStepId()).to.equal('UpdateLeadStep');
     expect(stepDef.getName()).to.equal('Update a Marketo Lead');
     expect(stepDef.getExpression()).to.equal('update a marketo lead');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);

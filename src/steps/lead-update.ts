@@ -3,7 +3,7 @@
 import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
 import { Step, FieldDefinition, StepDefinition, RecordDefinition, StepRecord } from '../proto/cog_pb';
 
-export class UpdateLeadByFieldStep extends BaseStep implements StepInterface {
+export class UpdateLeadStep extends BaseStep implements StepInterface {
 
   protected stepName: string = 'Update a Marketo Lead';
   protected stepExpression: string = 'update a marketo lead';
@@ -96,4 +96,4 @@ export class UpdateLeadByFieldStep extends BaseStep implements StepInterface {
 
 }
 
-export { UpdateLeadByFieldStep as Step };
+export { UpdateLeadStep as Step };
