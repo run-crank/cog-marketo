@@ -100,7 +100,7 @@ export class LeadAwareMixin {
               leadId: lead['id'],
             };
           }),
-          partitionName: partition ? partition.name : 'Default'
+          partitionName: partition ? partition.name : 'Default',
         };
         const response = await this.client._connection.postJson(`/v1/programs/${programId}/members/delete.json`, requestBody);
         responseArray.push(response);
@@ -133,7 +133,7 @@ export class LeadAwareMixin {
               leadId: lead['id'],
             };
           }),
-          partitionName: partition ? partition.name : 'Default'
+          partitionName: partition ? partition.name : 'Default',
         };
         const response = await this.client._connection.postJson(`/v1/programs/${programId}/members/status.json`, requestBody);
         responseArray.push(response);
