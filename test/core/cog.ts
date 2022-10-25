@@ -8,6 +8,7 @@ import { Step as ProtoStep, StepDefinition, FieldDefinition, RunStepResponse, Ru
 import { Cog } from '../../src/core/cog';
 import { Metadata } from 'grpc';
 import { Duplex } from 'stream';
+import { Struct } from 'google-protobuf/google/protobuf/struct_pb';
 
 chai.use(sinonChai);
 
@@ -85,6 +86,7 @@ describe('Cog:RunStep', () => {
   const grpcUnaryCall: any = {};
   let cogUnderTest: Cog;
   let clientWrapperStub: any;
+  let step: any = {};
   const redisClient: any = '';
   const requestId: string = '1';
   const scenarioId: string = '2';
@@ -97,6 +99,9 @@ describe('Cog:RunStep', () => {
 
   beforeEach(() => {
     protoStep = new ProtoStep();
+    protoStep.setData(Struct.fromJavaScript({
+      connection: 'anyId',
+    }));
     grpcUnaryCall.request = {
       getStep () { return protoStep; },
       getRequestId () { return requestId; },
