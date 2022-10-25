@@ -20,6 +20,7 @@ describe('UpdateLeadStep', () => {
     clientWrapperStub = sinon.stub();
     clientWrapperStub.updateLead = sinon.stub();
     clientWrapperStub.findLeadByEmail = sinon.stub();
+    clientWrapperStub.findLeadByField = sinon.stub();
     stepUnderTest = new Step(clientWrapperStub);
   });
 
@@ -54,7 +55,7 @@ describe('UpdateLeadStep', () => {
         },
       ],
     }));
-    clientWrapperStub.findLeadByEmail.returns(Promise.resolve({
+    clientWrapperStub.findLeadByField.returns(Promise.resolve({
       success: true,
       result: [
         {
@@ -64,6 +65,7 @@ describe('UpdateLeadStep', () => {
       ],
     }));
     protoStep.setData(Struct.fromJavaScript({
+      reference: 123321,
       lead: {
         email: 'sampleEmail@example.com',
       },

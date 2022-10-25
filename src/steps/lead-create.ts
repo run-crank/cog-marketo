@@ -48,8 +48,8 @@ export class CreateLeadStep extends BaseStep implements StepInterface {
         const record = this.createRecord(createdLead.result[0]);
         const orderedRecord = this.createOrderedRecord(createdLead.result[0], stepData['__stepOrder']);
         return this.pass(
-          'Successfully created lead %s with status %s',
-          [lead.email, data.result[0].status],
+          'Successfully created lead %s',
+          [lead.email],
           [record, orderedRecord],
         );
       } else if (data && data.error && !data.error.partition) {
