@@ -52,6 +52,8 @@ export class UpdateLeadStep extends BaseStep implements StepInterface {
       let lookupField = 'id';
       if (emailRegex.test(reference)) {
         lookupField = 'email';
+      } else {
+        lead['id'] = reference;
       }
 
       const data: any = await this.client.updateLead(lead, lookupField, reference, partitionId);

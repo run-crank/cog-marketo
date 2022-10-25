@@ -33,7 +33,7 @@ describe('UpdateLeadStep', () => {
 
   it('should call the client wrapper with the expected args', async () => {
     protoStep.setData(Struct.fromJavaScript({
-      email: 'sampleEmail@example.com',
+      reference: 'sampleEmail@example.com',
     }));
 
     await stepUnderTest.executeStep(protoStep);
@@ -102,7 +102,7 @@ describe('UpdateLeadStep', () => {
       ],
     }));
     protoStep.setData(Struct.fromJavaScript({
-      email: 'sampleEmail@example.com',
+      reference: 'sampleEmail@example.com',
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
@@ -120,7 +120,7 @@ describe('UpdateLeadStep', () => {
       ],
     }));
     protoStep.setData(Struct.fromJavaScript({
-      email: 'sampleEmail@example.com',
+      reference: 'sampleEmail@example.com',
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
