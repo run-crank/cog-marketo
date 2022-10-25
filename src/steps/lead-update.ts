@@ -58,12 +58,12 @@ export class UpdateLeadStep extends BaseStep implements StepInterface {
 
       const data: any = await this.client.updateLead(lead, lookupField, reference, partitionId);
       if (data.success && data.result && data.result[0] && data.result[0].status !== 'skipped') {
-        const createdLead: any = await this.client.findLeadByEmail(lead.email, null, partitionId);
-        const record = this.createRecord(createdLead.result[0]);
-        const orderedRecord = this.createOrderedRecord(createdLead.result[0], stepData['__stepOrder']);
+        const updatedLead: any = await this.client.findLeadByField(lookupField, reference, null, partitionId);
+        const record = this.createRecord(updatedLead.result[0]);
+        const orderedRecord = this.createOrderedRecord(updatedLead.result[0], stepData['__stepOrder']);
         return this.pass(
-          'Successfully updated lead %s with status %s',
-          [lead.email, data.result[0].status],
+          'Successfully updated lead %s',
+          [reference],
           [record, orderedRecord],
         );
       } else if (data && data.error && !data.error.partition) {
