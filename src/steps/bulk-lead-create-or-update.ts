@@ -22,12 +22,36 @@ export class BulkCreateOrUpdateLeadByFieldStep extends BaseStep implements StepI
     },
   ];
   protected expectedRecords: ExpectedRecord[] = [{
-    id: 'leads',
-    type: RecordDefinition.Type.KEYVALUE,
+    id: 'passedLeads',
+    type: RecordDefinition.Type.TABLE,
     fields: [{
+      field: 'email',
+      type: FieldDefinition.Type.EMAIL,
+      description: 'Email of Marketo Lead',
+    }, {
       field: 'id',
       type: FieldDefinition.Type.NUMERIC,
-      description: "Lead's Marketo ID",
+      description: 'ID of Marketo Lead',
+    }, {
+      field: 'message',
+      type: FieldDefinition.Type.STRING,
+      description: 'Message for explanation of pass',
+    }],
+  }, {
+    id: 'failedLeads',
+    type: RecordDefinition.Type.TABLE,
+    fields: [{
+      field: 'email',
+      type: FieldDefinition.Type.EMAIL,
+      description: 'Email of Marketo Lead',
+    }, {
+      field: 'id',
+      type: FieldDefinition.Type.NUMERIC,
+      description: 'ID of Marketo Lead',
+    }, {
+      field: 'message',
+      type: FieldDefinition.Type.STRING,
+      description: 'Message for explanation of fail',
     }],
     dynamicFields: false,
   }];
