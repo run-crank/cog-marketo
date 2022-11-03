@@ -147,6 +147,7 @@ export class LeadAwareMixin {
   }
 
   public async bulkFindLeadsByEmail(emails: [], justInCaseField: string = null, partitionId: number = null) {
+    console.log('partitionId:', partitionId);
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const fields = await this.describeLeadFields();
     const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
@@ -160,6 +161,7 @@ export class LeadAwareMixin {
       response = await this.client.lead.find('email', chunkedEmails[i], { fields: [justInCaseField, ...this.mustHaveFields] });
       responseArray.push(response);
     }
+    console.log('responseArray before filtering partition:', responseArray);
 
     // If a partition ID was provided, filter the returned leads accordingly.
     responseArray.forEach((response) => {
@@ -169,6 +171,8 @@ export class LeadAwareMixin {
         });
       }
     });
+
+    console.log('responseArray after filtering partition:', responseArray);
 
     return responseArray;
   }
