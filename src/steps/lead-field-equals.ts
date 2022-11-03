@@ -118,7 +118,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
       try {
         // Checking multiple leads
         console.log('multiple leads found, performing bulk check');
-        const emailArray = Object.values(stepData.multiple_email);
+        const emailArray = stepData.multiple_email;
         const successArray = [];
         const failArray = [];
         const data: any = await this.client.bulkFindLeadsByEmail(emailArray, field, partitionId);
