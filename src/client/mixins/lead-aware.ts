@@ -158,7 +158,7 @@ export class LeadAwareMixin {
     // Make a separate API call for each chunk of 300 and return an array of the responses.
     const responseArray = [];
     for (let i = 0; i < chunkedEmails.length; i += 1) {
-      response = await this.client.lead.find('email', chunkedEmails[i], { fields: [justInCaseField, ...this.mustHaveFields] });
+      response = await this.client.lead.find('email', chunkedEmails[i], { fields: [justInCaseField, ...this.mustHaveFields, partitionId ? 'leadPartitionId' : null] });
       responseArray.push(response);
     }
     console.log('responseArray before filtering partition:', responseArray);
@@ -188,7 +188,7 @@ export class LeadAwareMixin {
       // would fail. And if the amount of fields is over 1000, it is likely
       // not worth it to cache with the if statement below.
       // Instead, we will only request the needed fields.
-      response = await this.client.lead.find(field, [value], { fields: [justInCaseField, ...this.mustHaveFields] });
+      response = await this.client.lead.find(field, [value], { fields: [justInCaseField, ...this.mustHaveFields, partitionId ? 'leadPartitionId' : null] });
     } else if (fieldList.join(',').length > 7168) {
       // If the length of the get request would be over 7KB, then the request
       // would fail. Instead, we will split the request every 200 fields, and
@@ -215,7 +215,7 @@ export class LeadAwareMixin {
     let response: any = {};
 
     if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
-      response = await this.client.lead.find('email', [email], { fields: [justInCaseField, ...this.mustHaveFields] });
+      response = await this.client.lead.find('email', [email], { fields: [justInCaseField, ...this.mustHaveFields, partitionId ? 'leadPartitionId' : null] });
     } else if (fieldList.join(',').length > 7168) {
       response = await this.marketoRequestHelperFuntion(fieldList, 'email', email);
     } else {
