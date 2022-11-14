@@ -142,7 +142,7 @@ export class BulkCreateOrUpdateLeadByFieldStep extends BaseStep implements StepI
       } else if (!failedLeadArray.length) {
         records.push(this.createTable('passedLeads', 'Leads Created or Updated', passedLeadArray));
         return this.pass(
-          'Successfully created %d leads and updated %d leads',
+          'Successfully created or updated %d leads',
           [passedLeadArray.length],
           records,
         );
