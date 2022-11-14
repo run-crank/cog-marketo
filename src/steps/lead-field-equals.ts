@@ -117,13 +117,10 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     if (stepData.multiple_email && Array.isArray(stepData.multiple_email) && stepData.multiple_email.length > 0) {
       try {
         // Checking multiple leads
-        console.log('multiple leads found, performing bulk check');
         const emailArray = stepData.multiple_email;
-        console.log('emailArray:', emailArray);
         const successArray = [];
         const failArray = [];
         const data: any = await this.client.bulkFindLeadsByEmail(emailArray, field, partitionId);
-        console.log('data:', data);
         const indexMap = {}; // Only needed if using dynamic multiple leads with different expected values
 
         // Check if the expectedValue is dynamic
@@ -145,8 +142,6 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
           const startingIndex = i * 300;
           const emailSubarray = emailArray.slice(startingIndex, startingIndex + 300);
           if (batch.success && batch.result) {
-            console.log('batch.result:', batch.result);
-            console.log('batch.result stringified:', JSON.stringify(batch.result));
             // If an email is missing from the response, then add it to the failArray
             emailSubarray.forEach((email) => {
               if (batch.result.filter(result => email === result.email).length === 0) {
@@ -219,7 +214,6 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     } else {
       // Only checking one lead
       try {
-        console.log('one lead found, performing single check');
         const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
         let lookupField = 'id';
         if (emailRegex.test(reference)) {
