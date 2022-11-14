@@ -68,8 +68,7 @@ export class BulkCreateOrUpdateLeadByFieldStep extends BaseStep implements StepI
 
     const records = [];
     try {
-      const createdLeadArray = [];
-      const updatedLeadArray = [];
+      const passedLeadArray = [];
       const failedLeadArray = [];
 
       // we should parse out the original CSV array if provided, or handle it if missing
@@ -93,11 +92,8 @@ export class BulkCreateOrUpdateLeadByFieldStep extends BaseStep implements StepI
           batch.result.forEach((result, index) => {
             const leadArrayIndex = startingIndex + index;
             if (result.status !== 'skipped') {
-              if (result.status === 'updated') {
-                updatedLeadArray.push({ ...leadArray[leadArrayIndex], id: result.id });
-              }
-              if (result.status === 'created') {
-                createdLeadArray.push({ ...leadArray[leadArrayIndex], id: result.id });
+              if (['created', 'updated'].includes(result.status)) {
+                passedLeadArray.push({ ...leadArray[leadArrayIndex], id: result.id });
               }
             } else if (result.reasons && result.reasons[0]) {
               failedLeadArray.push({ ...leadArray[leadArrayIndex], message: result.reasons[0].message });
@@ -130,13 +126,12 @@ export class BulkCreateOrUpdateLeadByFieldStep extends BaseStep implements StepI
         }
       });
 
-      const returnedLeadsCount = updatedLeadArray.length + createdLeadArray.length + failedLeadArray.length;
+      const returnedLeadsCount = passedLeadArray.length + failedLeadArray.length;
 
       if (returnedLeadsCount === 0) {
         return this.fail('No leads were created or updated in Marketo', [], []);
       } else if (leadArray.length !== returnedLeadsCount) {
-        records.push(this.createTable('createdLeads', 'Leads Created', createdLeadArray));
-        records.push(this.createTable('updatedLeads', 'Leads Updated', updatedLeadArray));
+        records.push(this.createTable('passedLeads', 'Leads Created or Updated', passedLeadArray));
         records.push(this.createTable('failedLeads', 'Leads Failed', failedLeadArray));
         records.push(this.keyValue('failedOriginal', 'Objects Failed (Original format)', { array: JSON.stringify(failArrayOriginal) }));
         return this.fail(
@@ -145,16 +140,14 @@ export class BulkCreateOrUpdateLeadByFieldStep extends BaseStep implements StepI
           records,
         );
       } else if (!failedLeadArray.length) {
-        records.push(this.createTable('createdLeads', 'Leads Created', createdLeadArray));
-        records.push(this.createTable('updatedLeads', 'Leads Updated', updatedLeadArray));
+        records.push(this.createTable('passedLeads', 'Leads Created or Updated', passedLeadArray));
         return this.pass(
           'Successfully created %d leads and updated %d leads',
-          [createdLeadArray.length, updatedLeadArray.length],
+          [passedLeadArray.length],
           records,
         );
       } else {
-        records.push(this.createTable('createdLeads', 'Leads Created', createdLeadArray));
-        records.push(this.createTable('updatedLeads', 'Leads Updated', updatedLeadArray));
+        records.push(this.createTable('passedLeads', 'Leads Created or Updated', passedLeadArray));
         records.push(this.createTable('failedLeads', 'Leads Failed', failedLeadArray));
         records.push(this.keyValue('failedOriginal', 'Objects Failed (Original format)', { array: JSON.stringify(failArrayOriginal) }));
         return this.fail(
