@@ -3,15 +3,6 @@ export class LeadAwareMixin {
   client: Marketo;
   leadDescription: any;
   delayInSeconds;
-  mustHaveFields = [
-    'email',
-    'updatedAt',
-    'createdAt',
-    'lastName',
-    'firstName',
-    'id',
-    'leadPartitionId',
-  ].filter(f => !!f);
 
   public async createOrUpdateLead(lead: Record<string, any>, partitionId: number = 1) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
@@ -93,12 +84,21 @@ export class LeadAwareMixin {
     if (!partition) {
       return Promise.resolve([{ error: { partition: false } }]);
     }
+    const mustHaveFields = [
+      'email',
+      'updatedAt',
+      'createdAt',
+      'lastName',
+      'firstName',
+      'id',
+      'leadPartitionId',
+    ];
 
     const responseArray = [];
     const chunkedLeads = this.chunkArrayHelper(leads);
     await Promise.all(chunkedLeads.map(leadChunk => new Promise(async (resolve, reject) => {
       try {
-        const leadsWithIds = await this.client.lead.find('email', leadChunk, { fields: this.mustHaveFields });
+        const leadsWithIds = await this.client.lead.find('email', leadChunk, { fields: mustHaveFields });
         const requestBody = {
           input: leadsWithIds.result.map((lead) => {
             return {
@@ -125,12 +125,21 @@ export class LeadAwareMixin {
     if (!partition) {
       return Promise.resolve([{ error: { partition: false } }]);
     }
+    const mustHaveFields = [
+      'email',
+      'updatedAt',
+      'createdAt',
+      'lastName',
+      'firstName',
+      'id',
+      'leadPartitionId',
+    ];
 
     const responseArray = [];
     const chunkedLeads = this.chunkArrayHelper(leads);
     await Promise.all(chunkedLeads.map(leadChunk => new Promise(async (resolve, reject) => {
       try {
-        const leadsWithIds = await this.client.lead.find('email', leadChunk, { fields: this.mustHaveFields, partitionName: partition ? partition.name : 'Default' });
+        const leadsWithIds = await this.client.lead.find('email', leadChunk, { fields: mustHaveFields, partitionName: partition ? partition.name : 'Default' });
         const requestBody = {
           statusName: status,
           input: leadsWithIds.result.map((lead) => {
@@ -159,10 +168,21 @@ export class LeadAwareMixin {
 
     const chunkedEmails = this.chunkArrayHelper(emails);
 
+    const mustHaveFields = [
+      justInCaseField,
+      'email',
+      'updatedAt',
+      'createdAt',
+      'lastName',
+      'firstName',
+      'id',
+      'leadPartitionId',
+    ].filter(f => !!f);
+
     // Make a separate API call for each chunk of 300 and return an array of the responses.
     const responseArray = [];
     for (let i = 0; i < chunkedEmails.length; i += 1) {
-      response = await this.client.lead.find('email', chunkedEmails[i], { fields: [justInCaseField, ...this.mustHaveFields, partitionId ? 'leadPartitionId' : null] });
+      response = await this.client.lead.find('email', chunkedEmails[i], { fields: mustHaveFields });
       responseArray.push(response);
     }
 
@@ -184,12 +204,23 @@ export class LeadAwareMixin {
     const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
     let response: any = {};
 
+    const mustHaveFields = [
+      justInCaseField,
+      'email',
+      'updatedAt',
+      'createdAt',
+      'lastName',
+      'firstName',
+      'id',
+      'leadPartitionId',
+    ].filter(f => !!f);
+
     if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
       // If the length of the get request would be over 7KB, then the request
       // would fail. And if the amount of fields is over 1000, it is likely
       // not worth it to cache with the if statement below.
       // Instead, we will only request the needed fields.
-      response = await this.client.lead.find(field, [value], { fields: [justInCaseField, ...this.mustHaveFields, partitionId ? 'leadPartitionId' : null] });
+      response = await this.client.lead.find(field, [value], { fields: mustHaveFields });
     } else if (fieldList.join(',').length > 7168) {
       // If the length of the get request would be over 7KB, then the request
       // would fail. Instead, we will split the request every 200 fields, and
@@ -213,10 +244,20 @@ export class LeadAwareMixin {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const fields = await this.describeLeadFields();
     const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
+    const mustHaveFields = [
+      justInCaseField,
+      'email',
+      'updatedAt',
+      'createdAt',
+      'lastName',
+      'firstName',
+      'id',
+      'leadPartitionId',
+    ].filter(f => !!f);
     let response: any = {};
 
     if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
-      response = await this.client.lead.find('email', [email], { fields: [justInCaseField, ...this.mustHaveFields, partitionId ? 'leadPartitionId' : null] });
+      response = await this.client.lead.find('email', [email], { fields: mustHaveFields });
     } else if (fieldList.join(',').length > 7168) {
       response = await this.marketoRequestHelperFuntion(fieldList, 'email', email);
     } else {
