@@ -137,7 +137,9 @@ describe('CheckLeadActivityByIdStep', () => {
           result: [{ id: 2001, name: 'Lead created' }],
         }));
 
-        clientWrapperStub.getActivitiesByLeadId.returns(Promise.resolve({}));
+        clientWrapperStub.getActivitiesByLeadId.returns(Promise.resolve({
+          result: []
+        }));
       });
 
       it('should respond with fail', async () => {

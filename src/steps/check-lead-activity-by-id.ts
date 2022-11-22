@@ -103,7 +103,7 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
       const activities = activityResponse.result;
 
       /* Fail when when the activity supplied is not found in the lead's logs. */
-      if (!activities) {
+      if (!activities.length) {
         return this[includes ? 'fail' : 'pass']('No %s activity found for lead %s within the last %d minute(s)', [
           stepData.activityTypeIdOrName,
           id,
