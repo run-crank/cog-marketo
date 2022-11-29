@@ -179,9 +179,19 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
   }
 
   hasMatchingAttributes(actualAttributes: any[], expectedAttributes: any[]): boolean {
-    /* This will intersect actual vs expected; If the count of intersection and expected is same. All attributes have been matched. */
-    const intersection = actualAttributes.filter(actual => expectedAttributes.find(expected => expected.name == actual.name && expected.value == actual.value) !== undefined);
-    return intersection.length === expectedAttributes.length;
+    // OLD and replaced with code below for readability and simplicity
+    // This will intersect actual vs expected; If the count of intersection and expected is same. All attributes have been matched.
+    // const intersection = actualAttributes.filter(actual => expectedAttributes.find(expected => expected.name == actual.name && expected.value == actual.value) !== undefined);
+    // return intersection.length === expectedAttributes.length;
+
+    // loop through expected attributes, if ANY aren't found in the actual attributes, return false
+    for (const expected of expectedAttributes) {
+      if (actualAttributes.find(actual => actual.name == expected.name && actual.value == expected.value) === undefined) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   getPrimaryAttribute(activityTypes, activity) {
