@@ -36,7 +36,6 @@ export class SmartCampaignAwareMixin {
             failedLeads[lead.id] = result.errors[0].toString();
           }
         }
-        // passedLeads.push(result); not sure how to map passed leads over, if we should use the og batch, or the result, need to see result format
         resolve(null);
       } catch (e) {
         if (e.code === 200) {
