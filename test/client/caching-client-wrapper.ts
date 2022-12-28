@@ -50,7 +50,7 @@ describe('CachingClientWrapper', () => {
 
   it('findLeadByEmail using original function', (done) => {
     const expectedEmail = 'test@example.com';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getAsync = sinon.stub().returns(false);
     cachingClientWrapperUnderTest.findLeadByEmail(expectedEmail);
 
@@ -62,7 +62,7 @@ describe('CachingClientWrapper', () => {
 
   it('findLeadByEmail using cache', (done) => {
     const expectedEmail = 'test@example.com';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getAsync = sinon.stub();
     cachingClientWrapperUnderTest.getAsync.returns('"expectedCachedValue"');
     let actualCachedValue: string;
@@ -80,7 +80,7 @@ describe('CachingClientWrapper', () => {
   it('findLeadByField using original function', (done) => {
     const expectedField = 'firstName';
     const expectedId = '123';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getAsync = sinon.stub().returns(false);
     cachingClientWrapperUnderTest.findLeadByField(expectedField, expectedId);
 
@@ -93,7 +93,7 @@ describe('CachingClientWrapper', () => {
   it('findLeadByField using cache', (done) => {
     const expectedField = 'firstName';
     const expectedId = '123';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getAsync = sinon.stub();
     cachingClientWrapperUnderTest.getAsync.returns('"expectedCachedValue"');
     let actualCachedValue: string;
@@ -110,7 +110,7 @@ describe('CachingClientWrapper', () => {
 
   it('createOrUpdateLead', (done) => {
     const expectedLead = { email: 'test@example.com' };
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.clearCache = sinon.spy();
     cachingClientWrapperUnderTest.createOrUpdateLead(expectedLead);
 
@@ -123,7 +123,7 @@ describe('CachingClientWrapper', () => {
 
   it('deleteLeadById', (done) => {
     const expectedId = 123;
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.clearCache = sinon.spy();
     cachingClientWrapperUnderTest.deleteLeadById(expectedId);
 
@@ -136,7 +136,7 @@ describe('CachingClientWrapper', () => {
 
   it('describeLeadFields using original function', (done) => {
     const expectedEmail = 'test@example.com';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getAsync = sinon.stub().returns(false);
     cachingClientWrapperUnderTest.describeLeadFields(expectedEmail);
 
@@ -148,7 +148,7 @@ describe('CachingClientWrapper', () => {
 
   it('describeLeadFields using cache', (done) => {
     const expectedEmail = 'test@example.com';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getAsync = sinon.stub();
     cachingClientWrapperUnderTest.getAsync.returns('"expectedCachedValue"');
     let actualCachedValue: string;
@@ -165,7 +165,7 @@ describe('CachingClientWrapper', () => {
 
   it('getCustomObject using original function', (done) => {
     const customObjectName = 'any';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getAsync = sinon.stub().returns(false);
     cachingClientWrapperUnderTest.getCustomObject(customObjectName);
 
@@ -177,7 +177,7 @@ describe('CachingClientWrapper', () => {
 
   it('getCustomObject using cache', (done) => {
     const customObjectName = 'any';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getAsync = sinon.stub();
     cachingClientWrapperUnderTest.getAsync.returns('"expectedCachedValue"');
     let actualCachedValue: string;
@@ -197,7 +197,7 @@ describe('CachingClientWrapper', () => {
     const filterType = 'anyFilterType';
     const searchFields = [{ anySearchField: 'anySearchFieldValue' }];
     const requestFields = ['anyField'];
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getAsync = sinon.stub().returns(false);
     cachingClientWrapperUnderTest.queryCustomObject(customObjectName, filterType, searchFields, requestFields);
 
@@ -212,7 +212,7 @@ describe('CachingClientWrapper', () => {
     const filterType = 'anyFilterType';
     const searchFields = [{ anySearchField: 'anySearchFieldValue' }];
     const requestFields = ['anyField'];
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getAsync = sinon.stub();
     cachingClientWrapperUnderTest.getAsync.returns('"expectedCachedValue"');
     let actualCachedValue: string;
@@ -230,7 +230,7 @@ describe('CachingClientWrapper', () => {
   it('createOrUpdateCustomObject', (done) => {
     const customObjectName = 'any';
     const customObject = { anyField: 'anyValue' };
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.clearCache = sinon.spy();
     cachingClientWrapperUnderTest.createOrUpdateCustomObject(customObjectName, customObject);
 
@@ -244,7 +244,7 @@ describe('CachingClientWrapper', () => {
   it('deleteCustomObjectById', (done) => {
     const customObjectName = 'any';
     const customObjectGUID = 'anyGUID';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.clearCache = sinon.spy();
     cachingClientWrapperUnderTest.deleteCustomObjectById(customObjectName, customObjectGUID);
 
@@ -256,7 +256,7 @@ describe('CachingClientWrapper', () => {
   });
 
   it('getCampaigns using original function', (done) => {
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getAsync = sinon.stub().returns(false);
     cachingClientWrapperUnderTest.getCampaigns();
 
@@ -267,7 +267,7 @@ describe('CachingClientWrapper', () => {
   });
 
   it('getCampaigns using cache', (done) => {
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getAsync = sinon.stub().returns('"expectedCachedValue"');
     let actualCachedValue: string;
     (async () => {
@@ -284,7 +284,7 @@ describe('CachingClientWrapper', () => {
   it('addLeadToSmartCampaign', (done) => {
     const campaignIdInput = 'someId';
     const leadInput = { name: 'someLead' };
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.clearCache = sinon.spy();
     cachingClientWrapperUnderTest.addLeadToSmartCampaign(campaignIdInput, leadInput);
 
@@ -296,7 +296,7 @@ describe('CachingClientWrapper', () => {
   });
 
   it('getActivityTypes using original function', (done) => {
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getActivityTypes();
 
     expect(clientWrapperStub.getActivityTypes).to.have.been.called;
@@ -305,7 +305,7 @@ describe('CachingClientWrapper', () => {
 
   it('getActivityPagingToken using original function', (done) => {
     const sinceDate = 'anyDate';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getActivityPagingToken(sinceDate);
 
     expect(clientWrapperStub.getActivityPagingToken).to.have.been.calledWith(sinceDate);
@@ -316,7 +316,7 @@ describe('CachingClientWrapper', () => {
     const nextPageToken = 'anyToken';
     const leadId = 'anyId';
     const activityId = 'anyActivityId';
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getActivitiesByLeadId(nextPageToken, leadId, activityId);
 
     expect(clientWrapperStub.getActivitiesByLeadId).to.have.been.calledWith(nextPageToken, leadId, activityId);
@@ -324,7 +324,7 @@ describe('CachingClientWrapper', () => {
   });
 
   it('getDailyApiUsage using original function', (done) => {
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getDailyApiUsage();
 
     expect(clientWrapperStub.getDailyApiUsage).to.have.been.called;
@@ -332,7 +332,7 @@ describe('CachingClientWrapper', () => {
   });
 
   it('getWeeklyApiUsage using original function', (done) => {
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getWeeklyApiUsage();
 
     expect(clientWrapperStub.getWeeklyApiUsage).to.have.been.called;
@@ -342,7 +342,7 @@ describe('CachingClientWrapper', () => {
   it('mergeLeadsById using original function', (done) => {
     const winningId = '1';
     const losingIds = ['2'];
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.clearCache = sinon.spy();
     cachingClientWrapperUnderTest.mergeLeadsById(winningId, losingIds);
 
@@ -355,7 +355,7 @@ describe('CachingClientWrapper', () => {
 
   it('getCache', (done) => {
     redisClientStub.get = sinon.stub().yields();
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getCache('expectedKey');
 
     setTimeout(() => {
@@ -366,7 +366,7 @@ describe('CachingClientWrapper', () => {
 
   it('setCache', (done) => {
     redisClientStub.setex = sinon.stub().yields(); 
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.getCache = sinon.stub().returns(null);
     cachingClientWrapperUnderTest.cachePrefix = 'testPrefix';
     cachingClientWrapperUnderTest.setCache('expectedKey', 'expectedValue');
@@ -380,7 +380,7 @@ describe('CachingClientWrapper', () => {
 
   it('clearCache', (done) => {
     redisClientStub.del = sinon.stub().yields();
-    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap);
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
     cachingClientWrapperUnderTest.cachePrefix = 'testPrefix';
     cachingClientWrapperUnderTest.getCache = sinon.stub().returns(['testKey1', 'testKey2'])
     cachingClientWrapperUnderTest.clearCache();

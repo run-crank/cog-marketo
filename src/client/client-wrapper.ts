@@ -33,7 +33,7 @@ class ClientWrapper {
   client: Marketo;
   delayInSeconds: number;
 
-  constructor(auth: grpc.Metadata, clientConstructor = Marketo, delayInSeconds = 3) {
+  constructor(auth: grpc.Metadata, clientConstructor = Marketo, delayInSeconds = 3, mailgunCredentials: Record<string, any> = {}) {
     this.client = new clientConstructor({
       endpoint: `${auth.get('endpoint')[0]}/rest`,
       identity: `${auth.get('endpoint')[0]}/identity`,
@@ -42,6 +42,7 @@ class ClientWrapper {
       ...(!!auth.get('partnerId')[0] && { partnerId: auth.get('partnerId')[0] }),
     });
     this.delayInSeconds = delayInSeconds;
+    this.client.mailgunCredentials = mailgunCredentials;
   }
 }
 
