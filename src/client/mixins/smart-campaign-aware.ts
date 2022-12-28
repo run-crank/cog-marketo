@@ -13,7 +13,7 @@ export class SmartCampaignAwareMixin {
     const leads = leadArray.map((id) => { return { id }; }); // reformatting to match the format expected
 
     // Maximum of 100 leads allowed per call according to docs, maximum of 3000 leads total (set in the step)
-    const batchSize = 2;
+    const batchSize = 100;
     const batches = [];
     for (let i = 0; i < leads.length; i += batchSize) {
       batches.push(leads.slice(i, i + batchSize));
