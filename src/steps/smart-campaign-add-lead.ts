@@ -142,7 +142,6 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
 
     // Adding multiple leads
     if (stepData.multiple_email && Array.isArray(stepData.multiple_email) && stepData.multiple_email.length > 0) {
-      console.log('found multiple_email, using bulk action')
 
       stepData.multiple_email = Array.from(new Set(stepData.multiple_email)); // remove any duplicates
 

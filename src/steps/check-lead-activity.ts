@@ -138,7 +138,6 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
       if ((stepData.multiple_email && Array.isArray(stepData.multiple_email) && stepData.multiple_email.length > 0) ||
           (stepData.multiple_id && Array.isArray(stepData.multiple_id) && stepData.multiple_id.length > 0)) {
         // Checking multiple leads
-        console.log('multiple leads provided, performing bulk check');
         const leadIds = stepData.multiple_id || [];
         const leadEmails = {};
         const failedArray = [];
