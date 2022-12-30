@@ -59,13 +59,19 @@ describe('AddLeadToStaticListStep', () => {
     clientWrapperStub.addLeadToStaticList.returns(Promise.resolve({
       success: true,
       result: [{
-          id: 'anyId',
-          status: 'added',
+        id: 1,
+        status: 'added',
+      },{
+        id: 2,
+        status: 'added',
+      },{
+        id: 3,
+        status: 'added',
       }],
     }));
     protoStep.setData(Struct.fromJavaScript({
       staticListName: 'someEmail',
-      leadIds: 'anyId, anyId, anyId',
+      leadIds: '1, 2, 3',
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
@@ -115,7 +121,7 @@ describe('AddLeadToStaticListStep', () => {
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
   });
 
-  it('should respond with error if the marketo call was not successful', async () => {
+  it('should respond with fail if the marketo call was not successful', async () => {
     clientWrapperStub.findStaticListsByName.returns(Promise.resolve({
       success: true,
       result: [{
@@ -125,6 +131,7 @@ describe('AddLeadToStaticListStep', () => {
     }));
     clientWrapperStub.addLeadToStaticList.returns(Promise.resolve({
       success: false,
+      errors: [{ code: '1004', message: 'test error' }]
     }));
     protoStep.setData(Struct.fromJavaScript({
       staticListName: 'someEmail',
@@ -132,7 +139,7 @@ describe('AddLeadToStaticListStep', () => {
     }));
     
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
-    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
   });
 
   it('should respond with an error if the marketo throws an error', async () => {
@@ -143,6 +150,36 @@ describe('AddLeadToStaticListStep', () => {
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+  });
+  
+  it('should respond with success step executes successfully with multiple_leadId input', async () => {
+    clientWrapperStub.findStaticListsByName.returns(Promise.resolve({
+      success: true,
+      result: [{
+        id: 'anyId',
+        name: 'anyName',
+      }],
+    }));
+    clientWrapperStub.addLeadToStaticList.returns(Promise.resolve({
+      success: true,
+      result: [{
+        id: 1,
+        status: 'added',
+      }, {
+        id: 2,
+        status: 'added',
+      }, {
+        id: 3,
+        status: 'added',
+    }],
+    }));
+    protoStep.setData(Struct.fromJavaScript({
+      staticListName: 'someEmail',
+      leadIds: '',
+      multiple_leadIds: [1,2,3]
+    }));
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
   });
 
 });
