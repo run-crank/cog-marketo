@@ -17,6 +17,7 @@ export interface Field {
   description: string;
   help?: string;
   optionality?: number;
+  bulkSupport?: boolean;
 }
 
 export interface ExpectedRecord {

@@ -32,6 +32,7 @@ export class AddOrRemoveProgramMemberStep extends BaseStep implements StepInterf
       type: FieldDefinition.Type.STRING,
       optionality: FieldDefinition.Optionality.REQUIRED,
       description: "Lead's email",
+      bulkSupport: true,
     },
   ];
   protected expectedRecords: ExpectedRecord[] = [{
