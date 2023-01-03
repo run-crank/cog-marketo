@@ -19,6 +19,7 @@ export class Cog implements ICogServiceServer {
   constructor (private clientWrapperClass, private stepMap: Record<string, any> = {}, private redisUrl: string = undefined, private mailgunCredentials: Record<string, any> = {}) {
     this.steps = [].concat(...Object.values(this.getSteps(`${__dirname}/../steps`, clientWrapperClass)));
     this.redisClient = null;
+    this.mailgunCredentials = mailgunCredentials;
     if (this.redisUrl) {
       const c = redis.createClient(this.redisUrl);
       let emailSent = false;
@@ -197,10 +198,10 @@ export class Cog implements ICogServiceServer {
 
   private getClientWrapper(auth: grpc.Metadata, idMap: {} = null) {
     if (this.redisClient) {
-      const client = new ClientWrapper(auth);
+      const client = new ClientWrapper(auth, undefined, undefined, this.mailgunCredentials);
       return new this.clientWrapperClass(client, this.redisClient, idMap);
     } else {
-      return new ClientWrapper(auth);
+      return new ClientWrapper(auth, undefined, undefined, this.mailgunCredentials);
     }
   }
 }

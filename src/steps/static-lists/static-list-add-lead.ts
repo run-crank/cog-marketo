@@ -1,7 +1,7 @@
 /*tslint:disable:no-else-after-return*/
 
 import { BaseStep, Field, StepInterface, ExpectedRecord } from '../../core/base-step';
-import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../../proto/cog_pb';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition, StepRecord } from '../../proto/cog_pb';
 
 export class AddLeadToStaticListStep extends BaseStep implements StepInterface {
 
@@ -16,57 +16,138 @@ export class AddLeadToStaticListStep extends BaseStep implements StepInterface {
     field: 'leadIds',
     type: FieldDefinition.Type.STRING,
     description: 'Ids of Marketo Leads to be added separated by a comma(,) ',
+    bulkSupport: true,
   }];
   protected expectedRecords: ExpectedRecord[] = [{
-    id: 'staticListAdd',
-    type: RecordDefinition.Type.KEYVALUE,
-    fields: [],
+    id: 'passedLeads',
+    type: RecordDefinition.Type.TABLE,
+    fields: [{
+      field: 'id',
+      type: FieldDefinition.Type.NUMERIC,
+      description: 'ID of Marketo Lead',
+    }, {
+      field: 'status',
+      type: FieldDefinition.Type.STRING,
+      description: 'status of lead',
+    }],
+  }, {
+    id: 'failedLeads',
+    type: RecordDefinition.Type.TABLE,
+    fields: [{
+      field: 'id',
+      type: FieldDefinition.Type.NUMERIC,
+      description: 'ID of Marketo Lead',
+    }, {
+      field: 'status',
+      type: FieldDefinition.Type.STRING,
+      description: 'status of lead',
+    }, {
+      field: 'reasons',
+      type: FieldDefinition.Type.STRING,
+      description: 'Message for explanation of fail',
+    }],
     dynamicFields: false,
   }];
 
   async executeStep(step: Step) {
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
     const staticListName = stepData.staticListName;
-    const leadIds = stepData.leadIds;
+    let staticList: any;
+    try {
+      staticList = await this.client.findStaticListsByName(staticListName);
+    } catch (e) {
+      return this.error('Error finding Static List with name %s: %s', [
+        staticListName, JSON.stringify(e),
+      ]);
+    }
+
+    if (!staticList.result || (staticList.result && staticList.result.length === 0)) {
+      return this.error('Static List with name %s does not exist', [
+        staticListName,
+      ]);
+    }
+
+    let leadIds = stepData.leadIds ? stepData.leadIds.replace(' ', '').split(',') : null;
+
+    if (stepData.multiple_leadIds && Array.isArray(stepData.multiple_leadIds) && stepData.multiple_leadIds.length > 0) {
+      leadIds = stepData.multiple_leadIds;
+    }
+
+    leadIds = Array.from(new Set(leadIds)); // remove any duplicates
+
+    if (leadIds.length > 3000) {
+      return this.error('Cannot add %d leads, 3000 is the maximum allowed', [stepData.multiple_leadIds.length]);
+    }
 
     try {
-      // Check if staticList exists and also get the id
-      const staticList: any = await this.client.findStaticListsByName(staticListName);
+      const passedLeads = [];
+      const failedLeads = [];
 
-      if (!staticList.result || (staticList.result && staticList.result.length === 0)) {
-        return this.error('Static List with name %s does not exist', [
-          staticListName,
-        ]);
+      const batchSize = 300; // max amount of leads per request
+      const batches = [];
+      for (let i = 0; i < leadIds.length; i += batchSize) {
+        batches.push(leadIds.slice(i, i + batchSize));
       }
 
-      const data: any = await this.client.addLeadToStaticList(staticList.result[0].id, leadIds.replace(' ', '').split(','));
+      await Promise.all(batches.map(batch => new Promise(async (resolve) => {
+        try {
+          const data: any = await this.client.addLeadToStaticList(staticList.result[0].id, batch);
+          if (!data.success) {
+            // If the batch failed, add each individual lead to failed array
+            await batch.forEach(leadId => failedLeads.push({ id: leadId, status: 'skipped', reasons: `Batch failed with error: ${JSON.stringify(data.errors)}` }));
+          } else {
+            // If the batch passed, add leads to corresponding array
+            await data.result.forEach((l) => {
+              if (l.status === 'added') {
+                passedLeads.push(l);
+              } else {
+                failedLeads.push(l);
+              }
+            });
+          }
+          resolve(null);
+        } catch (e) {
+          // If the batch failed, add each individual lead to failed array
+          await batch.forEach(leadId => failedLeads.push({ id: leadId, status: 'skipped', reasons: `Batch failed with error: ${JSON.stringify(e)}` }));
+        }
+      })));
 
-      if (data.success && data.result.find(l => l.status !== 'added')) {
-        return this.fail('Failed to add all leads to static list %s', [staticListName], [this.createTable(data.result)]);
+      const passedLeadRecord = this.createTable('passedLeads', 'Leads Added', passedLeads);
+      const failedLeadRecord = this.createTable('failedLeads', 'Leads Not Added', failedLeads);
+
+      if (passedLeads.length === leadIds.length && !failedLeads.length) {
+        return this.pass('Successfully added %d leads to static list %s', [passedLeads.length, staticListName], [passedLeadRecord]);
       }
 
-      if (data.success && data.result) {
-        return this.pass('Successfully added leads to static list %s', [staticListName], [this.createTable(data.result)]);
+      if (passedLeads.length && failedLeads.length) {
+        return this.fail('Successfully added %d out of %d leads to static list %s', [passedLeads.length, leadIds.length, staticListName], [passedLeadRecord, failedLeadRecord]);
       }
 
-      return this.error('Failed to add leads to static list %s', [staticListName]);
+      if (failedLeads.length) {
+        return this.fail('Failed to add %d leads to static list %s', [failedLeads.length, staticListName], [failedLeadRecord]);
+      }
+
+      // Something went wrong, we should have returned before this point
+      return this.error('Error adding leads to smart campaign. Please contact Stack Moxie for help resolving this issue.');
     } catch (e) {
-      return this.error('There was an error adding leads to static list %s : %s', [staticListName, e.message]);
+      return this.error('Error adding leads to static list %s: %s', [staticListName, JSON.stringify(e)]);
     }
   }
 
-  createTable(staticListMember: Record<string, any>[]) {
+  createTable(id: string, name: string, leads: any[]): StepRecord {
     const headers = {
       id: 'Id',
       status: 'Status',
-      reasons: 'Reasons',
     };
 
-    staticListMember.forEach((slm, index) => {
-      staticListMember[index]['reasons'] = staticListMember[index]['reasons'] ? JSON.stringify(staticListMember[index]['reasons']) : '-';
-    });
+    if (leads[0] && leads[0]['reasons']) {
+      headers['reasons'] = 'Reasons';
+      leads.forEach((lead, index) => {
+        leads[index]['reasons'] = leads[index]['reasons'] ? JSON.stringify(leads[index]['reasons']) : '-';
+      });
+    }
 
-    return this.table('staticListAdd', 'Static List Members Added', headers, staticListMember);
+    return this.table(id, name, headers, leads);
   }
 }
 

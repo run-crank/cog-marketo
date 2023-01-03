@@ -198,6 +198,44 @@ export class LeadAwareMixin {
     return responseArray;
   }
 
+  public async bulkFindLeadsById(ids: [], justInCaseField: string = null, partitionId: number = null) {
+    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    const fields = await this.describeLeadFields();
+    const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
+    let response;
+
+    const chunkedIds = this.chunkArrayHelper(ids);
+
+    const mustHaveFields = [
+      justInCaseField,
+      'email',
+      'updatedAt',
+      'createdAt',
+      'lastName',
+      'firstName',
+      'id',
+      'leadPartitionId',
+    ].filter(f => !!f);
+
+    // Make a separate API call for each chunk of 300 and return an array of the responses.
+    const responseArray = [];
+    for (let i = 0; i < chunkedIds.length; i += 1) {
+      response = await this.client.lead.find('id', chunkedIds[i], { fields: mustHaveFields });
+      responseArray.push(response);
+    }
+
+    // If a partition ID was provided, filter the returned leads accordingly.
+    responseArray.forEach((response) => {
+      if (partitionId && response && response.result && response.result.length) {
+        response.result = response.result.filter((lead: Record<string, any>) => {
+          return lead.leadPartitionId && lead.leadPartitionId === partitionId;
+        });
+      }
+    });
+
+    return responseArray;
+  }
+
   public async findLeadByField(field: string, value: string, justInCaseField: string = null, partitionId: number = null) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const fields = await this.describeLeadFields();

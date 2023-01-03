@@ -4,9 +4,10 @@ class CachingClientWrapper {
   // cachePrefix is scoped to the specific scenario, request, and requestor
   public cachePrefix = `${this.idMap.scenarioId}${this.idMap.requestorId}${this.idMap.connectionId}`;
 
-  constructor(private client: ClientWrapper, public redisClient: any, public idMap: any) {
+  constructor(private client: ClientWrapper, public redisClient: any, public idMap: any, public mailgunCredentials: any) {
     this.redisClient = redisClient;
     this.idMap = idMap;
+    this.mailgunCredentials = mailgunCredentials;
   }
 
   // lead-aware methods
@@ -176,6 +177,11 @@ class CachingClientWrapper {
   public async addLeadToSmartCampaign(campaignId: string, lead: Record<string, any>) {
     await this.clearCache();
     return await this.client.addLeadToSmartCampaign(campaignId, lead);
+  }
+
+  public async bulkAddLeadToSmartCampaign(campaignId: string, leadArray: Number[]) {
+    await this.clearCache();
+    return await this.client.bulkAddLeadToSmartCampaign(campaignId, leadArray);
   }
 
   // static-list-aware methods
