@@ -16,7 +16,7 @@ export class AddLeadToStaticListStep extends BaseStep implements StepInterface {
     field: 'leadIds',
     type: FieldDefinition.Type.STRING,
     description: 'Ids of Marketo Leads to be added separated by a comma(,) ',
-    bulkSupport: true,
+    bulksupport: true,
   }];
   protected expectedRecords: ExpectedRecord[] = [{
     id: 'passedLeads',

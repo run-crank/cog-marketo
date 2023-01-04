@@ -18,21 +18,18 @@ export class AddOrRemoveProgramMemberStep extends BaseStep implements StepInterf
     {
       field: 'programId',
       type: FieldDefinition.Type.STRING,
-      optionality: FieldDefinition.Optionality.REQUIRED,
       description: 'ID of the program',
     },
     {
       field: 'memberStatus',
       type: FieldDefinition.Type.STRING,
-      optionality: FieldDefinition.Optionality.REQUIRED,
       description: 'Status to set on the members',
     },
     {
       field: 'email',
       type: FieldDefinition.Type.STRING,
-      optionality: FieldDefinition.Optionality.REQUIRED,
-      description: "Lead's email",
-      bulkSupport: true,
+      description: "Lead's email or ID",
+      bulksupport: true,
     },
   ];
   protected expectedRecords: ExpectedRecord[] = [{

@@ -15,7 +15,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
     field: 'email', // to prevent breaking previous scenarios, this is will stay as email
     type: FieldDefinition.Type.STRING,
     description: 'The email address or id of the Marketo Lead',
-    bulkSupport: true,
+    bulksupport: true,
   }, {
     field: 'activityTypeIdOrName',
     type: FieldDefinition.Type.ANYSCALAR,

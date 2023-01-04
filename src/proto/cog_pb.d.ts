@@ -2,7 +2,6 @@
 // file: cog.proto
 
 /* tslint:disable */
-/* eslint-disable */
 
 import * as jspb from "google-protobuf";
 import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
@@ -144,6 +143,9 @@ export class FieldDefinition extends jspb.Message {
     getHelp(): string;
     setHelp(value: string): void;
 
+    getBulksupport(): boolean;
+    setBulksupport(value: boolean): void;
+
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): FieldDefinition.AsObject;
@@ -162,6 +164,7 @@ export namespace FieldDefinition {
         type: FieldDefinition.Type,
         description: string,
         help: string,
+        bulksupport: boolean,
     }
 
     export enum Optionality {

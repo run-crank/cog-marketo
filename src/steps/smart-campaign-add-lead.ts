@@ -12,7 +12,7 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
     field: 'email',
     type: FieldDefinition.Type.STRING,
     description: "Lead's email address or id",
-    bulkSupport: true,
+    bulksupport: true,
   }, {
     field: 'campaign',
     type: FieldDefinition.Type.ANYSCALAR,
