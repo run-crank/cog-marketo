@@ -16,7 +16,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     field: 'email', // to prevent breaking previous scenarios, this is will stay as email
     type: FieldDefinition.Type.STRING,
     description: "Lead's email address or id",
-    bulkSupport: true,
+    bulksupport: true,
   }, {
     field: 'field',
     type: FieldDefinition.Type.STRING,
@@ -31,7 +31,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     type: FieldDefinition.Type.ANYSCALAR,
     optionality: FieldDefinition.Optionality.OPTIONAL,
     description: 'Expected field value',
-    bulkSupport: true,
+    bulksupport: true,
   }, {
     field: 'partitionId',
     type: FieldDefinition.Type.NUMERIC,

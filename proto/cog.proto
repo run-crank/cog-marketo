@@ -321,6 +321,11 @@ message FieldDefinition {
    */
   string help = 5;
 
+  /**
+   * An optional boolean denoting whether this field can accept bulk tokens when building a scenario.
+   */
+  bool bulksupport = 6;
+
 }
 
 /**
