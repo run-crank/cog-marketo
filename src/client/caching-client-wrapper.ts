@@ -70,12 +70,12 @@ class CachingClientWrapper {
     return await this.client.bulkCreateOrUpdateLead(leads, partitionId);
   }
 
-  public async bulkRemoveLeadsFromProgram(leads: [], programId: string, partitionId: number = 1) {
+  public async bulkRemoveLeadsFromProgram(leads: [], programId: string, partitionId: number = null) {
     await this.clearCache();
     return await this.client.bulkRemoveLeadsFromProgram(leads, programId, partitionId);
   }
 
-  public async bulkSetStatusToLeadsFromProgram(leads: [], programId: string, status: string, partitionId: number = 1) {
+  public async bulkSetStatusToLeadsFromProgram(leads: [], programId: string, status: string, partitionId: number = null) {
     await this.clearCache();
     return await this.client.bulkSetStatusToLeadsFromProgram(leads, programId, status, partitionId);
   }

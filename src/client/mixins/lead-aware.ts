@@ -77,11 +77,11 @@ export class LeadAwareMixin {
     return responseArray;
   }
 
-  public async bulkRemoveLeadsFromProgram(leads: {}[], programId: string, partitionId: number = 1) {
+  public async bulkRemoveLeadsFromProgram(leads: {}[], programId: string, partitionId: number = null) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const partitions = await this.client.lead.partitions();
     const partition = partitions.result.find(option => option.id === partitionId);
-    if (!partition) {
+    if (partitionId && !partition) {
       return Promise.resolve([{ error: { partition: false } }]);
     }
     const mustHaveFields = [
@@ -105,8 +105,10 @@ export class LeadAwareMixin {
               leadId: lead['id'],
             };
           }),
-          partitionName: partition ? partition.name : 'Default',
         };
+        if (partitionId) {
+          requestBody['partitionName'] = partition.name;
+        }
         const response = await this.client._connection.postJson(`/v1/programs/${programId}/members/delete.json`, requestBody);
         responseArray.push(response);
         resolve(null);
@@ -118,11 +120,11 @@ export class LeadAwareMixin {
     return responseArray;
   }
 
-  public async bulkSetStatusToLeadsFromProgram(leads: {}[], programId: string, status: string, partitionId: number = 1) {
+  public async bulkSetStatusToLeadsFromProgram(leads: {}[], programId: string, status: string, partitionId: number = null) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
     const partitions = await this.client.lead.partitions();
     const partition = partitions.result.find(option => option.id === partitionId);
-    if (!partition) {
+    if (partitionId && !partition) {
       return Promise.resolve([{ error: { partition: false } }]);
     }
     const mustHaveFields = [
@@ -139,7 +141,11 @@ export class LeadAwareMixin {
     const chunkedLeads = this.chunkArrayHelper(leads);
     await Promise.all(chunkedLeads.map(leadChunk => new Promise(async (resolve, reject) => {
       try {
-        const leadsWithIds = await this.client.lead.find('email', leadChunk, { fields: mustHaveFields, partitionName: partition ? partition.name : 'Default' });
+        const options = { fields: mustHaveFields };
+        if (partitionId) {
+          options['partitionName'] = partition.name;
+        }
+        const leadsWithIds = await this.client.lead.find('email', leadChunk, options);
         const requestBody = {
           statusName: status,
           input: leadsWithIds.result.map((lead) => {
@@ -147,8 +153,10 @@ export class LeadAwareMixin {
               leadId: lead['id'],
             };
           }),
-          partitionName: partition ? partition.name : 'Default',
         };
+        if (partitionId) {
+          requestBody['partitionName'] = partition.name;
+        }
         const response = await this.client._connection.postJson(`/v1/programs/${programId}/members/status.json`, requestBody);
         responseArray.push(response);
         resolve(null);
