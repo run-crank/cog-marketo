@@ -149,7 +149,7 @@ export class AddOrRemoveProgramMemberStep extends BaseStep implements StepInterf
         data = await this.client.bulkSetStatusToLeadsFromProgram(leadEmailArray, programId, status, partitionId);
       }
 
-      if (data[0] && data[0].error && !data[0].error.partition) {
+      if (partitionId && data[0] && data[0].error && !data[0].error.partition) {
         return this.fail('There is no Partition with id %s', [
           partitionId,
         ]);
