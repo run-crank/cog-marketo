@@ -71,73 +71,74 @@ export class AddOrRemoveProgramMemberStep extends BaseStep implements StepInterf
     const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
     let leadEmailArray = [];
 
-    if (stepData.multiple_email && Array.isArray(stepData.multiple_email) && stepData.multiple_email.length > 0) {
-      // handle bulk tokens
+    try {
 
-      // If the user provided emails
-      if (emailRegex.test(stepData.multiple_email[0])) {
-        leadEmailArray = JSON.parse(JSON.stringify(stepData.multiple_email));
-        let count = 0;
-        const bulkFindLeadResponse = await this.client.bulkFindLeadsByEmail(stepData.multiple_email, null, partitionId);
-        await bulkFindLeadResponse.forEach(async (batch) => {
-          if (!batch.success) {
-            return this.error('There was an error finding some lead IDs in partition %d: %s', [partitionId, batch.message]);
-          }
-          count += batch.result.length;
-        });
+      if (stepData.multiple_email && Array.isArray(stepData.multiple_email) && stepData.multiple_email.length > 0) {
+        // handle bulk tokens
 
-        if (count !== stepData.multiple_email.length) {
-          return this.error('Could not find all leads provided in partition %d', [partitionId]);
-        }
-
-      } else {
-        // If the user provided IDs rather than emails, we need to get the lead emails now for a few reasons (despite being inefficient):
-        // - that is what the mixins accept, and we can't adjust the mixins wihout also adjusting the other steps that use them
-        // - Marketo's API doesn't return the ID or email for failed records, so we need to know the email in advance so we can return it in the step record
-
-        let count = 0;
-        const bulkFindLeadResponse = await this.client.bulkFindLeadsById(stepData.multiple_email, null, partitionId);
-        await bulkFindLeadResponse.forEach(async (batch) => {
-          if (!batch.success) {
-            return this.error('There was an error finding some leads in partition %d: %s', [partitionId, batch.message]);
-          }
-
-          await batch.result.forEach((lead) => {
-            if (!partitionId || (lead.leadPartitionId && lead.leadPartitionId == partitionId)) {
-              count += 1;
-              leadEmailArray.push(lead.email);
+        // If the user provided emails
+        if (emailRegex.test(stepData.multiple_email[0])) {
+          leadEmailArray = JSON.parse(JSON.stringify(stepData.multiple_email));
+          let count = 0;
+          const bulkFindLeadResponse = await this.client.bulkFindLeadsByEmail(stepData.multiple_email, null, partitionId);
+          await bulkFindLeadResponse.forEach(async (batch) => {
+            if (!batch.success) {
+              return this.error('There was an error finding some lead IDs in partition %d: %s', [partitionId, batch.message]);
             }
+            count += batch.result.length;
           });
-        });
 
-        if (count !== stepData.multiple_email.length) {
-          return this.error('Could not find all leads provided in partition %d', [partitionId]);
-        }
+          if (count !== stepData.multiple_email.length) {
+            return this.error('Could not find all leads provided in partition %d', [partitionId]);
+          }
 
-      }
-    } else {
-      // handle single email/ID
-      if (emailRegex.test(stepData.email)) {
-        const response = await this.client.findLeadByEmail(stepData.email, null, partitionId);
-        if (!response.success) {
-          return this.error('There was an error finding lead %d in partition %d', [stepData.email, partitionId]);
+        } else {
+          // If the user provided IDs rather than emails, we need to get the lead emails now for a few reasons (despite being inefficient):
+          // - that is what the mixins accept, and we can't adjust the mixins wihout also adjusting the other steps that use them
+          // - Marketo's API doesn't return the ID or email for failed records, so we need to know the email in advance so we can return it in the step record
+
+          let count = 0;
+          const bulkFindLeadResponse = await this.client.bulkFindLeadsById(stepData.multiple_email, null, partitionId);
+          await bulkFindLeadResponse.forEach(async (batch) => {
+            if (!batch.success) {
+              return this.error('There was an error finding some leads in partition %d: %s', [partitionId, batch.message]);
+            }
+
+            await batch.result.forEach((lead) => {
+              if (!partitionId || (lead.leadPartitionId && lead.leadPartitionId == partitionId)) {
+                count += 1;
+                leadEmailArray.push(lead.email);
+              }
+            });
+          });
+
+          if (count !== stepData.multiple_email.length) {
+            return this.error('Could not find all leads provided in partition %d', [partitionId]);
+          }
+
         }
-        leadEmailArray.push(stepData.email);
       } else {
-        try {
-          const response = await this.client.findLeadByField('id', stepData.email, null, partitionId);
-          const email = response.result[0].email;
-          if (!response.success || !email) {
+        // handle single email/ID
+        if (emailRegex.test(stepData.email)) {
+          const response = await this.client.findLeadByEmail(stepData.email, null, partitionId);
+          if (!response.success) {
             return this.error('There was an error finding lead %d in partition %d', [stepData.email, partitionId]);
           }
-          leadEmailArray.push(email);
-        } catch (e) {
-          return this.error('There was an error finding lead %d in partition %d', [stepData.email, partitionId]);
+          leadEmailArray.push(stepData.email);
+        } else {
+          try {
+            const response = await this.client.findLeadByField('id', stepData.email, null, partitionId);
+            const email = response.result[0].email;
+            if (!response.success || !email) {
+              return this.error('There was an error finding lead %d in partition %d', [stepData.email, partitionId]);
+            }
+            leadEmailArray.push(email);
+          } catch (e) {
+            return this.error('There was an error finding lead %d in partition %d', [stepData.email, partitionId]);
+          }
         }
       }
-    }
 
-    try {
       const records = [];
       const passedLeadArray = [];
       const failedLeadArray = [];

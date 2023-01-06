@@ -208,8 +208,6 @@ export class LeadAwareMixin {
 
   public async bulkFindLeadsById(ids: [], justInCaseField: string = null, partitionId: number = null) {
     this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
-    const fields = await this.describeLeadFields();
-    const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
     let response;
 
     const chunkedIds = this.chunkArrayHelper(ids);
