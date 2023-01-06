@@ -50,6 +50,11 @@ class CachingClientWrapper {
     return await this.client.bulkFindLeadsByEmail(emails, justInCaseField, partitionId);
   }
 
+  public async bulkFindLeadsById(ids: [], justInCaseField: string = null, partitionId: number = null) {
+    await this.clearCache();
+    return await this.client.bulkFindLeadsById(ids, justInCaseField, partitionId);
+  }
+
   public async createOrUpdateLead(lead: Record<string, any>, partitionId: number = 1) {
     await this.clearCache();
     return await this.client.createOrUpdateLead(lead, partitionId);
