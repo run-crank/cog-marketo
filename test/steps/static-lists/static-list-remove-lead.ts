@@ -26,8 +26,8 @@ describe('RemoveLeadToStaticListStep', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('RemoveLeadToStaticListStep');
-    expect(stepDef.getName()).to.equal('Remove Marketo Leads to Static List');
-    expect(stepDef.getExpression()).to.equal('remove marketo leads to static list (?<staticListName>.+)');
+    expect(stepDef.getName()).to.equal('Remove Marketo leads from static list');
+    expect(stepDef.getExpression()).to.equal('remove marketo leads from static list (?<staticListName>.+)');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);
   });
 

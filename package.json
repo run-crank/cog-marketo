@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build-docker": "docker build -t automatoninc/marketo:$npm_package_version -t automatoninc/marketo:latest .",
-    "build-proto": "scripts/build-proto.sh",
+    "build-proto": "bash scripts/build-proto.sh",
     "build-ts": "tsc",
     "lint": "tslint -c tslint.json -p tsconfig.json",
     "start": "check-engine package.json && node -r ts-node/register src/core/grpc-server.ts",
@@ -55,7 +55,7 @@
     "typescript": "^3.5.1"
   },
   "dependencies": {
-    "@run-crank/utilities": "^0.5.1",
+    "@run-crank/utilities": "^0.5.2",
     "google-protobuf": "^3.8.0",
     "grpc": "^1.24.3",
     "mailgun-js": "^0.22.0",

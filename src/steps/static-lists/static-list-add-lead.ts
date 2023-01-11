@@ -5,9 +5,11 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition, StepRecord } f
 
 export class AddLeadToStaticListStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Add Marketo Leads to Static List';
+  protected stepName: string = 'Add Marketo leads to static list';
   protected stepExpression: string = 'add marketo leads to static list (?<staticListName>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['add'];
+  protected targetObject: string = 'Leads to Static List';
   protected expectedFields: Field[] = [{
     field: 'staticListName',
     type: FieldDefinition.Type.STRING,

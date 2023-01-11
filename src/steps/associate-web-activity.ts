@@ -5,9 +5,11 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../prot
 
 export class AssociateWebActivityStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Associate Web Activity';
+  protected stepName: string = 'Associate web activity';
   protected stepExpression: string = 'associate web activity with munchkin cookie (?<munchkinCookie>.+) to marketo lead (?<email>.+\@.+\..+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['add'];
+  protected targetObject: string = 'Web Activity to Lead';
   protected expectedFields: Field[] = [
     {
       field: 'munchkinCookie',

@@ -26,7 +26,7 @@ describe('StaticListMemberCountStep', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('StaticListMemberCountStep');
-    expect(stepDef.getName()).to.equal('Count a Marketo Static List');
+    expect(stepDef.getName()).to.equal('Count a Marketo static list');
     expect(stepDef.getExpression()).to.equal('check the number of members from marketo static list (?<staticListName>.+)');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.VALIDATION);
   });

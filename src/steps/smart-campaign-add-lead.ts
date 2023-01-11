@@ -5,9 +5,11 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition, StepRecord } f
 
 export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Add Marketo Lead to Smart Campaign';
+  protected stepName: string = 'Add Marketo lead to smart campaign';
   protected stepExpression: string = 'add the (?<email>.+) marketo lead to smart campaign (?<campaign>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['add'];
+  protected targetObject: string = 'Lead to Smart Campaign';
   protected expectedFields: Field[] = [{
     field: 'email',
     type: FieldDefinition.Type.STRING,

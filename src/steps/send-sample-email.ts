@@ -5,9 +5,11 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../prot
 
 export class SendSampleEmailStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Send Sample Email';
+  protected stepName: string = 'Send sample email';
   protected stepExpression: string = 'send a sample email to (?<emailAddress>.+\@.+\..+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['misc'];
+  protected targetObject: string = 'Send Email';
   protected expectedFields: Field[] = [
     {
       field: 'workspace',

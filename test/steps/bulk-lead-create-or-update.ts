@@ -25,7 +25,7 @@ describe('BulkCreateOrUpdateLeadByFieldStep', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('BulkCreateOrUpdateLeadByFieldStep');
-    expect(stepDef.getName()).to.equal('Bulk Create or Update Marketo Leads');
+    expect(stepDef.getName()).to.equal('Bulk create or update Marketo leads');
     expect(stepDef.getExpression()).to.equal('bulk create or update marketo leads');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);
   });

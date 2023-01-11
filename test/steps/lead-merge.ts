@@ -26,7 +26,7 @@ describe('MergeLeadsStep', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('MergeLeadsStep');
-    expect(stepDef.getName()).to.equal('Merge Marketo Leads');
+    expect(stepDef.getName()).to.equal('Merge Marketo leads');
     expect(stepDef.getExpression()).to.equal('merge marketo lead (?<losingEmail>.+\@.+\..+) into marketo lead (?<winningEmail>.+\@.+\..+)');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);
   });

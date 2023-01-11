@@ -26,7 +26,7 @@ describe('SendSampleEmailStep', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('SendSampleEmailStep');
-    expect(stepDef.getName()).to.equal('Send Sample Email');
+    expect(stepDef.getName()).to.equal('Send sample email');
     expect(stepDef.getExpression()).to.equal('send a sample email to (?<emailAddress>.+\@.+\..+)');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);
   });

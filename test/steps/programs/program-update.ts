@@ -26,7 +26,7 @@ describe('UpdateProgramStep', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('UpdateProgramStep');
-    expect(stepDef.getName()).to.equal('Update a Marketo Program');
+    expect(stepDef.getName()).to.equal('Update a Marketo program');
     expect(stepDef.getExpression()).to.equal('update a marketo program');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);
   });

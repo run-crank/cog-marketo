@@ -8,9 +8,11 @@ import * as moment from 'moment';
 
 export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Check a Marketo Lead\'s Activity';
+  protected stepName: string = 'Check a Marketo lead\'s activity';
   protected stepExpression: string = 'there should (?<includes>not include|be|not be) an? (?<activityTypeIdOrName>.+) activity for marketo lead (?<email>.+) in the last (?<minutes>\\d+) minutes?';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
+  protected actionList: string[] = ['check'];
+  protected targetObject: string = 'Lead Activity';
   protected expectedFields: Field[] = [{
     field: 'email', // to prevent breaking previous scenarios, this is will stay as email
     type: FieldDefinition.Type.STRING,

@@ -29,7 +29,7 @@ describe('AddLeadToSmartCampaignStep', () => {
     it('should return expected step metadata', () => {
       const stepDef: StepDefinition = stepUnderTest.getDefinition();
       expect(stepDef.getStepId()).to.equal('AddLeadToSmartCampaignStep');
-      expect(stepDef.getName()).to.equal('Add Marketo Lead to Smart Campaign');
+      expect(stepDef.getName()).to.equal('Add Marketo lead to smart campaign');
       expect(stepDef.getExpression()).to.equal('add the (?<email>.+) marketo lead to smart campaign (?<campaign>.+)');
       expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);
     });

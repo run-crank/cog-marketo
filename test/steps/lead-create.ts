@@ -26,7 +26,7 @@ describe('CreateLeadStep', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('CreateLeadStep');
-    expect(stepDef.getName()).to.equal('Create a Marketo Lead');
+    expect(stepDef.getName()).to.equal('Create a Marketo lead');
     expect(stepDef.getExpression()).to.equal('create a marketo lead');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);
   });

@@ -8,10 +8,12 @@ import { isNullOrUndefined } from 'util';
 
 export class LeadByIdFieldEqualsStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Check a field on a Marketo Lead by Id';
+  protected stepName: string = 'Check a field on a Marketo lead by id';
   // tslint:disable-next-line:max-line-length
   protected stepExpression: string = 'the (?<field>[a-zA-Z0-9_-]+) field on marketo lead with id (?<leadId>.+) should (?<operator>be set|not be set|be less than|be greater than|be one of|be|contain|not be one of|not be|not contain|match|not match) ?(?<expectation>.+)?';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
+  protected actionList: string[] = ['check'];
+  protected targetObject: string = 'Lead by Id';
   protected expectedFields: Field[] = [{
     field: 'leadId',
     type: FieldDefinition.Type.STRING,

@@ -732,7 +732,7 @@ proto.automaton.cog.CogManifest.prototype.setAuthHelpUrl = function(value) {
  * @private {!Array<number>}
  * @const
  */
-proto.automaton.cog.StepDefinition.repeatedFields_ = [4,7];
+proto.automaton.cog.StepDefinition.repeatedFields_ = [4,7,8];
 
 
 
@@ -773,7 +773,9 @@ proto.automaton.cog.StepDefinition.toObject = function(includeInstance, msg) {
     expectedFieldsList: jspb.Message.toObjectList(msg.getExpectedFieldsList(),
     proto.automaton.cog.FieldDefinition.toObject, includeInstance),
     expectedRecordsList: jspb.Message.toObjectList(msg.getExpectedRecordsList(),
-    proto.automaton.cog.RecordDefinition.toObject, includeInstance)
+    proto.automaton.cog.RecordDefinition.toObject, includeInstance),
+    actionList: (f = jspb.Message.getRepeatedField(msg, 8)) == null ? undefined : f,
+    targetObject: jspb.Message.getFieldWithDefault(msg, 9, "")
   };
 
   if (includeInstance) {
@@ -839,6 +841,14 @@ proto.automaton.cog.StepDefinition.deserializeBinaryFromReader = function(msg, r
       var value = new proto.automaton.cog.RecordDefinition;
       reader.readMessage(value,proto.automaton.cog.RecordDefinition.deserializeBinaryFromReader);
       msg.addExpectedRecords(value);
+      break;
+    case 8:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addAction(value);
+      break;
+    case 9:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTargetObject(value);
       break;
     default:
       reader.skipField();
@@ -918,6 +928,20 @@ proto.automaton.cog.StepDefinition.serializeBinaryToWriter = function(message, w
       7,
       f,
       proto.automaton.cog.RecordDefinition.serializeBinaryToWriter
+    );
+  }
+  f = message.getActionList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      8,
+      f
+    );
+  }
+  f = message.getTargetObject();
+  if (f.length > 0) {
+    writer.writeString(
+      9,
+      f
     );
   }
 };
@@ -1094,6 +1118,61 @@ proto.automaton.cog.StepDefinition.prototype.addExpectedRecords = function(opt_v
  */
 proto.automaton.cog.StepDefinition.prototype.clearExpectedRecordsList = function() {
   return this.setExpectedRecordsList([]);
+};
+
+
+/**
+ * repeated string action = 8;
+ * @return {!Array<string>}
+ */
+proto.automaton.cog.StepDefinition.prototype.getActionList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 8));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.automaton.cog.StepDefinition} returns this
+ */
+proto.automaton.cog.StepDefinition.prototype.setActionList = function(value) {
+  return jspb.Message.setField(this, 8, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.automaton.cog.StepDefinition} returns this
+ */
+proto.automaton.cog.StepDefinition.prototype.addAction = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 8, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.automaton.cog.StepDefinition} returns this
+ */
+proto.automaton.cog.StepDefinition.prototype.clearActionList = function() {
+  return this.setActionList([]);
+};
+
+
+/**
+ * optional string target_object = 9;
+ * @return {string}
+ */
+proto.automaton.cog.StepDefinition.prototype.getTargetObject = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.automaton.cog.StepDefinition} returns this
+ */
+proto.automaton.cog.StepDefinition.prototype.setTargetObject = function(value) {
+  return jspb.Message.setProto3StringField(this, 9, value);
 };
 
 

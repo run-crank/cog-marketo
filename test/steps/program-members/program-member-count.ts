@@ -27,7 +27,7 @@ describe('ProgramMemberCountStep', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('ProgramMemberCountStep');
-    expect(stepDef.getName()).to.equal('Count a Marketo Program');
+    expect(stepDef.getName()).to.equal('Count a Marketo program');
     expect(stepDef.getExpression()).to.equal('check the number of members from marketo program (?<programName>.+)');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.VALIDATION);
   });

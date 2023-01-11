@@ -26,7 +26,7 @@ describe('DeleteProgramStep', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('DeleteProgramStep');
-    expect(stepDef.getName()).to.equal('Delete a Marketo Program');
+    expect(stepDef.getName()).to.equal('Delete a Marketo program');
     expect(stepDef.getExpression()).to.equal('delete the (?<name>.+) marketo program');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);
   });

@@ -28,7 +28,7 @@ describe('CreateOrUpdateCustomObject', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('CreateOrUpdateCustomObjectStep');
-    expect(stepDef.getName()).to.equal('Create or Update a Marketo Custom Object');
+    expect(stepDef.getName()).to.equal('Create or update a Marketo custom object');
     expect(stepDef.getExpression()).to.equal('create or update an? (?<name>.+) marketo custom object linked to lead (?<linkValue>.+)');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);
   });

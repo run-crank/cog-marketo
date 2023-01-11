@@ -25,7 +25,7 @@ describe('DiscoverLeadStep', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('DiscoverLead');
-    expect(stepDef.getName()).to.equal('Discover fields on a Marketo Lead');
+    expect(stepDef.getName()).to.equal('Discover fields on a Marketo lead');
     expect(stepDef.getExpression()).to.equal('discover fields on marketo lead (?<email>.+)');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);
   });
