@@ -26,7 +26,7 @@ describe('AssociateWebActivityStep', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('AssociateWebActivityStep');
-    expect(stepDef.getName()).to.equal('Associate Web Activity');
+    expect(stepDef.getName()).to.equal('Associate web activity');
     expect(stepDef.getExpression()).to.equal('associate web activity with munchkin cookie (?<munchkinCookie>.+) to marketo lead (?<email>.+\@.+\..+)');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);
   });

@@ -28,7 +28,7 @@ describe('AddOrRemoveProgramMemberStep', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('AddOrRemoveProgramMemberStep');
-    expect(stepDef.getName()).to.equal('Add or Remove Marketo Program Members');
+    expect(stepDef.getName()).to.equal('Add or remove Marketo program members');
     expect(stepDef.getExpression()).to.equal('add or remove marketo program members');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);
   });

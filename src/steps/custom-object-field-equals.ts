@@ -6,9 +6,11 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition, StepRecord } f
 
 export class CustomObjectFieldEqualsStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Check a field on a Marketo Custom Object';
+  protected stepName: string = 'Check a field on a Marketo custom object';
   protected stepExpression: string = 'the (?<field>[a-zA-Z0-9_-]+) field on the (?<name>.+) marketo custom object linked to lead (?<linkValue>.+) should (?<operator>be set|not be set|be less than|be greater than|be one of|be|contain|not be one of|not be|not contain|match|not match) ?(?<expectedValue>.+)?';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
+  protected actionList: string[] = ['check'];
+  protected targetObject: string = 'Custom Object';
   protected expectedFields: Field[] = [{
     field: 'name',
     type: FieldDefinition.Type.STRING,

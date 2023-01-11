@@ -98,6 +98,14 @@ export class StepDefinition extends jspb.Message {
     setExpectedRecordsList(value: Array<RecordDefinition>): void;
     addExpectedRecords(value?: RecordDefinition, index?: number): RecordDefinition;
 
+    clearActionList(): void;
+    getActionList(): Array<string>;
+    setActionList(value: Array<string>): void;
+    addAction(value: string, index?: number): string;
+
+    getTargetObject(): string;
+    setTargetObject(value: string): void;
+
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): StepDefinition.AsObject;
@@ -118,6 +126,8 @@ export namespace StepDefinition {
         expression: string,
         expectedFieldsList: Array<FieldDefinition.AsObject>,
         expectedRecordsList: Array<RecordDefinition.AsObject>,
+        actionList: Array<string>,
+        targetObject: string,
     }
 
     export enum Type {

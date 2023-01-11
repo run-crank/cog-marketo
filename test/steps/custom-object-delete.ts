@@ -29,7 +29,7 @@ describe('DeleteCustomObject', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('DeleteCustomObjectStep');
-    expect(stepDef.getName()).to.equal('Delete a Marketo Custom Object');
+    expect(stepDef.getName()).to.equal('Delete a Marketo custom object');
     expect(stepDef.getExpression()).to.equal('delete the (?<name>.+) marketo custom object linked to lead (?<linkValue>.+)');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);
   });

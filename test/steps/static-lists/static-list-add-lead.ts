@@ -26,7 +26,7 @@ describe('AddLeadToStaticListStep', () => {
   it('should return expected step metadata', () => {
     const stepDef: StepDefinition = stepUnderTest.getDefinition();
     expect(stepDef.getStepId()).to.equal('AddLeadToStaticListStep');
-    expect(stepDef.getName()).to.equal('Add Marketo Leads to Static List');
+    expect(stepDef.getName()).to.equal('Add Marketo leads to static list');
     expect(stepDef.getExpression()).to.equal('add marketo leads to static list (?<staticListName>.+)');
     expect(stepDef.getType()).to.equal(StepDefinition.Type.ACTION);
   });

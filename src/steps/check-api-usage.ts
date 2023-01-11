@@ -8,6 +8,8 @@ export class CheckApiUsageStep extends BaseStep implements StepInterface {
   protected stepName: string = 'Check daily Marketo API usage';
   protected stepExpression: string = 'there should be less than 90% usage of your daily API limit';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
+  protected actionList: string[] = ['check'];
+  protected targetObject: string = 'API Usage';
   protected expectedFields: Field[] = [{
     field: 'requestLimit',
     type: FieldDefinition.Type.NUMERIC,

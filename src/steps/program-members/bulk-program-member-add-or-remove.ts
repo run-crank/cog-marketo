@@ -5,9 +5,11 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../../p
 
 export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Bulk Add or Remove Marketo Program Members';
+  protected stepName: string = 'Bulk add or remove Marketo program members';
   protected stepExpression: string = 'bulk add or remove marketo program members';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['create', 'delete'];
+  protected targetObject: string = 'Program Member';
   protected expectedFields: Field[] = [
     {
       field: 'partitionId',

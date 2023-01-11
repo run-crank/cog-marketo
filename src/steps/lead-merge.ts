@@ -8,10 +8,12 @@ import { isNullOrUndefined } from 'util';
 
 export class MergeLeadsStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Merge Marketo Leads';
+  protected stepName: string = 'Merge Marketo leads';
   // tslint:disable-next-line:max-line-length
   protected stepExpression: string = 'merge marketo lead (?<losingEmail>.+\@.+\..+) into marketo lead (?<winningEmail>.+\@.+\..+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = [];
+  protected targetObject: string = 'Merge Leads';
   protected expectedFields: Field[] = [{
     field: 'losingEmail',
     type: FieldDefinition.Type.STRING,

@@ -5,9 +5,11 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../prot
 
 export class DeleteLeadStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Delete a Marketo Lead';
+  protected stepName: string = 'Delete a Marketo lead';
   protected stepExpression: string = 'delete the (?<email>.+) marketo lead';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['delete'];
+  protected targetObject: string = 'Lead';
   protected expectedFields: Field[] = [{
     field: 'email', // to prevent breaking previous scenarios, this is will stay as email
     type: FieldDefinition.Type.STRING,

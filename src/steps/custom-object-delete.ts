@@ -6,9 +6,11 @@ import { isNullOrUndefined } from 'util';
 
 export class DeleteCustomObjectStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Delete a Marketo Custom Object';
+  protected stepName: string = 'Delete a Marketo custom object';
   protected stepExpression: string = 'delete the (?<name>.+) marketo custom object linked to lead (?<linkValue>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['delete'];
+  protected targetObject: string = 'Custom Object';
   protected expectedFields: Field[] = [{
     field: 'name',
     type: FieldDefinition.Type.STRING,

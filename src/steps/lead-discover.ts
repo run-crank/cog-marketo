@@ -5,10 +5,12 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition, StepRecord } f
 
 export class DiscoverLead extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Discover fields on a Marketo Lead';
+  protected stepName: string = 'Discover fields on a Marketo lead';
   // tslint:disable-next-line:max-line-length
   protected stepExpression: string = 'discover fields on marketo lead (?<email>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['discover'];
+  protected targetObject: string = 'Lead';
   protected expectedFields: Field[] = [{
     field: 'email', // to prevent breaking previous scenarios, this is will stay as email
     type: FieldDefinition.Type.STRING,

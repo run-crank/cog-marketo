@@ -5,9 +5,11 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../../p
 
 export class AddOrRemoveProgramMemberStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Add or Remove Marketo Program Members';
+  protected stepName: string = 'Add or remove Marketo program members';
   protected stepExpression: string = 'add or remove marketo program members';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['add', 'remove'];
+  protected targetObject: string = 'Program Member';
   protected expectedFields: Field[] = [
     {
       field: 'partitionId',

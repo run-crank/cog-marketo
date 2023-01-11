@@ -5,9 +5,11 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../prot
 
 export class BulkCreateOrUpdateLeadByFieldStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Bulk Create or Update Marketo Leads';
+  protected stepName: string = 'Bulk create or update Marketo leads';
   protected stepExpression: string = 'bulk create or update marketo leads';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['create', 'update'];
+  protected targetObject: string = 'Leads';
   protected expectedFields: Field[] = [
     {
       field: 'partitionId',

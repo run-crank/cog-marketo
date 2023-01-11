@@ -8,10 +8,12 @@ import { isNullOrUndefined } from 'util';
 
 export class BulkLeadFieldEqualsStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Check a field on multiple Marketo Leads';
+  protected stepName: string = 'Check a field on multiple Marketo leads';
   // tslint:disable-next-line:max-line-length
   protected stepExpression: string = 'the (?<field>[a-zA-Z0-9_-]+) field on marketo leads should (?<operator>be set|not be set|be less than|be greater than|be one of|be|contain|not be one of|not be|not contain|match|not match) ?(?<expectation>.+)?';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
+  protected actionList: string[] = ['check'];
+  protected targetObject: string = 'Leads';
   protected expectedFields: Field[] = [{
     field: 'leads',
     type: FieldDefinition.Type.MAP,

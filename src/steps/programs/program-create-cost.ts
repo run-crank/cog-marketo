@@ -6,9 +6,11 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../../p
 
 export class CreateProgramCostStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Create Cost for Marketo Program';
+  protected stepName: string = 'Create cost for Marketo program';
   protected stepExpression: string = 'create cost for marketo program';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['create'];
+  protected targetObject: string = 'Program Cost';
   protected expectedFields: Field[] = [
     {
       field: 'name',

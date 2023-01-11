@@ -5,9 +5,11 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../../p
 
 export class RemoveLeadToStaticListStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Remove Marketo Leads to Static List';
-  protected stepExpression: string = 'remove marketo leads to static list (?<staticListName>.+)';
+  protected stepName: string = 'Remove Marketo leads from static list';
+  protected stepExpression: string = 'remove marketo leads from static list (?<staticListName>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['remove'];
+  protected targetObject: string = 'Leads from Static List';
   protected expectedFields: Field[] = [{
     field: 'staticListName',
     type: FieldDefinition.Type.STRING,

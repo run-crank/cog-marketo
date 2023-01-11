@@ -5,9 +5,11 @@ import { Step, FieldDefinition, StepDefinition, RecordDefinition, StepRecord } f
 
 export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Create or update a Marketo Lead';
+  protected stepName: string = 'Create or update a Marketo lead';
   protected stepExpression: string = 'create or update a marketo lead';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
+  protected actionList: string[] = ['create', 'update'];
+  protected targetObject: string = 'Lead';
   protected expectedFields: Field[] = [
     {
       field: 'partitionId',

@@ -7,10 +7,12 @@ import { baseOperators } from '../../client/constants/operators';
 
 export class StaticListMemberCountStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Count a Marketo Static List';
+  protected stepName: string = 'Count a Marketo static list';
   // tslint:disable-next-line:max-line-length
   protected stepExpression: string = 'check the number of members from marketo static list (?<staticListName>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
+  protected actionList: string[] = ['check'];
+  protected targetObject: string = 'Static List Count';
   protected expectedFields: Field[] = [{
     field: 'staticListName',
     type: FieldDefinition.Type.STRING,

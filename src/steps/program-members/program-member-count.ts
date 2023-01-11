@@ -8,10 +8,12 @@ import { isNullOrUndefined } from 'util';
 
 export class ProgramMemberCountStep extends BaseStep implements StepInterface {
 
-  protected stepName: string = 'Count a Marketo Program';
+  protected stepName: string = 'Count a Marketo program';
   // tslint:disable-next-line:max-line-length
   protected stepExpression: string = 'check the number of members from marketo program (?<programName>.+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
+  protected actionList: string[] = ['check'];
+  protected targetObject: string = 'Program Member Count';
   protected expectedFields: Field[] = [{
     field: 'programName',
     type: FieldDefinition.Type.STRING,
