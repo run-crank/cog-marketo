@@ -12,7 +12,7 @@ export class MergeLeadsStep extends BaseStep implements StepInterface {
   // tslint:disable-next-line:max-line-length
   protected stepExpression: string = 'merge marketo lead (?<losingEmail>.+\@.+\..+) into marketo lead (?<winningEmail>.+\@.+\..+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
-  protected actionList: string[] = ['misc'];
+  protected actionList: string[] = [];
   protected targetObject: string = 'Merge Leads';
   protected expectedFields: Field[] = [{
     field: 'losingEmail',

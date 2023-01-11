@@ -9,7 +9,7 @@ export class BulkCreateOrUpdateLeadByFieldStep extends BaseStep implements StepI
   protected stepExpression: string = 'bulk create or update marketo leads';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
   protected actionList: string[] = ['create', 'update'];
-  protected targetObject: string = 'Marketo Leads';
+  protected targetObject: string = 'Leads';
   protected expectedFields: Field[] = [
     {
       field: 'partitionId',
