@@ -8,7 +8,7 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
   protected stepName: string = 'Bulk add or remove Marketo program members';
   protected stepExpression: string = 'bulk add or remove marketo program members';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
-  protected actionList: string[] = ['create', 'delete'];
+  protected actionList: string[] = ['add', 'remove'];
   protected targetObject: string = 'Program Member';
   protected expectedFields: Field[] = [
     {
