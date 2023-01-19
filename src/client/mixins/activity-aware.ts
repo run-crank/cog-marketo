@@ -5,19 +5,25 @@ export class ActivityAwareMixin {
   delayInSeconds;
 
   public async getActivityTypes() {
-    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    if (this.delayInSeconds > 0) {
+      await this.delay(this.delayInSeconds);
+    }
     return await this.client.activities.getActivityTypes();
   }
 
   public async getActivityPagingToken(sinceDate) {
-    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    if (this.delayInSeconds > 0) {
+      await this.delay(this.delayInSeconds);
+    }
     return await this.client._connection.get(`/v1/activities/pagingtoken.json?sinceDatetime=${sinceDate}`);
   }
 
   public async getActivitiesByLeadId(nextPageToken, leadIdInput, activityId) {
     // NOTE: leadId can be either a single ID or an array of IDs
     const leadId = JSON.parse(JSON.stringify(leadIdInput)); // Make a copy since it can be mutated
-    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    if (this.delayInSeconds > 0) {
+      await this.delay(this.delayInSeconds);
+    }
 
     const output = {
       success: true,
@@ -93,7 +99,9 @@ export class ActivityAwareMixin {
   }
 
   public async getActivities(nextPageToken, activityId) {
-    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    if (this.delayInSeconds > 0) {
+      await this.delay(this.delayInSeconds);
+    }
     return await this.client._connection.get('/v1/activities.json', {
       query: {
         nextPageToken,
