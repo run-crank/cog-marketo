@@ -24,7 +24,7 @@ export class EmailAwareMixin {
       return new Promise(async (resolve) => {
         try {
           if (this.delayInSeconds > 0) {
-            await this.delay(this.delayInSeconds)
+            await this.delay(this.delayInSeconds);
           }
           const response = await this.client._connection.get(`/asset/v1/emails.json?maxReturn=200&offset=${i * 200}`);
           if (response.hasOwnProperty('result')) {

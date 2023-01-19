@@ -104,7 +104,7 @@ export class SmartCampaignAwareMixin {
       return new Promise(async (resolve) => {
         try {
           if (this.delayInSeconds > 0) {
-            await this.delay(this.delayInSeconds)
+            await this.delay(this.delayInSeconds);
           }
           const response = await this.client.campaign.getSmartCampaigns({ maxReturn: 200, offset: i * 200 });
           if (response.hasOwnProperty('result')) {
