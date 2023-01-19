@@ -6,14 +6,14 @@ export class StatsAwareMixin {
 
   public async getDailyApiUsage() {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     return await this.client._connection.get('/v1/stats/usage.json');
   }
 
   public async getWeeklyApiUsage() {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     return await this.client._connection.get('/v1/stats/usage/last7days.json');
   }

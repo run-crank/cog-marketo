@@ -7,7 +7,7 @@ export class CustomObjectAwareMixin {
 
   public async createOrUpdateCustomObject(customObjectName, customObject: Record<string, any>) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     return this.client._connection.postJson(
       `/v1/customobjects/${customObjectName}.json`,
@@ -26,7 +26,7 @@ export class CustomObjectAwareMixin {
 
   public async getCustomObject(customObjectName) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     // This safely reduces the number of API calls that might have to be made
     // in custom object field check steps, but is an imcomplete solution.
@@ -44,7 +44,7 @@ export class CustomObjectAwareMixin {
   // @todo Update this method and callees to remove the requestFields argument.
   public async queryCustomObject(customObjectName, filterType, searchFields: any[], requestFields: string[] = []) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     const fields = await this.getCustomObject(customObjectName);
     if (isObject(searchFields[0])) {
@@ -70,7 +70,7 @@ export class CustomObjectAwareMixin {
 
   public async deleteCustomObjectById(customObjectName, customObjectGUID) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     // @todo Contribute this back up to the package.
     return this.client._connection.postJson(

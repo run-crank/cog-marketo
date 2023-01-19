@@ -6,14 +6,14 @@ export class EmailAwareMixin {
 
   public async sendSampleEmail(emailId, email) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     return await this.client._connection.post(`/asset/v1/email/${emailId}/sendSample.json?emailAddress=${email}`);
   }
 
   public async getEmailByName(name) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     return await this.client._connection.get(`/asset/v1/email/byName.json?name=${name}`);
   }

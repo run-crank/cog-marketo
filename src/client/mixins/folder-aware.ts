@@ -6,7 +6,7 @@ export class FolderAwareMixin {
 
   public async getFoldersById(id: string) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     return await this.client._connection.get(`/asset/v1/folder/${id}.json?type=Folder`);
   }

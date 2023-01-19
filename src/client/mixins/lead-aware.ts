@@ -6,7 +6,7 @@ export class LeadAwareMixin {
 
   public async createOrUpdateLead(lead: Record<string, any>, partitionId: number = 1) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     const partitions = await this.client.lead.partitions();
     const partition = partitions.result.find(option => option.id === partitionId);
@@ -20,7 +20,7 @@ export class LeadAwareMixin {
 
   public async createLead(lead: Record<string, any>, partitionId: number = 1) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     const partitions = await this.client.lead.partitions();
     const partition = partitions.result.find(option => option.id === partitionId);
@@ -40,7 +40,7 @@ export class LeadAwareMixin {
 
   public async updateLead(lead: Record<string, any>, lookupField: string, value: string, partitionId: number = 1) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     const partitions = await this.client.lead.partitions();
     const partition = partitions.result.find(option => option.id === partitionId);
@@ -66,7 +66,7 @@ export class LeadAwareMixin {
 
   public async bulkCreateOrUpdateLead(leads: {}[], partitionId: number = 1) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     const partitions = await this.client.lead.partitions();
     const partition = partitions.result.find(option => option.id === partitionId);
@@ -87,7 +87,7 @@ export class LeadAwareMixin {
 
   public async bulkRemoveLeadsFromProgram(leads: {}[], programId: string, partitionId: number = null) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     const partitions = await this.client.lead.partitions();
     const partition = partitions.result.find(option => option.id === partitionId);
@@ -132,7 +132,7 @@ export class LeadAwareMixin {
 
   public async bulkSetStatusToLeadsFromProgram(leads: {}[], programId: string, status: string, partitionId: number = null) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     const partitions = await this.client.lead.partitions();
     const partition = partitions.result.find(option => option.id === partitionId);
@@ -182,7 +182,7 @@ export class LeadAwareMixin {
 
   public async bulkFindLeadsByEmail(emails: [], justInCaseField: string = null, partitionId: number = null) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     const fields = await this.describeLeadFields();
     const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
@@ -222,7 +222,7 @@ export class LeadAwareMixin {
 
   public async bulkFindLeadsById(ids: [], justInCaseField: string = null, partitionId: number = null) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     let response;
 
@@ -260,7 +260,7 @@ export class LeadAwareMixin {
 
   public async findLeadByField(field: string, value: string, justInCaseField: string = null, partitionId: number = null) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     const fields = await this.describeLeadFields();
     const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
@@ -304,7 +304,7 @@ export class LeadAwareMixin {
 
   public async findLeadByEmail(email: string, justInCaseField: string = null, partitionId: number = null) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     const fields = await this.describeLeadFields();
     const fieldList: string[] = fields.result.filter(field => field.rest).map((field: any) => field.rest.name);
@@ -340,14 +340,14 @@ export class LeadAwareMixin {
 
   public async associateLeadById(leadId: string, cookie: string) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     return await this.client.lead.associateLead(leadId, cookie);
   }
 
   public async mergeLeadsById(winningLead: string, losingLeads: string[]) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     return await this.client.lead.mergeLead(winningLead, losingLeads, { mergeInCrm: null });
   }
@@ -372,7 +372,7 @@ export class LeadAwareMixin {
 
   public async deleteLeadById(leadId: number, email: string = null) {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     // @todo Contribute this back up to the package.
     return this.client._connection.postJson(
@@ -384,7 +384,7 @@ export class LeadAwareMixin {
 
   public async describeLeadFields() {
     if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds)
+      await this.delay(this.delayInSeconds);
     }
     // This safely reduces the number of API calls that might have to be made
     // in lead field check steps, but is an imcomplete solution.
