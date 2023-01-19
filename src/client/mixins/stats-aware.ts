@@ -5,12 +5,16 @@ export class StatsAwareMixin {
   delayInSeconds;
 
   public async getDailyApiUsage() {
-    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    if (this.delayInSeconds > 0) {
+      await this.delay(this.delayInSeconds)
+    }
     return await this.client._connection.get('/v1/stats/usage.json');
   }
 
   public async getWeeklyApiUsage() {
-    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    if (this.delayInSeconds > 0) {
+      await this.delay(this.delayInSeconds)
+    }
     return await this.client._connection.get('/v1/stats/usage/last7days.json');
   }
 

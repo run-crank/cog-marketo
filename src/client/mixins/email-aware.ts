@@ -5,12 +5,16 @@ export class EmailAwareMixin {
   delayInSeconds;
 
   public async sendSampleEmail(emailId, email) {
-    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    if (this.delayInSeconds > 0) {
+      await this.delay(this.delayInSeconds)
+    }
     return await this.client._connection.post(`/asset/v1/email/${emailId}/sendSample.json?emailAddress=${email}`);
   }
 
   public async getEmailByName(name) {
-    this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+    if (this.delayInSeconds > 0) {
+      await this.delay(this.delayInSeconds)
+    }
     return await this.client._connection.get(`/asset/v1/email/byName.json?name=${name}`);
   }
 
@@ -19,7 +23,9 @@ export class EmailAwareMixin {
     await Promise.all([0, 1, 2, 3, 4].map((i) => {
       return new Promise(async (resolve) => {
         try {
-          this.delayInSeconds > 0 ? await this.delay(this.delayInSeconds) : null;
+          if (this.delayInSeconds > 0) {
+            await this.delay(this.delayInSeconds)
+          }
           const response = await this.client._connection.get(`/asset/v1/emails.json?maxReturn=200&offset=${i * 200}`);
           if (response.hasOwnProperty('result')) {
             response.result.forEach((campaign) => {
