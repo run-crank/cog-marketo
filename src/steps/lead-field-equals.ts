@@ -111,6 +111,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     const operator: string = stepData.operator || 'be';
     const partitionId: number = stepData.partitionId ? parseFloat(stepData.partitionId) : null;
     const field = stepData.field;
+    const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
     let expectedValue = stepData.expectation;
     let dynamicExpectation = false;
 
@@ -120,11 +121,18 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
 
     if (stepData.multiple_email && Array.isArray(stepData.multiple_email) && stepData.multiple_email.length > 0) {
       try {
+        let lookupField = 'id';
+        let data:any;
+        const leadArray = stepData.multiple_email;
+        if (emailRegex.test(stepData.multiple_email[0])) {
+          lookupField = 'email';
+          data = await this.client.bulkFindLeadsByEmail(leadArray, field, partitionId);
+        } else {
+          data = await this.client.bulkFindLeadsById(leadArray, field, partitionId);
+        }
         // Checking multiple leads
-        const emailArray = stepData.multiple_email;
         const successArray = [];
         const failArray = [];
-        const data: any = await this.client.bulkFindLeadsByEmail(emailArray, field, partitionId);
         const indexMap = {}; // Only needed if using dynamic multiple leads with different expected values
 
         // Check if the expectedValue is dynamic
@@ -132,29 +140,29 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
           dynamicExpectation = true;
           expectedValue = stepData.multiple_expectation;
 
-          if (emailArray.length !== expectedValue.length) {
+          if (leadArray.length !== expectedValue.length) {
             return this.fail('Number of leads provided did not match number of expected values provided', [], []);
           }
 
-          emailArray.forEach((email: string, index: number) => {
-            indexMap[email] = expectedValue[index];
+          leadArray.forEach((emailOrId: string, index: number) => {
+            indexMap[lookupField] = expectedValue[index];
           });
         }
 
         // Sort each batch of leads into successArray and failArray
         data.forEach((batch, i) => {
           const startingIndex = i * 300;
-          const emailSubarray = emailArray.slice(startingIndex, startingIndex + 300);
+          const leadSubArray = leadArray.slice(startingIndex, startingIndex + 300);
           if (batch.success && batch.result) {
             // If an email is missing from the response, then add it to the failArray
-            emailSubarray.forEach((email) => {
-              if (batch.result.filter(result => email === result.email).length === 0) {
-                failArray.push({ email, id: null,  message: `Couldn't find lead associated with ${email}` });
+            leadSubArray.forEach((emailOrId) => {
+              if (batch.result.filter(result => [result.email, result.id].includes(emailOrId)).length === 0) {
+                failArray.push({ email: lookupField === 'email' ? emailOrId : null, id:  lookupField === 'id' ? emailOrId : null,  message: `Couldn't find lead associated with ${emailOrId}` });
               }
             });
             batch.result.forEach((result, j) => {
               if (result.hasOwnProperty(field)) {
-                const currExpectedValue = dynamicExpectation ? indexMap[result.email] : expectedValue;
+                const currExpectedValue = dynamicExpectation ? indexMap[lookupField === 'email' ? result.email : result.id] : expectedValue;
                 const assertResult = this.assert(operator, result[field], currExpectedValue, field, stepData['__piiSuppressionLevel']);
                 if (assertResult.valid) {
                   successArray.push({ email: result.email, id: result.id, message: assertResult.message });
@@ -167,8 +175,8 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
             });
           } else {
             // The entire batch will go in the failedArray if the response.success isn't truthy
-            emailSubarray.forEach((email) => {
-              failArray.push({ email, id: null,  message: `Marketo request failed for ${email}` });
+            leadSubArray.forEach((emailOrId) => {
+              failArray.push({ email: lookupField === 'email' ? emailOrId : null, id:  lookupField === 'id' ? emailOrId : null,  message: `Marketo request failed for ${emailOrId}` });
             });
           }
         });
@@ -179,13 +187,13 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
         if (returnedLeadsCount === 0) {
           // No leads returned from Marketo
           return this.fail('There was an error finding the leads in Marketo', [], []);
-        } else if (emailArray.length !== returnedLeadsCount) {
+        } else if (leadArray.length !== returnedLeadsCount) {
           // Not all leads were returned from Marketo
           records.push(this.createTable('failedLeads', 'Leads Failed', failArray));
           records.push(this.createTable('passedLeads', 'Leads Passed', successArray));
           return this.fail(
             'Found %d of %d leads where the %s field was found to %s %s',
-            [successArray.length , emailArray.length, field, operator, expectedValue],
+            [successArray.length , leadArray.length, field, operator, expectedValue],
             records,
           );
         } else if (!failArray.length) {
@@ -201,7 +209,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
           records.push(this.createTable('passedLeads', 'Leads Passed', successArray));
           return this.fail(
             'Found %d of %d leads where the %s field was found to %s %s',
-            [successArray.length , emailArray.length, field, operator, expectedValue],
+            [successArray.length , leadArray.length, field, operator, expectedValue],
             records,
           );
         }
@@ -218,7 +226,6 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
     } else {
       // Only checking one lead
       try {
-        const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
         let lookupField = 'id';
         if (emailRegex.test(reference)) {
           lookupField = 'email';
