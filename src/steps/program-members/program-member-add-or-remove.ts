@@ -131,7 +131,6 @@ export class AddOrRemoveProgramMemberStep extends BaseStep implements StepInterf
           try {
             const response = await this.client.findLeadByField('id', stepData.email, null, partitionId);
             if (!response.success || !response.result.length || !response.result[0].email) {
-              console.log('response:', response)
               return this.error('There was an error finding lead %s', [stepData.email.toString()]);
             }
             leadEmailArray.push(response.result[0].email);

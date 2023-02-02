@@ -145,7 +145,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
           }
 
           leadArray.forEach((emailOrId: string, index: number) => {
-            indexMap[lookupField] = expectedValue[index];
+            indexMap[emailOrId] = expectedValue[index];
           });
         }
 
