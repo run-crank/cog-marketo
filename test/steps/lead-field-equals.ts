@@ -577,6 +577,38 @@ describe('LeadFieldEqualsStep', () => {
       expect(response.toObject().messageFormat).to.contain('Successfully checked %d leads');
     });
     
+    it('should respond with a pass if the field on the lead matches the expectation by ID', async () => {
+      clientWrapperStub.bulkFindLeadsById = sinon.stub();
+      protoStep.setData(Struct.fromJavaScript({
+        expectation: 'Atoma',
+        email: 'dummyEmail',
+        multiple_email: ['111111', '111112', '111113'],
+        field: 'firstName',
+      }));
+  
+      // Have the client respond with a valid, but mismatched lead.
+      clientWrapperStub.bulkFindLeadsById.returns(Promise.resolve([{
+        success: true,
+        result: [{
+          firstName: 'Atoma',
+          id: '111111',
+          email: 'expected1@example.com',
+        }, {
+          firstName: 'Atoma',
+          id: '111112',
+          email: 'expected2@example.com',
+        }, {
+          firstName: 'Atoma',
+          id: '111113',
+          email: 'expected3@example.com',
+        }],
+      }]));
+  
+      const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+      expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
+      expect(response.toObject().messageFormat).to.contain('Successfully checked %d leads');
+    });
+    
     it('should respond with a pass if the fields on all leads match dynamic expectations', async () => {
       protoStep.setData(Struct.fromJavaScript({
         expectation: 'Atoma',
@@ -600,6 +632,39 @@ describe('LeadFieldEqualsStep', () => {
         }, {
           firstName: 'expectation3',
           id: 3,
+          email: 'expected3@example.com',
+        }],
+      }]));
+  
+      const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+      expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
+      expect(response.toObject().messageFormat).to.contain('Successfully checked %d leads');
+    });
+    
+    it('should respond with a pass if the fields on all leads match dynamic expectations by ID', async () => {
+      clientWrapperStub.bulkFindLeadsById = sinon.stub();
+      protoStep.setData(Struct.fromJavaScript({
+        expectation: 'Atoma',
+        email: 'dummyEmail',
+        multiple_email: ['111111', '111112', '111113'],
+        multiple_expectation: ['expectation1', 'expectation2', 'expectation3'],
+        field: 'firstName',
+      }));
+  
+      // Have the client respond with a valid, but mismatched lead.
+      clientWrapperStub.bulkFindLeadsById.returns(Promise.resolve([{
+        success: true,
+        result: [{
+          firstName: 'expectation1',
+          id: '111111',
+          email: 'expected1@example.com',
+        }, {
+          firstName: 'expectation2',
+          id: '111112',
+          email: 'expected2@example.com',
+        }, {
+          firstName: 'expectation3',
+          id: '111113',
           email: 'expected3@example.com',
         }],
       }]));
