@@ -85,13 +85,13 @@ export class AddOrRemoveProgramMemberStep extends BaseStep implements StepInterf
           const bulkFindLeadResponse = await this.client.bulkFindLeadsByEmail(stepData.multiple_email, null, partitionId);
           await bulkFindLeadResponse.forEach(async (batch) => {
             if (!batch.success) {
-              return this.error('There was an error finding some lead IDs in partition %d: %s', [partitionId, batch.message]);
+              return this.error('There was an error finding some lead IDs: %s', [batch.message]);
             }
             count += batch.result.length;
           });
 
           if (count !== stepData.multiple_email.length) {
-            return this.error('Could not find all leads provided in partition %d', [partitionId]);
+            return this.error('Could not find all leads provided');
           }
 
         } else {
@@ -103,7 +103,7 @@ export class AddOrRemoveProgramMemberStep extends BaseStep implements StepInterf
           const bulkFindLeadResponse = await this.client.bulkFindLeadsById(stepData.multiple_email, null, partitionId);
           await bulkFindLeadResponse.forEach(async (batch) => {
             if (!batch.success) {
-              return this.error('There was an error finding some leads in partition %d: %s', [partitionId, batch.message]);
+              return this.error('There was an error finding some leads: %s', [batch.message]);
             }
 
             await batch.result.forEach((lead) => {
@@ -115,7 +115,7 @@ export class AddOrRemoveProgramMemberStep extends BaseStep implements StepInterf
           });
 
           if (count !== stepData.multiple_email.length) {
-            return this.error('Could not find all leads provided in partition %d', [partitionId]);
+            return this.error('Could not find all leads provided');
           }
 
         }
@@ -124,19 +124,18 @@ export class AddOrRemoveProgramMemberStep extends BaseStep implements StepInterf
         if (emailRegex.test(stepData.email)) {
           const response = await this.client.findLeadByEmail(stepData.email, null, partitionId);
           if (!response.success) {
-            return this.error('There was an error finding lead %d in partition %d', [stepData.email, partitionId]);
+            return this.error('There was an error finding lead %s', [stepData.email.toString()]);
           }
           leadEmailArray.push(stepData.email);
         } else {
           try {
             const response = await this.client.findLeadByField('id', stepData.email, null, partitionId);
-            const email = response.result[0].email;
-            if (!response.success || !email) {
-              return this.error('There was an error finding lead %d in partition %d', [stepData.email, partitionId]);
+            if (!response.success || !response.result.length || !response.result[0].email) {
+              return this.error('There was an error finding lead %s', [stepData.email.toString()]);
             }
-            leadEmailArray.push(email);
+            leadEmailArray.push(response.result[0].email);
           } catch (e) {
-            return this.error('There was an error finding lead %d in partition %d', [stepData.email, partitionId]);
+            return this.error('There was an error finding lead %s', [stepData.email.toString()]);
           }
         }
       }
