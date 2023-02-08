@@ -8,8 +8,8 @@ export class SendSampleEmailStep extends BaseStep implements StepInterface {
   protected stepName: string = 'Send sample email';
   protected stepExpression: string = 'send a sample email to (?<emailAddress>.+\@.+\..+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.ACTION;
-  protected actionList: string[] = [];
-  protected targetObject: string = 'Send Email';
+  protected actionList: string[] = ['send'];
+  protected targetObject: string = 'Sample Email';
   protected expectedFields: Field[] = [
     {
       field: 'workspace',
