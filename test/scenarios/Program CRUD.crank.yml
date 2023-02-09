@@ -39,4 +39,5 @@ steps:
     costsDestructiveUpdate: true
 - step: Then the costs field on Marketo program Test Program 01 should be 5000
 - step: Then the folder field on Marketo program Test Program 01 should be Testing Folder
+- step: Then check the number of members from marketo program Test Program 01
 - step: Finally, delete the Test Program 01 Marketo program
