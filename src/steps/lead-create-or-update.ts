@@ -48,11 +48,12 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
       if (data.success && data.result && data.result[0] && data.result[0].status !== 'skipped') {
         const createdLead: any = await this.client.findLeadByEmail(lead.email, null, partitionId);
         const record = this.createRecord(createdLead.result[0]);
+        const passingRecord = this.createPassingRecord(createdLead.result[0], Object.keys(lead));
         const orderedRecord = this.createOrderedRecord(createdLead.result[0], stepData['__stepOrder']);
         return this.pass(
           'Successfully created or updated lead %s with status %s',
           [lead.email, data.result[0].status],
-          [record, orderedRecord],
+          [record, passingRecord, orderedRecord],
         );
       } else if (data && data.error && !data.error.partition) {
         return this.fail('There is no Partition with id %s', [
@@ -78,6 +79,18 @@ export class CreateOrUpdateLeadByFieldStep extends BaseStep implements StepInter
 
   public createRecord(lead): StepRecord {
     return this.keyValue('lead', 'Created Lead', lead);
+  }
+
+  public createPassingRecord(data, fields): StepRecord {
+    const filteredData = {};
+    if (data) {
+      Object.keys(data).forEach((key) => {
+        if (fields.includes(key)) {
+          filteredData[key] = data[key];
+        }
+      });
+    }
+    return this.keyValue('exposeOnPass:lead', 'Created Lead', filteredData);
   }
 
   public createOrderedRecord(lead, stepOrder = 1): StepRecord {
