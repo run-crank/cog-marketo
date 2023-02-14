@@ -115,8 +115,9 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
       const data = await this.client.createOrUpdateCustomObject(name, object);
       if (data.success && data.result.length > 0 && data.result[0].status != 'skipped') {
         const custObjRecord = this.createRecord(data);
+        const custObjPassingRecord = this.createPassingRecord(data);
         const orderedCustObjRecord = this.createOrderedRecord(data, stepData['__stepOrder']);
-        return this.pass(`Successfully ${data.result[0].status} %s`, [name], [custObjRecord, orderedCustObjRecord]);
+        return this.pass(`Successfully ${data.result[0].status} %s`, [name], [custObjRecord, custObjPassingRecord, orderedCustObjRecord]);
       } else {
         return this.fail('Failed to create %s.: %s', [
           name,
@@ -133,6 +134,12 @@ export class CreateOrUpdateCustomObjectStep extends BaseStep implements StepInte
 
   public createRecord(customObject): StepRecord {
     return this.keyValue('customObject', `Created ${customObject.result[0].displayName}`, {
+      marketoGUID: customObject.result[0].marketoGUID,
+    });
+  }
+
+  public createPassingRecord(customObject): StepRecord {
+    return this.keyValue('exposeOnPass:customObject', `Created ${customObject.result[0].displayName}`, {
       marketoGUID: customObject.result[0].marketoGUID,
     });
   }
