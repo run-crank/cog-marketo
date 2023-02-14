@@ -1,0 +1,7 @@
+scenario: Checking api usage limit of marketo instance
+description: Checking api usage limit of marketo instance
+
+steps:
+- step: There should be less than 90% usage of your daily API limit
+  data: 
+    requestLimit: 1000000

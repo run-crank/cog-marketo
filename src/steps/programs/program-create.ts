@@ -1,7 +1,7 @@
 /*tslint:disable:no-else-after-return*/
 
 import { BaseStep, Field, StepInterface, ExpectedRecord } from '../../core/base-step';
-import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../../proto/cog_pb';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition, StepRecord } from '../../proto/cog_pb';
 
 export class CreateProgramStep extends BaseStep implements StepInterface {
 
@@ -81,7 +81,11 @@ export class CreateProgramStep extends BaseStep implements StepInterface {
         return this.pass(
           'Successfully created program %s',
           [name],
-          [this.keyValue('program', 'Created Program', { id: data.result[0].id })],
+          [
+            this.createRecord(data.result[0]),
+            this.createPassingRecord(data.result[0]),
+            this.createOrderedRecord(data.result[0], stepData['__stepOrder']),
+          ],
         );
       } else {
         if (data.result && data.result[0] && data.result[0].reasons && data.result[0].reasons[0]) {
@@ -102,6 +106,35 @@ export class CreateProgramStep extends BaseStep implements StepInterface {
     }
   }
 
+  public createRecord(data): StepRecord {
+    return this.keyValue('program', 'Created Program', data);
+  }
+
+  public createPassingRecord(data): StepRecord {
+    const stepRecordFields = [
+      'name:',
+      'description',
+      'workspace',
+      'folder',
+      'channel',
+      'type',
+    ];
+    const filteredData = {};
+    Object.keys(data).forEach((key) => {
+      if (stepRecordFields.includes(key)) {
+        if (key === 'folder') {
+          filteredData[key] = data[key].value;
+        } else {
+          filteredData[key] = data[key];
+        }
+      }
+    });
+    return this.keyValue('exposeOnPass:program', 'Created Program', filteredData);
+  }
+
+  public createOrderedRecord(data, stepOrder = 1): StepRecord {
+    return this.keyValue(`program.${stepOrder}`, `Created Program from Step ${stepOrder}`, data);
+  }
 }
 
 export { CreateProgramStep as Step };

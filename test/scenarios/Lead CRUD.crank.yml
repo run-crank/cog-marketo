@@ -4,7 +4,7 @@ description: |
   expected.
 
 steps:
-- step: When I create or update a marketo lead
+- step: When I create a marketo lead
   data:
     partitionId: 1
     lead:
@@ -15,7 +15,7 @@ steps:
 - step: Then the email field on Marketo lead onetwomkto@thisisjust.atomatest.com should be onetwomkto@thisisjust.atomatest.com
 - step: And the firstName field on Marketo lead onetwomkto@thisisjust.atomatest.com should be james
 - step: And the lastName field on Marketo lead onetwomkto@thisisjust.atomatest.com should be yap
-- step: When I create or update a marketo lead
+- step: When I update a marketo lead
   data:
     partitionId: 1
     reference: onetwomkto@thisisjust.atomatest.com
@@ -25,4 +25,5 @@ steps:
         lastName: yap
         company: JY Corp
 - step: And the firstName field on Marketo lead onetwomkto@thisisjust.atomatest.com should be joey
+- step: And discover fields on marketo lead onetwomkto@thisisjust.atomatest.com
 - step: Finally, delete the onetwomkto@thisisjust.atomatest.com Marketo lead
