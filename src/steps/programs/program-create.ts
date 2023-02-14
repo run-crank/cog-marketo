@@ -131,7 +131,6 @@ export class CreateProgramStep extends BaseStep implements StepInterface {
         }
       });
     }
-    
     return this.keyValue('exposeOnPass:program', 'Created Program', filteredData);
   }
 
