@@ -120,15 +120,17 @@ export class CreateProgramStep extends BaseStep implements StepInterface {
       'type',
     ];
     const filteredData = {};
-    Object.keys(data).forEach((key) => {
-      if (stepRecordFields.includes(key)) {
-        if (key === 'folder') {
-          filteredData[key] = data[key].value;
-        } else {
-          filteredData[key] = data[key];
+    if (data) {
+      Object.keys(data).forEach((key) => {
+        if (stepRecordFields.includes(key)) {
+          if (key === 'folder') {
+            filteredData[key] = data[key].value;
+          } else {
+            filteredData[key] = data[key];
+          }
         }
-      }
-    });
+      });
+    }
     return this.keyValue('exposeOnPass:program', 'Created Program', filteredData);
   }
 
