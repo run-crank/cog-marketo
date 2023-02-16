@@ -338,13 +338,6 @@ export class LeadAwareMixin {
     return response;
   }
 
-  public async associateLeadById(leadId: string, cookie: string) {
-    if (this.delayInSeconds > 0) {
-      await this.delay(this.delayInSeconds);
-    }
-    return await this.client.lead.associateLead(leadId, cookie);
-  }
-
   public async mergeLeadsById(winningLead: string, losingLeads: string[]) {
     if (this.delayInSeconds > 0) {
       await this.delay(this.delayInSeconds);
