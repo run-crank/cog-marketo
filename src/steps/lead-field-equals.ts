@@ -274,7 +274,7 @@ export class LeadFieldEqualsStep extends BaseStep implements StepInterface {
   }
 
   createOrderedRecord(lead, stepOrder = 1): StepRecord {
-    return this.keyValue(`lead.${stepOrder}`, `Created Lead from Step ${stepOrder}`, lead);
+    return this.keyValue(`lead.${stepOrder}`, `Checked Lead from Step ${stepOrder}`, lead);
   }
 
   createTable(id: string, name: string, leads: any[]): StepRecord {
