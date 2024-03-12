@@ -277,13 +277,13 @@ export class LeadAwareMixin {
       'leadPartitionId',
     ].filter(f => !!f);
 
-    if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
+    if (fieldList.join(',').length > 7000 && fieldList.length >= 1000) {
       // If the length of the get request would be over 7KB, then the request
       // would fail. And if the amount of fields is over 1000, it is likely
       // not worth it to cache with the if statement below.
       // Instead, we will only request the needed fields.
       response = await this.client.lead.find(field, [value], { fields: mustHaveFields });
-    } else if (fieldList.join(',').length > 7168) {
+    } else if (fieldList.join(',').length > 7000) {
       // If the length of the get request would be over 7KB, then the request
       // would fail. Instead, we will split the request every 200 fields, and
       // combine the results.
@@ -320,9 +320,9 @@ export class LeadAwareMixin {
     ].filter(f => !!f);
     let response: any = {};
 
-    if (fieldList.join(',').length > 7168 && fieldList.length >= 1000) {
+    if (fieldList.join(',').length > 7000 && fieldList.length >= 1000) {
       response = await this.client.lead.find('email', [email], { fields: mustHaveFields });
-    } else if (fieldList.join(',').length > 7168) {
+    } else if (fieldList.join(',').length > 7000) {
       response = await this.marketoRequestHelperFuntion(fieldList, 'email', email);
     } else {
       response = await this.client.lead.find('email', [email], { fields: fieldList });
