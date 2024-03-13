@@ -99,7 +99,7 @@ describe('CheckLeadActivityByIdStep', () => {
         }));
 
         clientWrapperStub.findLeadByField.returns(Promise.resolve({
-          result: [{}],
+          result: [{ id: 10001 }],
         }));
 
         clientWrapperStub.getActivityTypes.returns(Promise.resolve({
