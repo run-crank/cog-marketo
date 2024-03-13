@@ -81,8 +81,8 @@ export class CheckLeadActivityByIdStep extends BaseStep implements StepInterface
 
       const lead = (await this.client.findLeadByField('id', id, null, partitionId)).result[0];
 
-      /* Error when lead is not found */
-      if (!lead) {
+      /* Error when lead is not found OR if lead is an empty object */
+      if (!lead || !Object.keys(lead).length) {
         return this.fail('Lead %s was not found%s', [
           id,
           partitionId ? ` in partition ${partitionId}` : '',

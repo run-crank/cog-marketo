@@ -233,7 +233,7 @@ export class AddLeadToSmartCampaignStep extends BaseStep implements StepInterfac
 
         const findLeadResponse: any = await this.client.findLeadByField(lookupField, reference, null, partitionId);
 
-        if (!findLeadResponse.result[0]) {
+        if (!findLeadResponse.result[0] || !Object.keys(findLeadResponse.result[0]).length) {
           return this.fail(
             'Couldn\'t find a lead associated with %s%s', [
               findLeadResponse,

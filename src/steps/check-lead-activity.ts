@@ -354,8 +354,8 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
         const lead = (await this.client.findLeadByField(lookupField, reference, null, partitionId)).result[0];
 
-        /* Error when lead is not found */
-        if (!lead) {
+        /* Error when lead is not found OR if lead is an empty object */
+        if (!lead || !Object.keys(lead).length) {
           return this.fail('Lead %s was not found%s', [
             reference,
             partitionId ? ` in partition ${partitionId}` : '',
@@ -433,6 +433,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
       }
 
     } catch (e) {
+      console.log(e);
       return this.error('There was an error checking activities for Marketo Lead: %s', [
         e.toString(),
       ]);
