@@ -8,7 +8,7 @@ export class StaticListAwareMixin {
     if (this.delayInSeconds > 0) {
       await this.delay(this.delayInSeconds);
     }
-    return await this.client._connection.get(`/asset/v1/staticList/byName.json?name=${name}`);
+    return await this.client._connection.get(`/asset/v1/staticList/byName.json?name=${encodeURIComponent(name)}`);
   }
 
   public async findStaticLists() {
