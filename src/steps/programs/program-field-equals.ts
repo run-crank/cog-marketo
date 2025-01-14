@@ -96,9 +96,9 @@ export class ProgramFieldEqualsStep extends BaseStep implements StepInterface {
           : this.fail(result.message, [], [record, orderedRecord]);
 
       } else {
-        const record = this.createRecord(data.result[0]);
-        const orderedRecord = this.createOrderedRecord(data.result[0], stepData['__stepOrder']);
         if (data.result && data.result[0] && !data.result[0][field]) {
+          const record = this.createRecord(data.result[0]);
+          const orderedRecord = this.createOrderedRecord(data.result[0], stepData['__stepOrder']);
           return this.fail(
             'Found the %s program, but there was no %s field.',
             [name, field],
