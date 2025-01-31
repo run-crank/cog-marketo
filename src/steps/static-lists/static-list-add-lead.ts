@@ -15,6 +15,12 @@ export class AddLeadToStaticListStep extends BaseStep implements StepInterface {
     type: FieldDefinition.Type.STRING,
     description: "Static List's Name",
   }, {
+    field: 'programId',
+    type: FieldDefinition.Type.NUMERIC,
+    description: 'Program Id',
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+    help: 'Used to filter the static lists if there are multiple static lists with the same name',
+  }, {
     field: 'leadIds',
     type: FieldDefinition.Type.STRING,
     description: 'Ids of Marketo Leads to be added separated by a comma(,) ',
@@ -54,22 +60,40 @@ export class AddLeadToStaticListStep extends BaseStep implements StepInterface {
   async executeStep(step: Step) {
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
     const staticListName = stepData.staticListName;
-    let staticList: any;
+    const programId = stepData.programId || null;
+
+    let staticListResponse: any;
+    let staticListId: Number;
     try {
-      staticList = await this.client.findStaticListsByName(staticListName);
+      staticListResponse = await this.client.findStaticListsByName(staticListName);
     } catch (e) {
       return this.error('Error finding Static List with name %s: %s', [
         staticListName, JSON.stringify(e),
       ]);
     }
 
-    if (!staticList.result || (staticList.result && staticList.result.length === 0)) {
+    if (!staticListResponse.result || (staticListResponse.result && staticListResponse.result.length === 0)) {
       return this.error('Static List with name %s does not exist', [
         staticListName,
       ]);
     }
 
-    let leadIds = stepData.leadIds ? stepData.leadIds.replace(' ', '').split(',') : null;
+    if (programId && staticListResponse.result && staticListResponse.result.length > 1) {
+      const matchingStaticLists = staticListResponse.result.filter(list => list.folder.id === programId);
+
+      if (matchingStaticLists && matchingStaticLists.length !== 1) {
+        return this.error('Multiple Static Lists with name %s exist in Program with id %s', [
+          staticListName,
+          programId,
+        ]);
+      }
+
+      staticListId = matchingStaticLists[0].id;
+    } else {
+      staticListId = staticListResponse.result[0].id;
+    }
+
+    let leadIds = stepData.leadIds ? stepData.leadIds.toString().replace(' ', '').split(',') : null;
 
     if (stepData.multiple_leadIds && Array.isArray(stepData.multiple_leadIds) && stepData.multiple_leadIds.length > 0) {
       leadIds = stepData.multiple_leadIds;
@@ -93,7 +117,7 @@ export class AddLeadToStaticListStep extends BaseStep implements StepInterface {
 
       await Promise.all(batches.map(batch => new Promise(async (resolve) => {
         try {
-          const data: any = await this.client.addLeadToStaticList(staticList.result[0].id, batch);
+          const data: any = await this.client.addLeadToStaticList(staticListId, batch);
           if (!data.success) {
             // If the batch failed, add each individual lead to failed array
             await batch.forEach(leadId => failedLeads.push({ id: leadId, status: 'skipped', reasons: `Batch failed with error: ${JSON.stringify(data.errors)}` }));

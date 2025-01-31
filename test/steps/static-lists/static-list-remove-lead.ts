@@ -43,9 +43,14 @@ describe('RemoveLeadToStaticListStep', () => {
     expect(fields[0].type).to.equal(FieldDefinition.Type.STRING);
 
     // leadIds field
-    expect(fields[1].key).to.equal('leadIds');
-    expect(fields[1].optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
-    expect(fields[1].type).to.equal(FieldDefinition.Type.STRING);
+    expect(fields[1].key).to.equal('programId');
+    expect(fields[1].optionality).to.equal(FieldDefinition.Optionality.OPTIONAL);
+    expect(fields[1].type).to.equal(FieldDefinition.Type.NUMERIC);
+
+    // leadIds field
+    expect(fields[2].key).to.equal('leadIds');
+    expect(fields[2].optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
+    expect(fields[2].type).to.equal(FieldDefinition.Type.STRING);
   });
 
   it('should respond with success step executes successfully', async () => {

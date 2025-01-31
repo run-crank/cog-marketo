@@ -15,6 +15,12 @@ export class RemoveLeadToStaticListStep extends BaseStep implements StepInterfac
     type: FieldDefinition.Type.STRING,
     description: "Static List's Name",
   }, {
+    field: 'programId',
+    type: FieldDefinition.Type.NUMERIC,
+    description: 'Program Id',
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+    help: 'Used to filter the static lists if there are multiple static lists with the same name',
+  }, {
     field: 'leadIds',
     type: FieldDefinition.Type.STRING,
     description: 'Ids of Marketo Leads to be removed separated by a comma(,) ',
@@ -29,19 +35,36 @@ export class RemoveLeadToStaticListStep extends BaseStep implements StepInterfac
   async executeStep(step: Step) {
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
     const staticListName = stepData.staticListName;
-    const leadIds = stepData.leadIds;
+    const programId = stepData.programId || null;
+    const leadIds = stepData.leadIds.toString();
 
+    let staticListId: Number;
     try {
       // Check if staticList exists and also get the id
-      const staticList: any = await this.client.findStaticListsByName(staticListName);
+      const staticListResponse: any = await this.client.findStaticListsByName(staticListName);
 
-      if (!staticList.result || (staticList.result && staticList.result.length === 0)) {
+      if (!staticListResponse.result || (staticListResponse.result && staticListResponse.result.length === 0)) {
         return this.error('Static List with name %s does not exist', [
           staticListName,
         ]);
       }
 
-      const data: any = await this.client.removeLeadToStaticList(staticList.result[0].id, leadIds.replace(' ', '').split(','));
+      if (programId && staticListResponse.result && staticListResponse.result.length > 1) {
+        const matchingStaticLists = staticListResponse.result.filter(list => list.folder.id === programId);
+
+        if (matchingStaticLists && matchingStaticLists.length !== 1) {
+          return this.error('Multiple Static Lists with name %s exist in Program with id %s', [
+            staticListName,
+            programId,
+          ]);
+        }
+
+        staticListId = matchingStaticLists[0].id;
+      } else {
+        staticListId = staticListResponse.result[0].id;
+      }
+
+      const data: any = await this.client.removeLeadToStaticList(staticListId, leadIds.replace(' ', '').split(','));
 
       if (data.success && data.result.find(l => l.status !== 'removed')) {
         return this.fail('Failed to remove all leads to static list %s', [staticListName], [this.createTable(data.result)]);

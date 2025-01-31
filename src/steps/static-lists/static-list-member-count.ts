@@ -17,6 +17,12 @@ export class StaticListMemberCountStep extends BaseStep implements StepInterface
     field: 'staticListName',
     type: FieldDefinition.Type.STRING,
     description: "Static List's Name",
+  }, {
+    field: 'programId',
+    type: FieldDefinition.Type.NUMERIC,
+    description: 'Program Id',
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+    help: 'Used to filter the static lists if there are multiple static lists with the same name',
   }];
   protected expectedRecords: ExpectedRecord[] = [{
     id: 'staticListMember',
@@ -36,21 +42,38 @@ export class StaticListMemberCountStep extends BaseStep implements StepInterface
   async executeStep(step: Step) {
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
     const staticListName = stepData.staticListName;
+    const programId = stepData.programId || null;
 
+    let staticListId: Number;
     try {
       // Check if staticList exists and also get the id
-      const staticList: any = await this.client.findStaticListsByName(staticListName);
+      const staticListResponse: any = await this.client.findStaticListsByName(staticListName);
 
-      if (!staticList.result || (staticList.result && staticList.result.length === 0)) {
+      if (!staticListResponse.result || (staticListResponse.result && staticListResponse.result.length === 0)) {
         return this.error('Static List with name %s does not exist', [
           staticListName,
         ]);
       }
 
-      const data: any = await this.client.findStaticListsMembershipByListId(staticList.result[0].id);
+      if (programId && staticListResponse.result && staticListResponse.result.length > 1) {
+        const matchingStaticLists = staticListResponse.result.filter(list => list.folder.id === programId);
+
+        if (matchingStaticLists && matchingStaticLists.length !== 1) {
+          return this.error('Multiple Static Lists with name %s exist in Program with id %s', [
+            staticListName,
+            programId,
+          ]);
+        }
+
+        staticListId = matchingStaticLists[0].id;
+      } else {
+        staticListId = staticListResponse.result[0].id;
+      }
+
+      const data: any = await this.client.findStaticListsMembershipByListId(staticListId);
 
       if (data.success && data.result) {
-        return this.pass('Static List %s has %s members', [staticListName, data.result.length], [this.createRecord(staticList.result[0].id, data.result.length), this.createOrderedRecord(staticList.result[0].id, data.result.length, stepData['__stepOrder']), this.createTable(data.result)]);
+        return this.pass('Static List %s has %s members', [staticListName, data.result.length], [this.createRecord(staticListId.toString(), data.result.length), this.createOrderedRecord(staticListId.toString(), data.result.length, stepData['__stepOrder']), this.createTable(data.result)]);
       } else {
         return this.error('There was an error while checking program static list member count');
       }
