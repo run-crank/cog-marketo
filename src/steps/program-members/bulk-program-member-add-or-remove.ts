@@ -20,7 +20,7 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
     {
       field: 'programId',
       type: FieldDefinition.Type.STRING,
-      description: 'ID of the program',
+      description: "Program's ID or name",
     },
     {
       field: 'memberStatus',
@@ -47,9 +47,10 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
     const partitionId = stepData.partitionId || 1;
-    const programId = stepData.programId;
+    let programId = stepData.programId;
     const status = stepData.memberStatus;
     const leads: {[index: string]: {email: string}} = stepData.leads;
+    const numericRegex = /^\d+$/;
     const leadArray = [];
 
     Object.values(leads).forEach((lead) => {
@@ -58,6 +59,17 @@ export class BulkAddOrRemoveProgramMemberStep extends BaseStep implements StepIn
 
     const records = [];
     try {
+      // If programId is not numeric, assume it's a program name and look up the ID
+      if (!numericRegex.test(programId)) {
+        const program: any = await this.client.findProgramsByName(programId);
+        if (program.result.length === 0) {
+          return this.error('Program with name %s does not exist', [
+            programId,
+          ]);
+        }
+        programId = program.result[0].id;
+      }
+
       const createdLeadArray = [];
       const updatedLeadArray = [];
       const deletedLeadArray = [];

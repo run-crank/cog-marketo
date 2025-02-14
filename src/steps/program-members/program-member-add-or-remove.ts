@@ -20,7 +20,7 @@ export class AddOrRemoveProgramMemberStep extends BaseStep implements StepInterf
     {
       field: 'programId',
       type: FieldDefinition.Type.STRING,
-      description: 'ID of the program',
+      description: "Program's ID or name",
     },
     {
       field: 'memberStatus',
@@ -68,12 +68,23 @@ export class AddOrRemoveProgramMemberStep extends BaseStep implements StepInterf
   async executeStep(step: Step) {
     const stepData: any = step.getData().toJavaScript();
     const partitionId = stepData.partitionId || null;
-    const programId = stepData.programId;
+    let programId = stepData.programId;
     const status = stepData.memberStatus;
     const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
+    const numericRegex = /^\d+$/;
     let leadEmailArray = [];
 
     try {
+      // If programId is not numeric, assume it's a program name and look up the ID
+      if (!numericRegex.test(programId)) {
+        const program: any = await this.client.findProgramsByName(programId);
+        if (program.result.length === 0) {
+          return this.error('Program with name %s does not exist', [
+            programId,
+          ]);
+        }
+        programId = program.result[0].id;
+      }
 
       if (stepData.multiple_email && Array.isArray(stepData.multiple_email) && stepData.multiple_email.length > 0) {
         // handle bulk tokens

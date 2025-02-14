@@ -80,7 +80,9 @@ describe('AddOrRemoveProgramMemberStep', () => {
     ]));
     
     protoStep.setData(Struct.fromJavaScript({
-      multiple_email: expectedEmails
+      multiple_email: expectedEmails,
+      programId: '12345',
+      memberStatus: 'Filled-out Form'
     }));
 
     await stepUnderTest.executeStep(protoStep);
@@ -128,12 +130,13 @@ describe('AddOrRemoveProgramMemberStep', () => {
       },
     ]));
     protoStep.setData(Struct.fromJavaScript({
-      programId: 'anyId',
       multiple_email: [
         'sampleEmail1@example.com',
         'sampleEmail2@example.com',
         'sampleEmail3@example.com',
       ],
+      programId: '12345',
+      memberStatus: 'Filled-out Form'
     }));
     const response: RunStepResponse = (await stepUnderTest.executeStep(protoStep)) as RunStepResponse;
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
@@ -180,7 +183,8 @@ describe('AddOrRemoveProgramMemberStep', () => {
       },
     ]));
     protoStep.setData(Struct.fromJavaScript({
-      programId: 'anyId',
+      programId: '12345',
+      memberStatus: 'Filled-out Form',
       multiple_email: [
         123321,
         123322,
@@ -215,7 +219,8 @@ describe('AddOrRemoveProgramMemberStep', () => {
       },
     ]));
     protoStep.setData(Struct.fromJavaScript({
-      programId: 'anyId',
+      programId: '12345',
+      memberStatus: 'Filled-out Form',
       email: 'sampleEmail1@example.com',
     }));
     const response: RunStepResponse = (await stepUnderTest.executeStep(protoStep)) as RunStepResponse;
@@ -246,7 +251,8 @@ describe('AddOrRemoveProgramMemberStep', () => {
       },
     ]));
     protoStep.setData(Struct.fromJavaScript({
-      programId: 'anyId',
+      programId: '12345',
+      memberStatus: 'Filled-out Form',
       email: '123321',
     }));
     const response: RunStepResponse = (await stepUnderTest.executeStep(protoStep)) as RunStepResponse;
@@ -276,7 +282,7 @@ describe('AddOrRemoveProgramMemberStep', () => {
     clientWrapperStub.bulkSetStatusToLeadsFromProgram.returns(Promise.resolve([{ error: { partition: false } }]));
     protoStep.setData(Struct.fromJavaScript({
       partitionId: 23,
-      programId: 'anyId',
+      programId: '12345',
       multiple_email: [
         'sampleEmail1@example.com',
         'sampleEmail2@example.com',
@@ -353,7 +359,8 @@ describe('AddOrRemoveProgramMemberStep', () => {
       ],
     }]));
     protoStep.setData(Struct.fromJavaScript({
-      programId: 'anyId',
+      programId: '12345',
+      memberStatus: 'Filled-out Form',
       multiple_email: [
         'sampleEmail1@example.com',
         'sampleEmail2@example.com',
