@@ -46,6 +46,8 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
           status: 'anyStatus',
         },
       },
+      programId: '12345',
+      memberStatus: 'Filled-out Form'
     }));
 
     const expectedEmails: string[] = [
@@ -59,8 +61,6 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
   });
 
   it('should respond with success if the marketo executes succesfully', async () => {
-    const expectedEmail: string = 'expected@example.com';
-    const expectedReason: string = 'reason it failed';
     clientWrapperStub.bulkSetStatusToLeadsFromProgram.returns(Promise.resolve([
       {
         success: true,
@@ -80,8 +80,8 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
         ],
       },
     ]));
+    
     protoStep.setData(Struct.fromJavaScript({
-      programId: 'anyId',
       leads: {
         1: {
           email: 'sampleEmail1@example.com',
@@ -96,18 +96,18 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
           status: 'anyStatus',
         },
       },
+      programId: '12345',
+      memberStatus: 'Filled-out Form'
     }));
+    
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
   });
 
   it('should respond with fail if the partition does not exist', async () => {
-    const expectedEmail: string = 'expected@example.com';
-    const expectedReason: string = 'reason it failed';
     clientWrapperStub.bulkSetStatusToLeadsFromProgram.returns(Promise.resolve([{ error: { partition: false } }]));
+    
     protoStep.setData(Struct.fromJavaScript({
-      partitionId: 23,
-      programId: 'anyId',
       leads: {
         1: {
           email: 'sampleEmail1@example.com',
@@ -122,7 +122,11 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
           status: 'anyStatus',
         },
       },
+      programId: '12345',
+      memberStatus: 'Filled-out Form',
+      partitionId: 23
     }));
+    
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
   });
@@ -146,7 +150,6 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
       ],
     }]));
     protoStep.setData(Struct.fromJavaScript({
-      programId: 'anyId',
       leads: {
         1: {
           email: 'sampleEmail1@example.com',
@@ -161,6 +164,8 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
           status: 'anyStatus',
         },
       },
+      programId: '12345',
+      memberStatus: 'Filled-out Form'
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
@@ -170,7 +175,6 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
   it('should respond with an error if the marketo throws an error', async () => {
     clientWrapperStub.bulkSetStatusToLeadsFromProgram.throws('any error');
     protoStep.setData(Struct.fromJavaScript({
-      programId: 'anyId',
       leads: {
         1: {
           email: 'sampleEmail1@example.com',
@@ -185,6 +189,8 @@ describe('BulkAddOrRemoveProgramMemberStep', () => {
           status: 'anyStatus',
         },
       },
+      programId: '12345',
+      memberStatus: 'Filled-out Form'
     }));
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
