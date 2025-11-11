@@ -203,7 +203,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
 
             for (const activity of currLeadActivities) {
               const primaryAttribute = this.getPrimaryAttribute(activityTypes, activity);
-              const actualAttributes = activity.attributes;
+              const actualAttributes = [...activity.attributes];
 
               Object.keys(activity).forEach((key) => {
                 if (key !== 'attributes') {
@@ -380,7 +380,7 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
           let validatedActivity;
           for (const activity of activities) {
             const primaryAttribute = this.getPrimaryAttribute(activityTypes, activity);
-            const actualAttributes = activity.attributes;
+            const actualAttributes = [...activity.attributes];
 
             Object.keys(activity).forEach((key) => {
               if (key !== 'attributes') {
