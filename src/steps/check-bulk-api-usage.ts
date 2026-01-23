@@ -1,0 +1,95 @@
+/*tslint:disable:no-else-after-return*/
+
+import { BaseStep, Field, StepInterface, ExpectedRecord } from '../core/base-step';
+import { Step, FieldDefinition, StepDefinition, RecordDefinition } from '../proto/cog_pb';
+
+export class CheckBulkApiUsageStep extends BaseStep implements StepInterface {
+
+  protected stepName: string = 'Check daily Marketo Bulk API usage';
+  protected stepExpression: string = 'there should be less than 90% usage of your daily bulk API limit';
+  protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
+  protected actionList: string[] = ['check'];
+  protected targetObject: string = 'Bulk API Usage';
+  protected expectedFields: Field[] = [{
+    field: 'exportLimit',
+    type: FieldDefinition.Type.NUMERIC,
+    optionality: FieldDefinition.Optionality.OPTIONAL,
+    description: 'Your daily bulk export limit in MB (default: 500)',
+  }];
+  protected expectedRecords: ExpectedRecord[] = [{
+    id: 'bulkExports',
+    type: RecordDefinition.Type.KEYVALUE,
+    fields: [{
+      field: 'bulkApiUsage',
+      type: FieldDefinition.Type.NUMERIC,
+      description: 'Daily Bulk API Usage in MB',
+    }],
+    dynamicFields: false,
+  }];
+
+  async executeStep(step: Step) {
+    const stepData: any = step.getData().toJavaScript();
+    const exportLimitMB = stepData.exportLimit || 500;
+    const exportLimitBytes = exportLimitMB * 1024 * 1024;
+
+    try {
+      // Get all export jobs from the different bulk API endpoints
+      const leadJobsResponse = await this.client.getBulkExportLeadJobs();
+      const activityJobsResponse = await this.client.getBulkExportActivityJobs();
+      const programMemberJobsResponse = await this.client.getBulkExportProgramMemberJobs();
+
+      // Calculate today's total usage by summing fileSize from all completed jobs created today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let totalBytesToday = 0;
+      let jobCount = 0;
+
+      // Helper function to process jobs from each endpoint
+      const processJobs = (jobs: any[]) => {
+        if (!jobs || !Array.isArray(jobs)) {
+          return;
+        }
+
+        jobs.forEach((job) => {
+          // Only count jobs created today and that have completed
+          const createdAt = new Date(job.createdAt);
+          createdAt.setHours(0, 0, 0, 0);
+
+          if (createdAt.getTime() === today.getTime() && job.status === 'Completed' && job.fileSize) {
+            totalBytesToday += job.fileSize;
+            jobCount += 1;
+          }
+        });
+      };
+
+      // Process jobs from all endpoints
+      if (leadJobsResponse.result) {
+        processJobs(leadJobsResponse.result);
+      }
+      if (activityJobsResponse.result) {
+        processJobs(activityJobsResponse.result);
+      }
+      if (programMemberJobsResponse.result) {
+        processJobs(programMemberJobsResponse.result);
+      }
+
+      // Convert to MB for display
+      const totalMBUsed = (totalBytesToday / (1024 * 1024)).toFixed(2);
+      const percentUsage = ((totalBytesToday / exportLimitBytes) * 100).toFixed(2);
+
+      if (totalBytesToday < (0.9 * exportLimitBytes)) {
+        return this.pass('You have used %s MB of your %d MB daily bulk export limit, which is %s%% of your quota. This is based on %d completed export job(s) today.',
+                         [totalMBUsed, exportLimitMB, percentUsage, jobCount],
+                         [this.keyValue('bulkExports', 'Checked Bulk API Usage', { bulkApiUsage: parseFloat(totalMBUsed) })]);
+      }
+      return this.fail('You have used %s MB of your %d MB daily bulk export limit, which is %s%% of your quota. This is based on %d completed export job(s) today. You are approaching or have exceeded your daily limit.',
+                       [totalMBUsed, exportLimitMB, percentUsage, jobCount],
+                       [this.keyValue('bulkExports', 'Checked Bulk API Usage', { bulkApiUsage: parseFloat(totalMBUsed) })]);
+    } catch (e) {
+      return this.error('There was a problem checking the Bulk API Usage: %s', [e.toString()]);
+    }
+  }
+}
+
+export { CheckBulkApiUsageStep as Step };
