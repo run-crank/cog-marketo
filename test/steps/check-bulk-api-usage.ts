@@ -21,6 +21,8 @@ describe('CheckBulkApiUsageStep', () => {
     clientWrapperStub.getBulkExportLeadJobs = sinon.stub();
     clientWrapperStub.getBulkExportActivityJobs = sinon.stub();
     clientWrapperStub.getBulkExportProgramMemberJobs = sinon.stub();
+    clientWrapperStub.getCustomObjectTypes = sinon.stub();
+    clientWrapperStub.getBulkExportCustomObjectJobs = sinon.stub();
     stepUnderTest = new Step(clientWrapperStub);
   });
 
@@ -34,128 +36,133 @@ describe('CheckBulkApiUsageStep', () => {
 
   it('should respond with success if bulk API usage is less than 90% of the daily limit', async () => {
     const expectedLimit: number = 500; // 500MB default
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
+    // Use current moment — always "today" in any timezone
+    const nowISO = new Date().toISOString();
+
     protoStep.setData(Struct.fromJavaScript({
       exportLimit: expectedLimit,
     }));
-    
+
     // Mock lead export jobs - 100MB used today
     clientWrapperStub.getBulkExportLeadJobs.returns(Promise.resolve({
       success: true,
       result: [
         {
-          createdAt: today.toISOString(),
+          finishedAt: nowISO,
           status: 'Completed',
           fileSize: 100 * 1024 * 1024, // 100MB
         },
       ],
     }));
-    
+
     // Mock activity export jobs - 50MB used today
     clientWrapperStub.getBulkExportActivityJobs.returns(Promise.resolve({
       success: true,
       result: [
         {
-          createdAt: today.toISOString(),
+          finishedAt: nowISO,
           status: 'Completed',
           fileSize: 50 * 1024 * 1024, // 50MB
         },
       ],
     }));
-    
+
     // Mock program member export jobs - empty
     clientWrapperStub.getBulkExportProgramMemberJobs.returns(Promise.resolve({
       success: true,
       result: [],
     }));
-    
+
+    clientWrapperStub.getCustomObjectTypes.returns(Promise.resolve({ success: true, result: [] }));
+
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
   });
 
   it('should respond with a failure if bulk API usage is more than 90% of the daily limit', async () => {
     const expectedLimit: number = 500;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
+    const nowISO = new Date().toISOString();
+
     protoStep.setData(Struct.fromJavaScript({
       exportLimit: expectedLimit,
     }));
-    
+
     // Mock lead export jobs - 400MB used today
     clientWrapperStub.getBulkExportLeadJobs.returns(Promise.resolve({
       success: true,
       result: [
         {
-          createdAt: today.toISOString(),
+          finishedAt: nowISO,
           status: 'Completed',
           fileSize: 400 * 1024 * 1024, // 400MB
         },
       ],
     }));
-    
+
     // Mock activity export jobs - 100MB used today
     clientWrapperStub.getBulkExportActivityJobs.returns(Promise.resolve({
       success: true,
       result: [
         {
-          createdAt: today.toISOString(),
+          finishedAt: nowISO,
           status: 'Completed',
           fileSize: 100 * 1024 * 1024, // 100MB
         },
       ],
     }));
-    
+
     // Mock program member export jobs - empty
     clientWrapperStub.getBulkExportProgramMemberJobs.returns(Promise.resolve({
       success: true,
       result: [],
     }));
-    
+
+    clientWrapperStub.getCustomObjectTypes.returns(Promise.resolve({ success: true, result: [] }));
+
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
   });
 
   it('should only count jobs from today', async () => {
     const expectedLimit: number = 500;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    
+    // Current moment is always "today" in any timezone
+    const nowISO = new Date().toISOString();
+    // 48 hours ago is always "before today" in any timezone
+    const twoDaysAgoISO = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+
     protoStep.setData(Struct.fromJavaScript({
       exportLimit: expectedLimit,
     }));
-    
-    // Mock lead export jobs - one from today (50MB), one from yesterday (400MB)
+
+    // Mock lead export jobs - one from today (50MB), one from two days ago (400MB)
     clientWrapperStub.getBulkExportLeadJobs.returns(Promise.resolve({
       success: true,
       result: [
         {
-          createdAt: today.toISOString(),
+          finishedAt: nowISO,
           status: 'Completed',
           fileSize: 50 * 1024 * 1024, // 50MB today
         },
         {
-          createdAt: yesterday.toISOString(),
+          finishedAt: twoDaysAgoISO,
           status: 'Completed',
-          fileSize: 400 * 1024 * 1024, // 400MB yesterday (should not count)
+          fileSize: 400 * 1024 * 1024, // 400MB two days ago (should not count)
         },
       ],
     }));
-    
+
     clientWrapperStub.getBulkExportActivityJobs.returns(Promise.resolve({
       success: true,
       result: [],
     }));
-    
+
     clientWrapperStub.getBulkExportProgramMemberJobs.returns(Promise.resolve({
       success: true,
       result: [],
     }));
-    
+
+    clientWrapperStub.getCustomObjectTypes.returns(Promise.resolve({ success: true, result: [] }));
+
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     // Should pass because only 50MB from today counts
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
@@ -163,26 +170,24 @@ describe('CheckBulkApiUsageStep', () => {
 
   it('should only count completed jobs', async () => {
     const expectedLimit: number = 500;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
+    const nowISO = new Date().toISOString();
+
     protoStep.setData(Struct.fromJavaScript({
       exportLimit: expectedLimit,
     }));
-    
-    // Mock lead export jobs - one completed (50MB), one queued (400MB)
+
+    // Mock lead export jobs - one completed (50MB), one queued (400MB, no finishedAt yet)
     clientWrapperStub.getBulkExportLeadJobs.returns(Promise.resolve({
       success: true,
       result: [
         {
-          createdAt: today.toISOString(),
+          finishedAt: nowISO,
           status: 'Completed',
           fileSize: 50 * 1024 * 1024, // 50MB completed
         },
         {
-          createdAt: today.toISOString(),
           status: 'Queued',
-          fileSize: 400 * 1024 * 1024, // 400MB queued (should not count)
+          fileSize: 400 * 1024 * 1024, // 400MB queued (should not count — no finishedAt)
         },
       ],
     }));
@@ -191,12 +196,14 @@ describe('CheckBulkApiUsageStep', () => {
       success: true,
       result: [],
     }));
-    
+
     clientWrapperStub.getBulkExportProgramMemberJobs.returns(Promise.resolve({
       success: true,
       result: [],
     }));
-    
+
+    clientWrapperStub.getCustomObjectTypes.returns(Promise.resolve({ success: true, result: [] }));
+
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     // Should pass because only 50MB from completed jobs counts
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
@@ -218,12 +225,14 @@ describe('CheckBulkApiUsageStep', () => {
       success: true,
       result: [],
     }));
-    
+
     clientWrapperStub.getBulkExportProgramMemberJobs.returns(Promise.resolve({
       success: true,
       result: [],
     }));
-    
+
+    clientWrapperStub.getCustomObjectTypes.returns(Promise.resolve({ success: true, result: [] }));
+
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     // Should pass with 0MB usage
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
@@ -239,17 +248,16 @@ describe('CheckBulkApiUsageStep', () => {
   });
 
   it('should use default limit of 500MB when not specified', async () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
+    const nowISO = new Date().toISOString();
+
     // Don't set exportLimit, should default to 500MB
     protoStep.setData(Struct.fromJavaScript({}));
-    
+
     clientWrapperStub.getBulkExportLeadJobs.returns(Promise.resolve({
       success: true,
       result: [
         {
-          createdAt: today.toISOString(),
+          finishedAt: nowISO,
           status: 'Completed',
           fileSize: 400 * 1024 * 1024, // 400MB
         },
@@ -260,14 +268,106 @@ describe('CheckBulkApiUsageStep', () => {
       success: true,
       result: [],
     }));
-    
+
     clientWrapperStub.getBulkExportProgramMemberJobs.returns(Promise.resolve({
       success: true,
       result: [],
     }));
-    
+
+    clientWrapperStub.getCustomObjectTypes.returns(Promise.resolve({ success: true, result: [] }));
+
     const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     // Should pass because 400MB < 90% of 500MB (450MB)
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
+  });
+
+  it('should include custom object export jobs in usage calculation', async () => {
+    const expectedLimit: number = 500;
+    const nowISO = new Date().toISOString();
+
+    protoStep.setData(Struct.fromJavaScript({
+      exportLimit: expectedLimit,
+    }));
+
+    clientWrapperStub.getBulkExportLeadJobs.returns(Promise.resolve({ success: true, result: [] }));
+    clientWrapperStub.getBulkExportActivityJobs.returns(Promise.resolve({ success: true, result: [] }));
+    clientWrapperStub.getBulkExportProgramMemberJobs.returns(Promise.resolve({ success: true, result: [] }));
+
+    // Two custom object types
+    clientWrapperStub.getCustomObjectTypes.returns(Promise.resolve({
+      success: true,
+      result: [
+        { name: 'cars_c' },
+        { name: 'orders_c' },
+      ],
+    }));
+
+    // cars_c: 200MB completed today
+    // orders_c: 250MB completed today — total 450MB = 90% of 500MB limit, should fail
+    clientWrapperStub.getBulkExportCustomObjectJobs.withArgs('cars_c').returns(Promise.resolve({
+      success: true,
+      result: [
+        {
+          finishedAt: nowISO,
+          status: 'Completed',
+          fileSize: 200 * 1024 * 1024,
+        },
+      ],
+    }));
+    clientWrapperStub.getBulkExportCustomObjectJobs.withArgs('orders_c').returns(Promise.resolve({
+      success: true,
+      result: [
+        {
+          finishedAt: nowISO,
+          status: 'Completed',
+          fileSize: 250 * 1024 * 1024,
+        },
+      ],
+    }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    // 450MB >= 90% of 500MB (450MB), should fail
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.FAILED);
+  });
+
+  it('should not count jobs whose finishedAt is before midnight Central Time', async () => {
+    // Marketo resets at midnight Central Time. A job that finished at e.g. 1am UTC is
+    // still the previous calendar day in Central Time (UTC-5/UTC-6) and must not count.
+    // 48 hours ago is unambiguously a previous day in any timezone.
+    const twoDaysAgoISO = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+
+    protoStep.setData(Struct.fromJavaScript({ exportLimit: 500 }));
+
+    clientWrapperStub.getBulkExportLeadJobs.returns(Promise.resolve({
+      success: true,
+      result: [
+        {
+          finishedAt: twoDaysAgoISO,
+          status: 'Completed',
+          fileSize: 460 * 1024 * 1024, // 460MB — would fail if counted, but should not be
+        },
+      ],
+    }));
+    clientWrapperStub.getBulkExportActivityJobs.returns(Promise.resolve({ success: true, result: [] }));
+    clientWrapperStub.getBulkExportProgramMemberJobs.returns(Promise.resolve({ success: true, result: [] }));
+    clientWrapperStub.getCustomObjectTypes.returns(Promise.resolve({ success: true, result: [] }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
+    // Should pass — the large job is from a previous day and must not count
+    expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
+  });
+
+  it('should gracefully handle getCustomObjectTypes returning no result', async () => {
+    protoStep.setData(Struct.fromJavaScript({ exportLimit: 500 }));
+
+    clientWrapperStub.getBulkExportLeadJobs.returns(Promise.resolve({ success: true, result: [] }));
+    clientWrapperStub.getBulkExportActivityJobs.returns(Promise.resolve({ success: true, result: [] }));
+    clientWrapperStub.getBulkExportProgramMemberJobs.returns(Promise.resolve({ success: true, result: [] }));
+
+    // Simulate API returning success:false with no result (e.g. no custom objects configured)
+    clientWrapperStub.getCustomObjectTypes.returns(Promise.resolve({ success: false }));
+
+    const response: RunStepResponse = await stepUnderTest.executeStep(protoStep);
     expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.PASSED);
   });
 });

@@ -55,6 +55,25 @@ export class StatsAwareMixin {
     return await this.client._connection.get(fullUrl, options);
   }
 
+  public async getCustomObjectTypes() {
+    if (this.delayInSeconds > 0) {
+      await this.delay(this.delayInSeconds);
+    }
+    return await this.client._connection.get('/v1/customobjects.json');
+  }
+
+  public async getBulkExportCustomObjectJobs(apiName: string) {
+    if (this.delayInSeconds > 0) {
+      await this.delay(this.delayInSeconds);
+    }
+    const baseEndpoint = this.client._connection._options.endpoint.replace('/rest', '');
+    const fullUrl = `${baseEndpoint}/bulk/v1/customobjects/${apiName}/export.json`;
+    const options = {
+      data: { _method: 'GET' },
+    };
+    return await this.client._connection.get(fullUrl, options);
+  }
+
   public async delay(seconds: number) {
     return new Promise(resolve => setTimeout(resolve, seconds * 1000));
   }
