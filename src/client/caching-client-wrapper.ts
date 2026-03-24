@@ -267,6 +267,14 @@ class CachingClientWrapper {
     return await this.client.getBulkExportProgramMemberJobs();
   }
 
+  public async getCustomObjectTypes() {
+    return await this.client.getCustomObjectTypes();
+  }
+
+  public async getBulkExportCustomObjectJobs(apiName: string) {
+    return await this.client.getBulkExportCustomObjectJobs(apiName);
+  }
+
   public async createProgram(program) {
     return await this.client.createProgram(program);
   }

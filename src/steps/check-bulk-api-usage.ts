@@ -37,10 +37,12 @@ export class CheckBulkApiUsageStep extends BaseStep implements StepInterface {
       const leadJobsResponse = await this.client.getBulkExportLeadJobs();
       const activityJobsResponse = await this.client.getBulkExportActivityJobs();
       const programMemberJobsResponse = await this.client.getBulkExportProgramMemberJobs();
+      const customObjectTypesResponse = await this.client.getCustomObjectTypes();
 
-      // Calculate today's total usage by summing fileSize from all completed jobs created today
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      // Calculate today's total usage by summing fileSize from all completed jobs that
+      // finished today in Central Time. Marketo's daily quota resets at midnight Central
+      // Time, so this must match the timezone Marketo uses — not the server's local time.
+      const todayCentralStr = new Date().toLocaleDateString('en-US', { timeZone: 'America/Chicago' });
 
       let totalBytesToday = 0;
       let jobCount = 0;
@@ -52,11 +54,14 @@ export class CheckBulkApiUsageStep extends BaseStep implements StepInterface {
         }
 
         jobs.forEach((job) => {
-          // Only count jobs created today and that have completed
-          const createdAt = new Date(job.createdAt);
-          createdAt.setHours(0, 0, 0, 0);
-
-          if (createdAt.getTime() === today.getTime() && job.status === 'Completed' && job.fileSize) {
+          // Only count completed jobs whose finishedAt falls on today in Central Time.
+          // Using finishedAt (not createdAt) matches how Marketo attributes quota usage,
+          // and using Central Time matches Marketo's midnight quota reset.
+          if (!job.finishedAt || job.status !== 'Completed' || !job.fileSize) {
+            return;
+          }
+          const jobFinishedCentralStr = new Date(job.finishedAt).toLocaleDateString('en-US', { timeZone: 'America/Chicago' });
+          if (jobFinishedCentralStr === todayCentralStr) {
             totalBytesToday += job.fileSize;
             jobCount += 1;
           }
@@ -72,6 +77,16 @@ export class CheckBulkApiUsageStep extends BaseStep implements StepInterface {
       }
       if (programMemberJobsResponse.result) {
         processJobs(programMemberJobsResponse.result);
+      }
+
+      // Process custom object export jobs for each custom object type
+      if (customObjectTypesResponse && customObjectTypesResponse.result) {
+        for (const customObjectType of customObjectTypesResponse.result) {
+          const customObjectJobsResponse = await this.client.getBulkExportCustomObjectJobs(customObjectType.name);
+          if (customObjectJobsResponse && customObjectJobsResponse.result) {
+            processJobs(customObjectJobsResponse.result);
+          }
+        }
       }
 
       // Convert to MB for display
