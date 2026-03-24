@@ -255,6 +255,26 @@ class CachingClientWrapper {
     return await this.client.getWeeklyApiUsage();
   }
 
+  public async getBulkExportLeadJobs() {
+    return await this.client.getBulkExportLeadJobs();
+  }
+
+  public async getBulkExportActivityJobs() {
+    return await this.client.getBulkExportActivityJobs();
+  }
+
+  public async getBulkExportProgramMemberJobs() {
+    return await this.client.getBulkExportProgramMemberJobs();
+  }
+
+  public async getCustomObjectTypes() {
+    return await this.client.getCustomObjectTypes();
+  }
+
+  public async getBulkExportCustomObjectJobs(apiName: string) {
+    return await this.client.getBulkExportCustomObjectJobs(apiName);
+  }
+
   public async createProgram(program) {
     return await this.client.createProgram(program);
   }

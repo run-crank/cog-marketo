@@ -78,7 +78,7 @@ export class AddOrRemoveProgramMemberStep extends BaseStep implements StepInterf
       // If programId is not numeric, assume it's a program name and look up the ID
       if (!numericRegex.test(programId)) {
         const program: any = await this.client.findProgramsByName(programId);
-        if (program.result.length === 0) {
+        if (!program.result || program.result.length === 0) {
           return this.error('Program with name %s does not exist', [
             programId,
           ]);

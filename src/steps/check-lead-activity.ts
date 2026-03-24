@@ -136,6 +136,16 @@ export class CheckLeadActivityStep extends BaseStep implements StepInterface {
       activityTypeIdOrName = activityType.id;
 
       /* Expected attributes passed to test step. Translate object/map as array for easier comparison with actual attributes */
+      const unresolvedTemplates = Object.entries(withAttributes)
+        .filter(([, v]) => typeof v === 'string' && v.includes('{{') && v.includes('}}'))
+        .map(([k]) => k);
+      if (unresolvedTemplates.length > 0) {
+        return this.error(
+          'One or more withAttributes values could not be resolved from a template variable: %s. ' +
+          'Check that all referenced fields (e.g. {{marketo.lead.lastProgramProcessed}}) are set on the lead before this step runs.',
+          [unresolvedTemplates.join(', ')],
+        );
+      }
       const expectedAttributes = Object.keys(withAttributes).map((key) => { return { name: key, value: withAttributes[key] }; });
       if ((stepData.multiple_email && Array.isArray(stepData.multiple_email) && stepData.multiple_email.length > 0) ||
           (stepData.multiple_id && Array.isArray(stepData.multiple_id) && stepData.multiple_id.length > 0)) {
