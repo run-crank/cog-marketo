@@ -38,10 +38,18 @@ export class ProgramMemberCountStep extends BaseStep implements StepInterface {
     const stepData: any = step.getData() ? step.getData().toJavaScript() : {};
     const programName = stepData.programName;
 
+    if (!programName || (typeof programName === 'string' && programName.trim() === '')) {
+      return this.error(
+        'Program name is required but was not provided or could not be resolved. ' +
+        'Check that any template variable (e.g. {{marketo.lead.lastProgramProcessed}}) resolves to a valid program name.',
+        [],
+      );
+    }
+
     try {
       // Check if program exists and also get the id
       const program: any = await this.client.findProgramsByName(programName);
-      if (program.result && program.result.length === 0) {
+      if (!program.result || program.result.length === 0) {
         return this.error('Program with name %s does not exist', [
           programName,
         ]);
