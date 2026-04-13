@@ -71,6 +71,14 @@ export class ProgramMemberFieldEqualsStep extends BaseStep implements StepInterf
       return this.error("The operator '%s' requires an expected value. Please provide one.", [operator]);
     }
 
+    if (!programName || (typeof programName === 'string' && programName.trim() === '')) {
+      return this.error(
+        'Program name is required but was not provided or could not be resolved. ' +
+        'Check that any template variable (e.g. {{marketo.lead.lastProgramProcessed}}) resolves to a valid program name.',
+        [],
+      );
+    }
+
     try {
       const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
       let lookupField = 'id';
@@ -89,7 +97,7 @@ export class ProgramMemberFieldEqualsStep extends BaseStep implements StepInterf
 
       // Check if program exists and also get the id
       const program: any = await this.client.findProgramsByName(programName);
-      if (program.result.length === 0) {
+      if (!program.result || program.result.length === 0) {
         return this.error('Program with name %s does not exist', [
           programName,
         ]);

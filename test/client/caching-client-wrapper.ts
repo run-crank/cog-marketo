@@ -18,6 +18,9 @@ describe('CachingClientWrapper', () => {
     clientWrapperStub = {
       getDailyApiUsage: sinon.spy(),
       getWeeklyApiUsage: sinon.spy(),
+      getBulkExportLeadJobs: sinon.spy(),
+      getBulkExportActivityJobs: sinon.spy(),
+      getBulkExportProgramMemberJobs: sinon.spy(),
       getActivitiesByLeadId: sinon.spy(),
       getActivityPagingToken: sinon.spy(),
       getActivityTypes: sinon.spy(),
@@ -336,6 +339,30 @@ describe('CachingClientWrapper', () => {
     cachingClientWrapperUnderTest.getWeeklyApiUsage();
 
     expect(clientWrapperStub.getWeeklyApiUsage).to.have.been.called;
+    done();
+  });
+
+  it('getBulkExportLeadJobs using original function', (done) => {
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
+    cachingClientWrapperUnderTest.getBulkExportLeadJobs();
+
+    expect(clientWrapperStub.getBulkExportLeadJobs).to.have.been.called;
+    done();
+  });
+
+  it('getBulkExportActivityJobs using original function', (done) => {
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
+    cachingClientWrapperUnderTest.getBulkExportActivityJobs();
+
+    expect(clientWrapperStub.getBulkExportActivityJobs).to.have.been.called;
+    done();
+  });
+
+  it('getBulkExportProgramMemberJobs using original function', (done) => {
+    cachingClientWrapperUnderTest = new CachingClientWrapper(clientWrapperStub, redisClientStub, idMap, null);
+    cachingClientWrapperUnderTest.getBulkExportProgramMemberJobs();
+
+    expect(clientWrapperStub.getBulkExportProgramMemberJobs).to.have.been.called;
     done();
   });
 
